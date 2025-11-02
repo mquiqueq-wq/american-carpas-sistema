@@ -1,0 +1,645 @@
+{% extends 'trabajadores/base.html' %}
+{% load custom_filters %}
+<!-- Título de la página -->
+{% block title %}{{ trabajador.nombres }} {{ trabajador.apellidos }} - American Carpas 1 SAS{% endblock %}
+
+{% block content %}
+<!-- Contenedor principal con fondo blanco -->
+<div class="contenedor-principal">
+    <!-- Encabezado con nombre del trabajador y botones de acción -->
+    <div class="d-flex justify-content-between align-items-start mb-4">
+        <div>
+            <h2 class="titulo-pagina mb-1">
+                {{ trabajador.nombres }} {{ trabajador.apellidos }}
+            </h2>
+            <p class="text-muted mb-0">
+                <span class="badge bg-secondary">{{ trabajador.get_tipo_documento_display }}</span>
+                {{ trabajador.id_trabajador }}
+            </p>
+        </div>
+        <!-- Botones de acción -->
+        <div>
+            <a href="{% url 'trabajadores:trabajador_update' trabajador.id_trabajador %}" 
+               class="btn btn-outline-secondary me-2">
+                <i class="bi bi-pencil"></i> Editar
+            </a>
+            <a href="{% url 'trabajadores:trabajador_delete' trabajador.id_trabajador %}" 
+               class="btn btn-outline-danger">
+                <i class="bi bi-trash"></i> Eliminar
+            </a>
+        </div>
+    </div>
+
+    <!-- Separador visual -->
+    <div class="separador"></div>
+
+    <!-- ==========================================
+         ACORDEÓN PRINCIPAL CON TODAS LAS SECCIONES
+         ========================================== -->
+    <div class="accordion" id="accordionTrabajador">
+
+        <!-- ==========================================
+             SECCIÓN 1: INFORMACIÓN PERSONAL
+             ========================================== -->
+        <div class="accordion-item">
+            <!-- Encabezado de la sección - Clickeable para expandir/colapsar -->
+            <h2 class="accordion-header" id="headingPersonal">
+                <button class="accordion-button" type="button" data-bs-toggle="collapse" 
+                        data-bs-target="#collapsePersonal" aria-expanded="true" 
+                        aria-controls="collapsePersonal">
+                    <i class="bi bi-person-badge me-2"></i> 
+                    <strong>Información Personal</strong>
+                </button>
+            </h2>
+            <!-- Contenido de la sección - Visible por defecto (show) -->
+            <div id="collapsePersonal" class="accordion-collapse collapse show" 
+                 aria-labelledby="headingPersonal" data-bs-parent="#accordionTrabajador">
+                <div class="accordion-body">
+                    <div class="row">
+                        <!-- Columna izquierda -->
+                        <div class="col-md-6">
+                            <!-- Tipo de documento -->
+                            <div class="mb-3">
+                                <label class="form-label text-muted small">Tipo de documento</label>
+                                <p class="mb-0"><strong>{{ trabajador.get_tipo_documento_display }}</strong></p>
+                            </div>
+
+                            <!-- Número de documento -->
+                            <div class="mb-3">
+                                <label class="form-label text-muted small">Número de documento</label>
+                                <p class="mb-0"><strong>{{ trabajador.id_trabajador }}</strong></p>
+                            </div>
+
+                            <!-- Fecha expedición -->
+                            <div class="mb-3">
+                                <label class="form-label text-muted small">Fecha expedición documento</label>
+                                <p class="mb-0">{{ trabajador.fecha_expedicion_doc|date:"d/m/Y" }}</p>
+                            </div>
+
+                            <!-- Lugar expedición -->
+                            <div class="mb-3">
+                                <label class="form-label text-muted small">Lugar expedición</label>
+                                <p class="mb-0">{{ trabajador.lugar_expedicion }}</p>
+                            </div>
+
+                            <!-- Nacionalidad -->
+                            <div class="mb-3">
+                                <label class="form-label text-muted small">Nacionalidad</label>
+                                <p class="mb-0">{{ trabajador.nacionalidad }}</p>
+                            </div>
+
+                            <!-- Fecha de nacimiento -->
+                            <div class="mb-3">
+                                <label class="form-label text-muted small">Fecha de nacimiento</label>
+                                <p class="mb-0">{{ trabajador.fecha_nacimiento|date:"d/m/Y" }}</p>
+                            </div>
+
+                            <!-- Lugar de nacimiento -->
+                            <div class="mb-3">
+                                <label class="form-label text-muted small">Lugar de nacimiento</label>
+                                <p class="mb-0">{{ trabajador.lugar_nacimiento }}</p>
+                            </div>
+
+                            <!-- Género -->
+                            <div class="mb-3">
+                                <label class="form-label text-muted small">Género</label>
+                                <p class="mb-0">{{ trabajador.get_genero_display|default:"No especificado" }}</p>
+                            </div>
+
+                            <!-- Estado civil -->
+                            <div class="mb-3">
+                                <label class="form-label text-muted small">Estado civil</label>
+                                <p class="mb-0">{{ trabajador.get_estado_civil_display }}</p>
+                            </div>
+                        </div>
+
+                        <!-- Columna derecha -->
+                        <div class="col-md-6">
+                            <!-- Dirección de residencia -->
+                            <div class="mb-3">
+                                <label class="form-label text-muted small">Dirección de residencia</label>
+                                <p class="mb-0">{{ trabajador.direccion_residencia }}</p>
+                            </div>
+
+                            <!-- Ciudad de residencia -->
+                            <div class="mb-3">
+                                <label class="form-label text-muted small">Ciudad de residencia</label>
+                                <p class="mb-0">{{ trabajador.ciudad_residencia }}</p>
+                            </div>
+
+                            <!-- Departamento residencia -->
+                            <div class="mb-3">
+                                <label class="form-label text-muted small">Departamento residencia</label>
+                                <p class="mb-0">{{ trabajador.departamento_residencia }}</p>
+                            </div>
+
+                            <!-- Teléfono celular -->
+                            <div class="mb-3">
+                                <label class="form-label text-muted small">Teléfono celular</label>
+                                <p class="mb-0">
+                                    <i class="bi bi-phone"></i> {{ trabajador.telefono_celular }}
+                                </p>
+                            </div>
+
+                            <!-- Correo personal -->
+                            <div class="mb-3">
+                                <label class="form-label text-muted small">Correo personal</label>
+                                <p class="mb-0">
+                                    <i class="bi bi-envelope"></i> 
+                                    <a href="mailto:{{ trabajador.correo_personal }}">{{ trabajador.correo_personal }}</a>
+                                </p>
+                            </div>
+
+                            <!-- Grupo sanguíneo -->
+                            <div class="mb-3">
+                                <label class="form-label text-muted small">Grupo sanguíneo y RH</label>
+                                <p class="mb-0">
+                                    <span class="badge bg-danger">{{ trabajador.grupo_sanguineo_rh }}</span>
+                                </p>
+                            </div>
+
+                            <!-- Número de hijos -->
+                            <div class="mb-3">
+                                <label class="form-label text-muted small">Número de hijos</label>
+                                <p class="mb-0">{{ trabajador.numero_hijos|default:"No especificado" }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==========================================
+             SECCIÓN 2: INFORMACIÓN FAMILIAR
+             ========================================== -->
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="headingFamiliar">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" 
+                        data-bs-target="#collapseFamiliar" aria-expanded="false" 
+                        aria-controls="collapseFamiliar">
+                    <i class="bi bi-people me-2"></i> 
+                    <strong>Información Familiar</strong>
+                </button>
+            </h2>
+            <div id="collapseFamiliar" class="accordion-collapse collapse" 
+                 aria-labelledby="headingFamiliar" data-bs-parent="#accordionTrabajador">
+                <div class="accordion-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <!-- Nombres padre -->
+                            <div class="mb-3">
+                                <label class="form-label text-muted small">Nombres padre</label>
+                                <p class="mb-0">{{ trabajador.nombres_padre|default:"No especificado" }}</p>
+                            </div>
+
+                            <!-- Nombres madre -->
+                            <div class="mb-3">
+                                <label class="form-label text-muted small">Nombres madre</label>
+                                <p class="mb-0">{{ trabajador.nombres_madre|default:"No especificado" }}</p>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <!-- Contacto de emergencia -->
+                            <div class="mb-3">
+                                <label class="form-label text-muted small">Contacto de emergencia</label>
+                                <p class="mb-0"><strong>{{ trabajador.nombre_contacto_emergencia }}</strong></p>
+                            </div>
+
+                            <!-- Número contacto emergencia -->
+                            <div class="mb-3">
+                                <label class="form-label text-muted small">Número contacto emergencia</label>
+                                <p class="mb-0">
+                                    <i class="bi bi-phone-vibrate"></i> {{ trabajador.numero_contacto_emergencia }}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==========================================
+             SECCIÓN 3: INFORMACIÓN BANCARIA
+             ========================================== -->
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="headingBancaria">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" 
+                        data-bs-target="#collapseBancaria" aria-expanded="false" 
+                        aria-controls="collapseBancaria">
+                    <i class="bi bi-bank me-2"></i> 
+                    <strong>Información Bancaria</strong>
+                </button>
+            </h2>
+            <div id="collapseBancaria" class="accordion-collapse collapse" 
+                 aria-labelledby="headingBancaria" data-bs-parent="#accordionTrabajador">
+                <div class="accordion-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <!-- Banco -->
+                            <div class="mb-3">
+                                <label class="form-label text-muted small">Banco</label>
+                                <p class="mb-0"><strong>{{ trabajador.banco }}</strong></p>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <!-- Tipo de cuenta -->
+                            <div class="mb-3">
+                                <label class="form-label text-muted small">Tipo de cuenta</label>
+                                <p class="mb-0">{{ trabajador.get_tipo_cuenta_display }}</p>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <!-- Número de cuenta -->
+                            <div class="mb-3">
+                                <label class="form-label text-muted small">Número de cuenta</label>
+                                <p class="mb-0"><code>{{ trabajador.cuenta_bancaria }}</code></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==========================================
+             SECCIÓN 4: REGISTROS LABORALES
+             ========================================== -->
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="headingLaboral">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" 
+                        data-bs-target="#collapseLaboral" aria-expanded="false" 
+                        aria-controls="collapseLaboral">
+                    <i class="bi bi-briefcase me-2"></i> 
+                    <strong>Registros Laborales</strong>
+                    <span class="badge bg-primary ms-2">{{ trabajador.registros_laborales.count }}</span>
+                </button>
+            </h2>
+            <div id="collapseLaboral" class="accordion-collapse collapse" 
+                 aria-labelledby="headingLaboral" data-bs-parent="#accordionTrabajador">
+                <div class="accordion-body">
+                    <!-- Botón para agregar nuevo registro laboral -->
+                    <div class="mb-3">
+                        <a href="{% url 'trabajadores:laboral_create' trabajador.id_trabajador %}" 
+                           class="btn btn-sm btn-primary">
+                            <i class="bi bi-plus-circle"></i> Agregar registro laboral
+                        </a>
+                    </div>
+
+                    <!-- Verificar si hay registros laborales -->
+                    {% if trabajador.registros_laborales.all %}
+                        <!-- Listar cada registro laboral -->
+                        {% for laboral in trabajador.registros_laborales.all %}
+                            <div class="card mb-3">
+                                <div class="card-header d-flex justify-content-between align-items-center">
+                                    <strong>{{ laboral.cargo }}</strong>
+                                    <div>
+                                        <!-- Botón editar -->
+                                        <a href="{% url 'trabajadores:laboral_update' laboral.id_laboral %}" 
+                                           class="btn btn-sm btn-outline-secondary">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                        <!-- Botón eliminar -->
+                                        <a href="{% url 'trabajadores:laboral_delete' laboral.id_laboral %}" 
+                                           class="btn btn-sm btn-outline-danger">
+                                            <i class="bi bi-trash"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <p class="mb-2">
+                                                <strong>Tipo de contrato:</strong> 
+                                                {{ laboral.get_tipo_contrato_display }}
+                                            </p>
+                                            <p class="mb-2">
+                                                <strong>Fecha inicio:</strong> 
+                                                {{ laboral.fecha_inicio_contrato|date:"d/m/Y" }}
+                                            </p>
+                                            <p class="mb-2">
+                                                <strong>Jornada laboral:</strong> 
+                                                {{ laboral.get_jornada_laboral_display }}
+                                            </p>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <p class="mb-2">
+                                                <strong>{{ laboral.salario|currency }}</strong>
+                                            </p>
+                                            <p class="mb-2">
+                                                <strong>Sede de trabajo:</strong> 
+                                                {{ laboral.sede_trabajo }}
+                                            </p>
+                                            {% if laboral.fecha_terminacion_contrato %}
+                                                <p class="mb-2">
+                                                    <strong>Fecha terminación:</strong> 
+                                                    {{ laboral.fecha_terminacion_contrato|date:"d/m/Y" }}
+                                                </p>
+                                                {% if laboral.motivo_terminacion %}
+                                                    <p class="mb-2">
+                                                        <strong>Motivo:</strong> 
+                                                        {{ laboral.motivo_terminacion }}
+                                                    </p>
+                                                {% endif %}
+                                            {% else %}
+                                                <p class="mb-2">
+                                                    <span class="badge bg-success">Contrato Activo</span>
+                                                </p>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <!-- Mensaje cuando no hay registros -->
+                        <div class="alert alert-info">
+                            <i class="bi bi-info-circle me-2"></i>
+                            No hay registros laborales para este trabajador.
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- ==========================================
+             SECCIÓN 5: AFILIACIONES
+             ========================================== -->
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="headingAfiliaciones">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" 
+                        data-bs-target="#collapseAfiliaciones" aria-expanded="false" 
+                        aria-controls="collapseAfiliaciones">
+                    <i class="bi bi-shield-check me-2"></i> 
+                    <strong>Afiliaciones (EPS, Pensión, ARL, Caja)</strong>
+                    <span class="badge bg-success ms-2">{{ trabajador.afiliaciones.count }}</span>
+                </button>
+            </h2>
+            <div id="collapseAfiliaciones" class="accordion-collapse collapse" 
+                 aria-labelledby="headingAfiliaciones" data-bs-parent="#accordionTrabajador">
+                <div class="accordion-body">
+                    <!-- Botón para agregar nueva afiliación -->
+                    <div class="mb-3">
+                        <a href="{% url 'trabajadores:afiliacion_create' trabajador.id_trabajador %}" 
+                           class="btn btn-sm btn-success">
+                            <i class="bi bi-plus-circle"></i> Agregar afiliación
+                        </a>
+                    </div>
+
+                    <!-- Verificar si hay afiliaciones -->
+                    {% if trabajador.afiliaciones.all %}
+                        <!-- Listar cada afiliación -->
+                        {% for afiliacion in trabajador.afiliaciones.all %}
+                            <div class="card mb-3">
+                                <div class="card-header d-flex justify-content-between align-items-center">
+                                    <strong>Afiliación #{{ afiliacion.id_afiliacion }}</strong>
+                                    <div>
+                                        <!-- Botón editar -->
+                                        <a href="{% url 'trabajadores:afiliacion_update' afiliacion.id_afiliacion %}" 
+                                           class="btn btn-sm btn-outline-secondary">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                        <!-- Botón eliminar -->
+                                        <a href="{% url 'trabajadores:afiliacion_delete' afiliacion.id_afiliacion %}" 
+                                           class="btn btn-sm btn-outline-danger">
+                                            <i class="bi bi-trash"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <!-- EPS -->
+                                            <div class="mb-3">
+                                                <label class="text-muted small">EPS</label>
+                                                <p class="mb-0">
+                                                    <strong>{{ afiliacion.eps_nombre }}</strong><br>
+                                                    <small>No. {{ afiliacion.eps_numero_afiliacion }}</small>
+                                                </p>
+                                            </div>
+
+                                            <!-- Fondo de Pensiones -->
+                                            <div class="mb-3">
+                                                <label class="text-muted small">Fondo de Pensiones</label>
+                                                <p class="mb-0">
+                                                    <strong>{{ afiliacion.fondo_pensiones_nombre }}</strong><br>
+                                                    <small>No. {{ afiliacion.fondo_pensiones_numero_afiliacion }}</small>
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <!-- ARL -->
+                                            <div class="mb-3">
+                                                <label class="text-muted small">ARL</label>
+                                                <p class="mb-0">
+                                                    <strong>{{ afiliacion.arl_nombre }}</strong><br>
+                                                    <small>No. {{ afiliacion.arl_numero_nombre }}</small>
+                                                </p>
+                                            </div>
+
+                                            <!-- Caja de Compensación -->
+                                            <div class="mb-3">
+                                                <label class="text-muted small">Caja de Compensación</label>
+                                                <p class="mb-0">
+                                                    <strong>{{ afiliacion.caja_compensacion_nombre }}</strong><br>
+                                                    <small>No. {{ afiliacion.caja_compensacion_numero_afiliacion }}</small>
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <!-- Mensaje cuando no hay afiliaciones -->
+                        <div class="alert alert-info">
+                            <i class="bi bi-info-circle me-2"></i>
+                            No hay afiliaciones registradas para este trabajador.
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- ==========================================
+             SECCIÓN 6: DOTACIONES
+             ========================================== -->
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="headingDotaciones">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" 
+                        data-bs-target="#collapseDotaciones" aria-expanded="false" 
+                        aria-controls="collapseDotaciones">
+                    <i class="bi bi-box-seam me-2"></i> 
+                    <strong>Dotaciones</strong>
+                    <span class="badge bg-warning ms-2">{{ trabajador.dotaciones.count }}</span>
+                </button>
+            </h2>
+            <div id="collapseDotaciones" class="accordion-collapse collapse" 
+                 aria-labelledby="headingDotaciones" data-bs-parent="#accordionTrabajador">
+                <div class="accordion-body">
+                    <!-- Botón para agregar nueva dotación -->
+                    <div class="mb-3">
+                        <a href="{% url 'trabajadores:dotacion_create' trabajador.id_trabajador %}" 
+                           class="btn btn-sm btn-warning">
+                            <i class="bi bi-plus-circle"></i> Agregar dotación
+                        </a>
+                    </div>
+
+                    <!-- Verificar si hay dotaciones -->
+                    {% if trabajador.dotaciones.all %}
+                        <!-- Tabla de dotaciones -->
+                        <div class="table-responsive">
+                            <table class="table table-sm table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Tipo</th>
+                                        <th>Talla</th>
+                                        <th>Fecha Entrega</th>
+                                        <th>Cantidad</th>
+                                        <th>Observaciones</th>
+                                        <th class="text-center">Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for dotacion in trabajador.dotaciones.all %}
+                                        <tr>
+                                            <td><strong>{{ dotacion.tipo_dotacion }}</strong></td>
+                                            <td>{{ dotacion.talla }}</td>
+                                            <td>{{ dotacion.fecha_entrega|date:"d/m/Y" }}</td>
+                                            <td>{{ dotacion.cantidad }}</td>
+                                            <td>{{ dotacion.observaciones|default:"-" }}</td>
+                                            <td class="text-center">
+                                                <a href="{% url 'trabajadores:dotacion_update' dotacion.id_dotacion %}" 
+                                                   class="btn btn-sm btn-outline-secondary">
+                                                    <i class="bi bi-pencil"></i>
+                                                </a>
+                                                <a href="{% url 'trabajadores:dotacion_delete' dotacion.id_dotacion %}" 
+                                                   class="btn btn-sm btn-outline-danger">
+                                                    <i class="bi bi-trash"></i>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <!-- Mensaje cuando no hay dotaciones -->
+                        <div class="alert alert-info">
+                            <i class="bi bi-info-circle me-2"></i>
+                            No hay dotaciones registradas para este trabajador.
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- ==========================================
+             SECCIÓN 7: CURSOS Y CAPACITACIONES
+             ========================================== -->
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="headingCursos">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" 
+                        data-bs-target="#collapseCursos" aria-expanded="false" 
+                        aria-controls="collapseCursos">
+                    <i class="bi bi-mortarboard me-2"></i> 
+                    <strong>Cursos y Capacitaciones</strong>
+                    <span class="badge bg-info ms-2">{{ trabajador.cursos.count }}</span>
+                </button>
+            </h2>
+            <div id="collapseCursos" class="accordion-collapse collapse" 
+                 aria-labelledby="headingCursos" data-bs-parent="#accordionTrabajador">
+                <div class="accordion-body">
+                    <!-- Botón para agregar nuevo curso -->
+                    <div class="mb-3">
+                        <a href="{% url 'trabajadores:curso_create' trabajador.id_trabajador %}" 
+                           class="btn btn-sm btn-info">
+                            <i class="bi bi-plus-circle"></i> Agregar curso
+                        </a>
+                    </div>
+
+                    <!-- Verificar si hay cursos -->
+                    {% if trabajador.cursos.all %}
+                        <!-- Listar cada curso -->
+                        {% for curso in trabajador.cursos.all %}
+                            <div class="card mb-3">
+                                <div class="card-header d-flex justify-content-between align-items-center">
+                                    <strong>{{ curso.nombre_curso }}</strong>
+                                    <div>
+                                        <!-- Botón editar -->
+                                        <a href="{% url 'trabajadores:curso_update' curso.id_curso %}" 
+                                           class="btn btn-sm btn-outline-secondary">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                        <!-- Botón eliminar -->
+                                        <a href="{% url 'trabajadores:curso_delete' curso.id_curso %}" 
+                                           class="btn btn-sm btn-outline-danger">
+                                            <i class="bi bi-trash"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <p class="mb-2">
+                                                <strong>Institución:</strong> 
+                                                {{ curso.institucion }}
+                                            </p>
+                                            <p class="mb-2">
+                                                <strong>Fecha inicio:</strong> 
+                                                {{ curso.fecha_inicio_curso|date:"d/m/Y" }}
+                                            </p>
+                                        </div>
+                                        <div class="col-md-6">
+                                            {% if curso.fecha_fin_curso %}
+                                                <p class="mb-2">
+                                                    <strong>Fecha fin:</strong> 
+                                                    {{ curso.fecha_fin_curso|date:"d/m/Y" }}
+                                                </p>
+                                                <p class="mb-2">
+                                                    <span class="badge bg-success">Completado</span>
+                                                </p>
+                                            {% else %}
+                                                <p class="mb-2">
+                                                    <span class="badge bg-warning">En curso</span>
+                                                </p>
+                                            {% endif %}
+                                            
+                                            {% if curso.certificado_url %}
+                                                <p class="mb-2">
+                                                    <a href="{{ curso.certificado_url }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                                        <i class="bi bi-file-earmark-pdf"></i> Ver certificado
+                                                    </a>
+                                                </p>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <!-- Mensaje cuando no hay cursos -->
+                        <div class="alert alert-info">
+                            <i class="bi bi-info-circle me-2"></i>
+                            No hay cursos registrados para este trabajador.
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+    </div>
+    <!-- Fin del acordeón principal -->
+
+    <!-- Separador visual -->
+    <div class="separador"></div>
+
+    <!-- Botón para volver al listado -->
+    <div class="text-center">
+        <a href="{% url 'trabajadores:trabajador_list' %}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Volver al listado
+        </a>
+    </div>
+</div>
+{% endblock %}

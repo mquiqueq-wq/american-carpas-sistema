@@ -1,0 +1,180 @@
+{% extends 'trabajadores/base.html' %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="contenedor-principal">
+        <!-- Encabezado -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h2 class="titulo-pagina mb-1">
+                    <i class="bi bi-mortarboard"></i> {{ title }}
+                </h2>
+                <p class="text-muted mb-0">Configure la vigencia y normativa del tipo de curso</p>
+            </div>
+        </div>
+
+        <!-- Separador -->
+        <div class="separador-custom"></div>
+
+        <!-- Formulario -->
+        <form method="post" novalidate>
+            {% csrf_token %}
+            
+            <div class="row">
+                <!-- Columna izquierda -->
+                <div class="col-md-6">
+                    <!-- Nombre del tipo de curso -->
+                    <div class="mb-3">
+                        <label for="{{ form.nombre_tipo_curso.id_for_label }}" class="form-label fw-bold">
+                            <i class="bi bi-bookmark-fill text-primary"></i> Nombre del Tipo de Curso *
+                        </label>
+                        {{ form.nombre_tipo_curso }}
+                        {% if form.nombre_tipo_curso.errors %}
+                            <div class="text-danger small mt-1">
+                                {{ form.nombre_tipo_curso.errors }}
+                            </div>
+                        {% endif %}
+                        <small class="form-text text-muted">
+                            Ej: Trabajo en Alturas - Avanzado, Primeros Auxilios, etc.
+                        </small>
+                    </div>
+
+                    <!-- Vigencia en días -->
+                    <div class="mb-3">
+                        <label for="{{ form.vigencia_dias.id_for_label }}" class="form-label fw-bold">
+                            <i class="bi bi-calendar-check text-success"></i> Vigencia (días) *
+                        </label>
+                        {{ form.vigencia_dias }}
+                        {% if form.vigencia_dias.errors %}
+                            <div class="text-danger small mt-1">
+                                {{ form.vigencia_dias.errors }}
+                            </div>
+                        {% endif %}
+                        <small class="form-text text-muted">
+                            365 días = 1 año, 730 días = 2 años, 1095 días = 3 años
+                        </small>
+                    </div>
+
+                    <!-- Días alerta anticipada -->
+                    <div class="mb-3">
+                        <label for="{{ form.dias_alerta_anticipada.id_for_label }}" class="form-label fw-bold">
+                            <i class="bi bi-bell-fill text-warning"></i> Días de alerta anticipada *
+                        </label>
+                        {{ form.dias_alerta_anticipada }}
+                        {% if form.dias_alerta_anticipada.errors %}
+                            <div class="text-danger small mt-1">
+                                {{ form.dias_alerta_anticipada.errors }}
+                            </div>
+                        {% endif %}
+                        <small class="form-text text-muted">
+                            Días antes del vencimiento para enviar alerta (recomendado: 30)
+                        </small>
+                    </div>
+                </div>
+
+                <!-- Columna derecha -->
+                <div class="col-md-6">
+                    <!-- Requiere renovación -->
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">
+                            <i class="bi bi-arrow-repeat text-info"></i> ¿Requiere renovación?
+                        </label>
+                        <div class="form-check form-switch">
+                            {{ form.requiere_renovacion }}
+                            <label class="form-check-label" for="{{ form.requiere_renovacion.id_for_label }}">
+                                Sí, este curso debe renovarse periódicamente
+                            </label>
+                        </div>
+                        {% if form.requiere_renovacion.errors %}
+                            <div class="text-danger small mt-1">
+                                {{ form.requiere_renovacion.errors }}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Normativa de referencia -->
+                    <div class="mb-3">
+                        <label for="{{ form.normativa_referencia.id_for_label }}" class="form-label fw-bold">
+                            <i class="bi bi-file-earmark-text text-primary"></i> Normativa de referencia
+                        </label>
+                        {{ form.normativa_referencia }}
+                        {% if form.normativa_referencia.errors %}
+                            <div class="text-danger small mt-1">
+                                {{ form.normativa_referencia.errors }}
+                            </div>
+                        {% endif %}
+                        <small class="form-text text-muted">
+                            Ej: Resolución 1409 de 2012, Decreto 1072 de 2015
+                        </small>
+                    </div>
+
+                    <!-- Estado activo -->
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">
+                            <i class="bi bi-toggle-on text-success"></i> Estado
+                        </label>
+                        <div class="form-check form-switch">
+                            {{ form.activo }}
+                            <label class="form-check-label" for="{{ form.activo.id_for_label }}">
+                                Activo (visible para asignar a trabajadores)
+                            </label>
+                        </div>
+                        {% if form.activo.errors %}
+                            <div class="text-danger small mt-1">
+                                {{ form.activo.errors }}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Descripción (ancho completo) -->
+            <div class="mb-3">
+                <label for="{{ form.descripcion.id_for_label }}" class="form-label fw-bold">
+                    <i class="bi bi-card-text text-secondary"></i> Descripción
+                </label>
+                {{ form.descripcion }}
+                {% if form.descripcion.errors %}
+                    <div class="text-danger small mt-1">
+                        {{ form.descripcion.errors }}
+                    </div>
+                {% endif %}
+                <small class="form-text text-muted">
+                    Descripción detallada del curso (opcional)
+                </small>
+            </div>
+
+            <!-- Separador -->
+            <div class="separador-custom"></div>
+
+            <!-- Botones -->
+            <div class="d-flex justify-content-between">
+                <a href="{% url 'trabajadores:tipo_curso_list' %}" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left"></i> Cancelar
+                </a>
+                <button type="submit" class="btn btn-primary-custom">
+                    <i class="bi bi-check-circle"></i> Guardar Tipo de Curso
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Agregar clases de Bootstrap a los campos del formulario
+    document.addEventListener('DOMContentLoaded', function() {
+        const formControls = document.querySelectorAll('input:not([type="hidden"]):not([type="checkbox"]), select, textarea');
+        formControls.forEach(function(control) {
+            if (control.tagName === 'SELECT') {
+                control.classList.add('form-select');
+            } else {
+                control.classList.add('form-control');
+            }
+        });
+    });
+</script>
+{% endblock %}

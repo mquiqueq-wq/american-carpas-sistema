@@ -1,0 +1,412 @@
+{% extends 'trabajadores/base.html' %}
+
+<!-- Título de la página -->
+{% block title %}{{ title }} - American Carpas 1 SAS{% endblock %}
+
+{% block content %}
+<!-- Contenedor principal con fondo blanco -->
+<div class="contenedor-principal">
+    <!-- Título de la página -->
+    <h2 class="titulo-pagina">{{ title }}</h2>
+    <!-- Subtítulo con instrucciones -->
+    <p class="subtitulo-pagina">
+        Campos marcados con <span class="text-danger">*</span> son obligatorios (según restricciones NOT NULL).
+    </p>
+
+    <!-- Formulario -->
+    <form method="post" novalidate>
+        {% csrf_token %}
+        
+        <!-- Botones superiores: Guardar borrador y Registrar -->
+        <div class="mb-4">
+            <button type="submit" name="guardar_borrador" class="btn btn-outline-secondary me-2">
+                <i class="bi bi-save"></i> Guardar borrador
+            </button>
+            <button type="submit" class="btn btn-primary">
+                <i class="bi bi-check-circle"></i> Registrar
+            </button>
+        </div>
+
+        <!-- ==========================================
+             SECCIÓN: DATOS PERSONALES
+             ========================================== -->
+        <h3 class="seccion-titulo">Datos personales</h3>
+        
+        <div class="row">
+            <!-- Columna izquierda -->
+            <div class="col-md-6">
+                <!-- Campo: Número de documento (ID Trabajador) -->
+                <div class="mb-3">
+                    <label for="{{ form.id_trabajador.id_for_label }}" class="form-label">
+                        Número de documento <span class="text-danger">*</span>
+                    </label>
+                    {{ form.id_trabajador }}
+                    {% if form.id_trabajador.errors %}
+                        <div class="text-danger small mt-1">
+                            {{ form.id_trabajador.errors }}
+                        </div>
+                    {% endif %}
+                    <small class="form-text text-muted">Este será el identificador único del trabajador (5-20 dígitos)</small>
+                </div>
+
+                <!-- Campo: Tipo de documento -->
+                <div class="mb-3">
+                    <label for="{{ form.tipo_documento.id_for_label }}" class="form-label">
+                        Tipo de documento <span class="text-danger">*</span>
+                    </label>
+                    {{ form.tipo_documento }}
+                    {% if form.tipo_documento.errors %}
+                        <div class="text-danger small mt-1">
+                            {{ form.tipo_documento.errors }}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Campo: Nombres -->
+                <div class="mb-3">
+                    <label for="{{ form.nombres.id_for_label }}" class="form-label">
+                        Nombres <span class="text-danger">*</span>
+                    </label>
+                    {{ form.nombres }}
+                    {% if form.nombres.errors %}
+                        <div class="text-danger small mt-1">
+                            {{ form.nombres.errors }}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Campo: Apellidos -->
+                <div class="mb-3">
+                    <label for="{{ form.apellidos.id_for_label }}" class="form-label">
+                        Apellidos <span class="text-danger">*</span>
+                    </label>
+                    {{ form.apellidos }}
+                    {% if form.apellidos.errors %}
+                        <div class="text-danger small mt-1">
+                            {{ form.apellidos.errors }}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Campo: Fecha expedición documento -->
+                <div class="mb-3">
+                    <label for="{{ form.fecha_expedicion_doc.id_for_label }}" class="form-label">
+                        Fecha expedición documento <span class="text-danger">*</span>
+                    </label>
+                    {{ form.fecha_expedicion_doc }}
+                    {% if form.fecha_expedicion_doc.errors %}
+                        <div class="text-danger small mt-1">
+                            {{ form.fecha_expedicion_doc.errors }}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Campo: Lugar expedición -->
+                <div class="mb-3">
+                    <label for="{{ form.lugar_expedicion.id_for_label }}" class="form-label">
+                        Lugar expedición <span class="text-danger">*</span>
+                    </label>
+                    {{ form.lugar_expedicion }}
+                    {% if form.lugar_expedicion.errors %}
+                        <div class="text-danger small mt-1">
+                            {{ form.lugar_expedicion.errors }}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Campo: Nacionalidad -->
+                <div class="mb-3">
+                    <label for="{{ form.nacionalidad.id_for_label }}" class="form-label">
+                        Nacionalidad <span class="text-danger">*</span>
+                    </label>
+                    {{ form.nacionalidad }}
+                    {% if form.nacionalidad.errors %}
+                        <div class="text-danger small mt-1">
+                            {{ form.nacionalidad.errors }}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Campo: Fecha de nacimiento -->
+                <div class="mb-3">
+                    <label for="{{ form.fecha_nacimiento.id_for_label }}" class="form-label">
+                        Fecha de nacimiento <span class="text-danger">*</span>
+                    </label>
+                    {{ form.fecha_nacimiento }}
+                    {% if form.fecha_nacimiento.errors %}
+                        <div class="text-danger small mt-1">
+                            {{ form.fecha_nacimiento.errors }}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Campo: Lugar de nacimiento -->
+                <div class="mb-3">
+                    <label for="{{ form.lugar_nacimiento.id_for_label }}" class="form-label">
+                        Lugar de nacimiento <span class="text-danger">*</span>
+                    </label>
+                    {{ form.lugar_nacimiento }}
+                    {% if form.lugar_nacimiento.errors %}
+                        <div class="text-danger small mt-1">
+                            {{ form.lugar_nacimiento.errors }}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Campo: Género -->
+                <div class="mb-3">
+                    <label for="{{ form.genero.id_for_label }}" class="form-label">
+                        Género
+                    </label>
+                    {{ form.genero }}
+                    {% if form.genero.errors %}
+                        <div class="text-danger small mt-1">
+                            {{ form.genero.errors }}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Campo: Estado civil -->
+                <div class="mb-3">
+                    <label for="{{ form.estado_civil.id_for_label }}" class="form-label">
+                        Estado civil <span class="text-danger">*</span>
+                    </label>
+                    {{ form.estado_civil }}
+                    {% if form.estado_civil.errors %}
+                        <div class="text-danger small mt-1">
+                            {{ form.estado_civil.errors }}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Campo: Dirección de residencia -->
+                <div class="mb-3">
+                    <label for="{{ form.direccion_residencia.id_for_label }}" class="form-label">
+                        Dirección de residencia <span class="text-danger">*</span>
+                    </label>
+                    {{ form.direccion_residencia }}
+                    {% if form.direccion_residencia.errors %}
+                        <div class="text-danger small mt-1">
+                            {{ form.direccion_residencia.errors }}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Campo: Ciudad de residencia -->
+                <div class="mb-3">
+                    <label for="{{ form.ciudad_residencia.id_for_label }}" class="form-label">
+                        Ciudad de residencia <span class="text-danger">*</span>
+                    </label>
+                    {{ form.ciudad_residencia }}
+                    {% if form.ciudad_residencia.errors %}
+                        <div class="text-danger small mt-1">
+                            {{ form.ciudad_residencia.errors }}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Columna derecha -->
+            <div class="col-md-6">
+                <!-- Campo: Departamento residencia -->
+                <div class="mb-3">
+                    <label for="{{ form.departamento_residencia.id_for_label }}" class="form-label">
+                        Departamento residencia <span class="text-danger">*</span>
+                    </label>
+                    {{ form.departamento_residencia }}
+                    {% if form.departamento_residencia.errors %}
+                        <div class="text-danger small mt-1">
+                            {{ form.departamento_residencia.errors }}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Campo: Teléfono celular -->
+                <div class="mb-3">
+                    <label for="{{ form.telefono_celular.id_for_label }}" class="form-label">
+                        Teléfono celular <span class="text-danger">*</span>
+                    </label>
+                    {{ form.telefono_celular }}
+                    {% if form.telefono_celular.errors %}
+                        <div class="text-danger small mt-1">
+                            {{ form.telefono_celular.errors }}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Campo: Correo personal -->
+                <div class="mb-3">
+                    <label for="{{ form.correo_personal.id_for_label }}" class="form-label">
+                        Correo personal <span class="text-danger">*</span>
+                    </label>
+                    {{ form.correo_personal }}
+                    {% if form.correo_personal.errors %}
+                        <div class="text-danger small mt-1">
+                            {{ form.correo_personal.errors }}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Campo: Grupo sanguíneo y RH -->
+                <div class="mb-3">
+                    <label for="{{ form.grupo_sanguineo_rh.id_for_label }}" class="form-label">
+                        Grupo sanguíneo y RH <span class="text-danger">*</span>
+                    </label>
+                    {{ form.grupo_sanguineo_rh }}
+                    {% if form.grupo_sanguineo_rh.errors %}
+                        <div class="text-danger small mt-1">
+                            {{ form.grupo_sanguineo_rh.errors }}
+                        </div>
+                    {% endif %}
+                    <small class="form-text text-muted">Ej: O+, A-, B+, AB-</small>
+                </div>
+
+                <!-- Campo: Nombres padre -->
+                <div class="mb-3">
+                    <label for="{{ form.nombres_padre.id_for_label }}" class="form-label">
+                        Nombres padre
+                    </label>
+                    {{ form.nombres_padre }}
+                    {% if form.nombres_padre.errors %}
+                        <div class="text-danger small mt-1">
+                            {{ form.nombres_padre.errors }}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Campo: Nombres madre -->
+                <div class="mb-3">
+                    <label for="{{ form.nombres_madre.id_for_label }}" class="form-label">
+                        Nombres madre
+                    </label>
+                    {{ form.nombres_madre }}
+                    {% if form.nombres_madre.errors %}
+                        <div class="text-danger small mt-1">
+                            {{ form.nombres_madre.errors }}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Campo: Nombre contacto emergencia -->
+                <div class="mb-3">
+                    <label for="{{ form.nombre_contacto_emergencia.id_for_label }}" class="form-label">
+                        Nombre contacto emergencia <span class="text-danger">*</span>
+                    </label>
+                    {{ form.nombre_contacto_emergencia }}
+                    {% if form.nombre_contacto_emergencia.errors %}
+                        <div class="text-danger small mt-1">
+                            {{ form.nombre_contacto_emergencia.errors }}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Campo: Número contacto emergencia -->
+                <div class="mb-3">
+                    <label for="{{ form.numero_contacto_emergencia.id_for_label }}" class="form-label">
+                        Número contacto emergencia <span class="text-danger">*</span>
+                    </label>
+                    {{ form.numero_contacto_emergencia }}
+                    {% if form.numero_contacto_emergencia.errors %}
+                        <div class="text-danger small mt-1">
+                            {{ form.numero_contacto_emergencia.errors }}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Campo: Número de hijos -->
+                <div class="mb-3">
+                    <label for="{{ form.numero_hijos.id_for_label }}" class="form-label">
+                        Número de hijos
+                    </label>
+                    {{ form.numero_hijos }}
+                    {% if form.numero_hijos.errors %}
+                        <div class="text-danger small mt-1">
+                            {{ form.numero_hijos.errors }}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Campo: Cuenta bancaria -->
+                <div class="mb-3">
+                    <label for="{{ form.cuenta_bancaria.id_for_label }}" class="form-label">
+                        Cuenta bancaria <span class="text-danger">*</span>
+                    </label>
+                    {{ form.cuenta_bancaria }}
+                    {% if form.cuenta_bancaria.errors %}
+                        <div class="text-danger small mt-1">
+                            {{ form.cuenta_bancaria.errors }}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Campo: Tipo de cuenta -->
+                <div class="mb-3">
+                    <label for="{{ form.tipo_cuenta.id_for_label }}" class="form-label">
+                        Tipo de cuenta <span class="text-danger">*</span>
+                    </label>
+                    {{ form.tipo_cuenta }}
+                    {% if form.tipo_cuenta.errors %}
+                        <div class="text-danger small mt-1">
+                            {{ form.tipo_cuenta.errors }}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Campo: Banco -->
+                <div class="mb-3">
+                    <label for="{{ form.banco.id_for_label }}" class="form-label">
+                        Banco <span class="text-danger">*</span>
+                    </label>
+                    {{ form.banco }}
+                    {% if form.banco.errors %}
+                        <div class="text-danger small mt-1">
+                            {{ form.banco.errors }}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Separador visual -->
+        <div class="separador"></div>
+
+        <!-- Botones inferiores -->
+        <div class="d-flex justify-content-between">
+            <!-- Botón Cancelar -->
+            <a href="{% url 'trabajadores:trabajador_list' %}" class="btn btn-outline-secondary">
+                <i class="bi bi-x-circle"></i> Cancelar
+            </a>
+            
+            <!-- Botones de acción -->
+            <div>
+                <button type="submit" name="guardar_borrador" class="btn btn-outline-secondary me-2">
+                    <i class="bi bi-save"></i> Guardar borrador
+                </button>
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-check-circle"></i> Registrar
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+<!-- JavaScript adicional para este formulario -->
+{% block extra_js %}
+<script>
+    // Agregar clases de Bootstrap a los campos del formulario automáticamente
+    document.addEventListener('DOMContentLoaded', function() {
+        // Seleccionar todos los inputs, selects y textareas del formulario
+        const formControls = document.querySelectorAll('input:not([type="hidden"]), select, textarea');
+        
+        // Agregar la clase 'form-control' o 'form-select' según el tipo
+        formControls.forEach(function(control) {
+            if (control.tagName === 'SELECT') {
+                control.classList.add('form-select');
+            } else {
+                control.classList.add('form-control');
+            }
+        });
+    });
+</script>
+{% endblock %}

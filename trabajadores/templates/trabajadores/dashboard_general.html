@@ -1,0 +1,207 @@
+{% extends 'trabajadores/base.html' %}
+
+{% block title %}Dashboard General - Alertas{% endblock %}
+
+{% block content %}
+<div class="contenedor-principal">
+    <!-- Encabezado -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="titulo-pagina mb-1">
+                <i class="bi bi-speedometer2"></i>
+                Dashboard General de Alertas
+            </h2>
+            <p class="text-muted mb-0">Resumen de trabajadores con cursos o dotaciones por vencer</p>
+        </div>
+        <div>
+            <a href="{% url 'trabajadores:trabajador_list' %}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i> Listado
+            </a>
+        </div>
+    </div>
+
+    <!-- Separador -->
+    <div class="separador"></div>
+
+    <!-- Estadísticas generales -->
+    <div class="row mb-4">
+        <div class="col-md-6 mb-3">
+            <div class="card border-warning">
+                <div class="card-body text-center">
+                    <i class="bi bi-people-fill fs-1 text-warning"></i>
+                    <h3 class="mt-2 mb-0">{{ total_trabajadores_con_alertas }}</h3>
+                    <p class="text-muted mb-0">Trabajadores con Alertas</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 mb-3">
+            <div class="card border-danger">
+                <div class="card-body text-center">
+                    <i class="bi bi-exclamation-octagon-fill fs-1 text-danger"></i>
+                    <h3 class="mt-2 mb-0">{{ total_alertas }}</h3>
+                    <p class="text-muted mb-0">Total de Alertas</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Accesos rápidos -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <i class="bi bi-grid-3x3-gap"></i> Accesos Rápidos
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-4 mb-2">
+                    <a href="{% url 'trabajadores:dashboard_alertas_cursos' %}" class="btn btn-outline-primary w-100">
+                        <i class="bi bi-mortarboard"></i> Dashboard de Cursos
+                    </a>
+                </div>
+                <div class="col-md-4 mb-2">
+                    <a href="{% url 'trabajadores:dashboard_alertas_dotaciones' %}" class="btn btn-outline-info w-100">
+                        <i class="bi bi-box-seam"></i> Dashboard de Dotaciones
+                    </a>
+                </div>
+                <div class="col-md-4 mb-2">
+                    <a href="{% url 'trabajadores:reporte_documentacion_incompleta' %}" class="btn btn-outline-danger w-100">
+                        <i class="bi bi-file-earmark-x"></i> Documentación Incompleta
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabla de trabajadores con alertas -->
+    <div class="card">
+        <div class="card-header">
+            <strong>Trabajadores con Alertas Activas</strong>
+            <span class="badge bg-warning ms-2">{{ total_trabajadores_con_alertas }}</span>
+        </div>
+        <div class="card-body">
+            {% if trabajadores_con_alertas %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Trabajador</th>
+                                <th>Documento</th>
+                                <th class="text-center">Cursos Vencidos</th>
+                                <th class="text-center">Cursos por Vencer</th>
+                                <th class="text-center">Dotaciones por Vencer</th>
+                                <th class="text-center">Total Alertas</th>
+                                <th class="text-center">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in trabajadores_con_alertas %}
+                            <tr>
+                                <td>
+                                    <strong>{{ item.trabajador.nombres }} {{ item.trabajador.apellidos }}</strong>
+                                </td>
+                                <td>{{ item.trabajador.id_trabajador }}</td>
+                                
+                                <!-- Cursos vencidos -->
+                                <td class="text-center">
+                                    {% if item.cursos_vencidos %}
+                                        <span class="badge bg-danger">
+                                            {{ item.cursos_vencidos|length }}
+                                        </span>
+                                    {% else %}
+                                        <span class="text-muted">-</span>
+                                    {% endif %}
+                                </td>
+                                
+                                <!-- Cursos próximos a vencer -->
+                                <td class="text-center">
+                                    {% if item.cursos_proximos %}
+                                        <span class="badge bg-warning text-dark">
+                                            {{ item.cursos_proximos|length }}
+                                        </span>
+                                    {% else %}
+                                        <span class="text-muted">-</span>
+                                    {% endif %}
+                                </td>
+                                
+                                <!-- Dotaciones próximas a vencer -->
+                                <td class="text-center">
+                                    {% if item.dotaciones_proximas %}
+                                        <span class="badge bg-info">
+                                            {{ item.dotaciones_proximas|length }}
+                                        </span>
+                                    {% else %}
+                                        <span class="text-muted">-</span>
+                                    {% endif %}
+                                </td>
+                                
+                                <!-- Total alertas -->
+                                <td class="text-center">
+                                    <span class="badge bg-primary fs-6">
+                                        {{ item.total_alertas }}
+                                    </span>
+                                </td>
+                                
+                                <!-- Acciones -->
+                                <td class="text-center">
+                                    <a href="{% url 'trabajadores:trabajador_detail' item.trabajador.id_trabajador %}" 
+                                       class="btn btn-sm btn-outline-primary"
+                                       title="Ver detalle">
+                                        <i class="bi bi-eye"></i> Ver
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="alert alert-success">
+                    <i class="bi bi-check-circle me-2"></i>
+                    <strong>¡Excelente!</strong> No hay trabajadores con alertas activas. Toda la documentación está vigente.
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Separador -->
+    <div class="separador"></div>
+
+    <!-- Leyenda -->
+    <div class="card">
+        <div class="card-header">
+            <i class="bi bi-info-circle"></i> Leyenda
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-4">
+                    <span class="badge bg-danger me-2">Rojo</span> Cursos vencidos (requieren renovación inmediata)
+                </div>
+                <div class="col-md-4">
+                    <span class="badge bg-warning text-dark me-2">Amarillo</span> Cursos próximos a vencer (30 días o menos)
+                </div>
+                <div class="col-md-4">
+                    <span class="badge bg-info me-2">Azul</span> Dotaciones por vencer
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .card {
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+    
+    .card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    
+    .badge {
+        font-size: 0.9rem;
+        padding: 0.4rem 0.7rem;
+    }
+</style>
+{% endblock %}

@@ -1,0 +1,154 @@
+ {% extends 'trabajadores/base.html' %}
+
+{% block title %}Reporte - Documentación Incompleta{% endblock %}
+
+{% block content %}
+<div class="contenedor-principal">
+    <!-- Encabezado -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="titulo-pagina mb-1">
+                <i class="bi bi-file-earmark-x text-danger"></i>
+                Trabajadores sin Documentación Completa
+            </h2>
+            <p class="text-muted mb-0">Listado de trabajadores con cursos vencidos o sin dotación activa</p>
+        </div>
+        <a href="{% url 'trabajadores:dashboard_general' %}" class="btn btn-outline-secondary">
+            <i class="bi bi-speedometer2"></i> Dashboard General
+        </a>
+    </div>
+
+    <!-- Separador -->
+    <div class="separador"></div>
+
+    <!-- Estadística principal -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card border-danger">
+                <div class="card-body text-center">
+                    <i class="bi bi-exclamation-octagon-fill fs-1 text-danger"></i>
+                    <h3 class="mt-2 mb-0">{{ total }}</h3>
+                    <p class="text-muted mb-0">Trabajadores con Documentación Incompleta</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabla de trabajadores -->
+    <div class="card">
+        <div class="card-header bg-danger text-white">
+            <strong><i class="bi bi-exclamation-triangle me-2"></i>Trabajadores Pendientes de Regularización</strong>
+        </div>
+        <div class="card-body">
+            {% if trabajadores_incompletos %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Trabajador</th>
+                                <th>Documento</th>
+                                <th>Problema</th>
+                                <th>Detalle</th>
+                                <th class="text-center">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in trabajadores_incompletos %}
+                            <tr>
+                                <td>
+                                    <strong>{{ item.trabajador.nombres }} {{ item.trabajador.apellidos }}</strong>
+                                </td>
+                                <td>{{ item.trabajador.id_trabajador }}</td>
+                                <td>
+                                    {% if item.cursos_vencidos %}
+                                        <span class="badge bg-danger me-1">
+                                            <i class="bi bi-mortarboard"></i> Cursos Vencidos
+                                        </span>
+                                    {% endif %}
+                                    {% if item.sin_dotacion %}
+                                        <span class="badge bg-warning text-dark">
+                                            <i class="bi bi-box-seam"></i> Sin Dotación
+                                        </span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if item.cursos_vencidos %}
+                                        <div class="mb-2">
+                                            <strong>Cursos vencidos ({{ item.cursos_vencidos|length }}):</strong>
+                                            <ul class="mb-0 mt-1">
+                                                {% for curso in item.cursos_vencidos %}
+                                                <li class="small">
+                                                    {{ curso.nombre_curso }}
+                                                    {% if curso.tipo_curso %}
+                                                        <span class="text-muted">
+                                                            ({{ curso.tipo_curso.nombre_tipo_curso }})
+                                                        </span>
+                                                    {% endif %}
+                                                </li>
+                                                {% endfor %}
+                                            </ul>
+                                        </div>
+                                    {% endif %}
+                                    {% if item.sin_dotacion %}
+                                        <div class="text-warning">
+                                            <i class="bi bi-exclamation-triangle"></i>
+                                            No tiene dotaciones activas registradas
+                                        </div>
+                                    {% endif %}
+                                </td>
+                                <td class="text-center">
+                                    <a href="{% url 'trabajadores:trabajador_detail' item.trabajador.id_trabajador %}" 
+                                       class="btn btn-sm btn-outline-primary"
+                                       title="Ver detalle">
+                                        <i class="bi bi-eye"></i> Ver
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="alert alert-success">
+                    <i class="bi bi-check-circle me-2"></i>
+                    <strong>¡Excelente!</strong> Todos los trabajadores tienen su documentación completa y vigente.
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Información adicional -->
+    {% if trabajadores_incompletos %}
+    <div class="card mt-4">
+        <div class="card-header bg-info text-white">
+            <i class="bi bi-info-circle me-2"></i>Recomendaciones
+        </div>
+        <div class="card-body">
+            <ul class="mb-0">
+                <li>Los trabajadores con <strong>cursos vencidos</strong> deben renovar sus certificaciones lo antes posible.</li>
+                <li>Los trabajadores <strong>sin dotación activa</strong> deben recibir sus elementos de protección personal.</li>
+                <li>Para cumplir con la normativa de SST, todos los trabajadores deben mantener su documentación vigente.</li>
+            </ul>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Separador -->
+    <div class="separador"></div>
+
+    <!-- Botones de navegación -->
+    <div class="d-flex justify-content-between">
+        <a href="{% url 'trabajadores:trabajador_list' %}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Volver al listado
+        </a>
+        <div>
+            <a href="{% url 'trabajadores:dashboard_alertas_cursos' %}" class="btn btn-outline-warning me-2">
+                <i class="bi bi-mortarboard"></i> Ver Alertas de Cursos
+            </a>
+            <a href="{% url 'trabajadores:dashboard_alertas_dotaciones' %}" class="btn btn-outline-info">
+                <i class="bi bi-box-seam"></i> Ver Alertas de Dotaciones
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

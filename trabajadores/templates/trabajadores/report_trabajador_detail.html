@@ -1,0 +1,104 @@
+{% load custom_filters %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Hoja de Vida - {{ trabajador.nombres }} {{ trabajador.apellidos }}</title>
+  <style>
+    @page { size: A4; margin: 15mm; }
+    body { font-family: DejaVu Sans, Arial, sans-serif; font-size: 12px; }
+    h1 { color:#0d6efd; font-size: 20px; margin: 0 0 8px 0; }
+    h2 { font-size: 15px; color:#333; margin: 12px 0 6px 0; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { border: 1px solid #cccccc; padding: 6px 8px; vertical-align: top; }
+    th { background: #f2f4f7; text-align: left; width: 35%; }
+    .muted { color: #666; font-size: 11px; margin-bottom: 8px; }
+  </style>
+</head>
+<body>
+  <h1>Hoja de Vida</h1>
+  <div class="muted">Generado para {{ trabajador.nombres }} {{ trabajador.apellidos }} ({{ trabajador.id_trabajador }})</div>
+
+  <h2>Datos Personales</h2>
+  <table>
+    <tbody>
+      <tr><th>Documento</th><td>{{ trabajador.id_trabajador }} ({{ trabajador.get_tipo_documento_display }})</td></tr>
+      <tr><th>Nombres</th><td>{{ trabajador.nombres }}</td></tr>
+      <tr><th>Apellidos</th><td>{{ trabajador.apellidos }}</td></tr>
+      <tr><th>Fecha Nacimiento</th><td>{{ trabajador.fecha_nacimiento }}</td></tr>
+      <tr><th>Contacto</th><td>Cel: {{ trabajador.telefono_celular }} | Email: {{ trabajador.correo_personal }}</td></tr>
+      <tr><th>Dirección</th><td>{{ trabajador.direccion_residencia }}, {{ trabajador.ciudad_residencia }} - {{ trabajador.departamento_residencia }}</td></tr>
+    </tbody>
+  </table>
+
+    <h2>Historial Laboral</h2>
+    <table>
+      <thead><tr><th>Inicio</th><th>Fin</th><th>Cargo</th><th>Jornada</th><th>Sede</th><th>Salario</th></tr></thead>
+      <tbody>
+        {% for l in laborales %}
+        <tr>
+          <td>{{ l.fecha_inicio_contrato }}</td>
+          <td>{{ l.fecha_terminacion_contrato|default:'—' }}</td>
+          <td>{{ l.cargo }}</td>
+          <td>{{ l.get_jornada_laboral_display }}</td>
+          <td>{{ l.sede_trabajo }}</td>
+          <td>{{ l.salario|currency }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="6">Sin registros.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <h2>Afiliaciones</h2>
+    <table>
+      <thead><tr><th>Entidad</th><th>Nombre</th><th>Número</th></tr></thead>
+      <tbody>
+        {% for a in afiliaciones %}
+        <tr><td>EPS</td><td>{{ a.eps_nombre }}</td><td>{{ a.eps_numero_afiliacion }}</td></tr>
+        <tr><td>Pensiones</td><td>{{ a.fondo_pensiones_nombre }}</td><td>{{ a.fondo_pensiones_numero_afiliacion }}</td></tr>
+        <tr><td>ARL</td><td>{{ a.arl_nombre }}</td><td>{{ a.arl_numero_nombre }}</td></tr>
+        <tr><td>Caja</td><td>{{ a.caja_compensacion_nombre }}</td><td>{{ a.caja_compensacion_numero_afiliacion }}</td></tr>
+        {% empty %}
+        <tr><td colspan="3">Sin afiliaciones registradas.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <h2>Dotación</h2>
+    <table>
+      <thead><tr><th>Tipo</th><th>Talla</th><th>Fecha</th><th>Cantidad</th><th>Obs.</th></tr></thead>
+      <tbody>
+        {% for d in dotaciones %}
+        <tr><td>{{ d.tipo_dotacion }}</td><td>{{ d.talla }}</td><td>{{ d.fecha_entrega }}</td><td>{{ d.cantidad }}</td><td>{{ d.observaciones }}</td></tr>
+        {% empty %}
+        <tr><td colspan="5">Sin dotación registrada.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <h2>Cursos</h2>
+    <table>
+      <thead><tr><th>Curso</th><th>Institución</th><th>Inicio</th><th>Fin</th><th>Certificado</th></tr></thead>
+      <tbody>
+        {% for c in cursos %}
+        <tr><td>{{ c.nombre_curso }}</td><td>{{ c.institucion }}</td><td>{{ c.fecha_inicio_curso }}</td><td>{{ c.fecha_fin_curso|default:'—' }}</td><td>{{ c.certificado_url }}</td></tr>
+        {% empty %}
+        <tr><td colspan="5">Sin cursos registrados.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <h2>Roles del Sistema</h2>
+    <table>
+      <thead><tr><th>Rol</th><th>Estado</th><th>Último ingreso</th></tr></thead>
+      <tbody>
+        {% for r in roles %}
+        <tr><td>{{ r.rol_sistema }}</td><td>{{ r.get_estado_cuenta_display }}</td><td>{{ r.ultimo_inicio_sesion }}</td></tr>
+        {% empty %}
+        <tr><td colspan="3">Sin roles asignados.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+</body>
+</html>

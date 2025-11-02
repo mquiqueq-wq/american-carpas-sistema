@@ -1,0 +1,98 @@
+{% extends 'trabajadores/base.html' %}
+
+<!-- Título de la página -->
+{% block title %}{{ title }} - American Carpas 1 SAS{% endblock %}
+
+{% block content %}
+<!-- Contenedor principal con fondo blanco -->
+<div class="contenedor-principal">
+    <!-- Título de la página -->
+    <h2 class="titulo-pagina">{{ title }}</h2>
+    
+    <!-- Información del trabajador -->
+    <div class="alert alert-info d-flex align-items-center mb-4" role="alert">
+        <i class="bi bi-person-badge me-2 fs-4"></i>
+        <div>
+            <strong>Trabajador:</strong> 
+            {{ trabajador.nombres }} {{ trabajador.apellidos }} 
+            ({{ trabajador.id_trabajador }})
+        </div>
+    </div>
+
+    <!-- Formulario -->
+    <form method="post" novalidate>
+        {% csrf_token %}
+        
+        <div class="row">
+            {% for field in form %}
+                {% if field.name != 'id_trabajador' %}
+                    <!-- Cada campo ocupa la mitad del ancho en pantallas medianas -->
+                    <div class="col-md-6 mb-3">
+                        <label for="{{ field.id_for_label }}" class="form-label">
+                            {{ field.label }}
+                            {% if field.field.required %}
+                                <span class="text-danger">*</span>
+                            {% endif %}
+                        </label>
+                        
+                        <!-- Renderizar el campo -->
+                        {{ field }}
+                        
+                        <!-- Texto de ayuda si existe -->
+                        {% if field.help_text %}
+                            <small class="form-text text-muted">{{ field.help_text }}</small>
+                        {% endif %}
+                        
+                        <!-- Mostrar errores del campo si existen -->
+                        {% if field.errors %}
+                            <div class="text-danger small mt-1">
+                                {{ field.errors }}
+                            </div>
+                        {% endif %}
+                    </div>
+                {% endif %}
+            {% endfor %}
+        </div>
+
+        <!-- Separador visual -->
+        <div class="separador"></div>
+
+        <!-- Botones de acción -->
+        <div class="d-flex justify-content-between">
+            <!-- Botón Cancelar -->
+            <a href="{% url 'trabajadores:trabajador_detail' trabajador.id_trabajador %}" 
+               class="btn btn-outline-secondary">
+                <i class="bi bi-x-circle"></i> Cancelar
+            </a>
+            
+            <!-- Botón Guardar -->
+            <button type="submit" class="btn btn-primary">
+                <i class="bi bi-check-circle"></i> Guardar
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+<!-- JavaScript adicional para este formulario -->
+{% block extra_js %}
+<script>
+    // Agregar clases de Bootstrap a los campos del formulario automáticamente
+    document.addEventListener('DOMContentLoaded', function() {
+        // Seleccionar todos los inputs, selects y textareas del formulario
+        const formControls = document.querySelectorAll('input:not([type="hidden"]), select, textarea');
+        
+        // Agregar la clase 'form-control' o 'form-select' según el tipo
+        formControls.forEach(function(control) {
+            if (control.tagName === 'SELECT') {
+                control.classList.add('form-select');
+            } else if (control.type === 'checkbox') {
+                // Para checkboxes usar form-check-input
+                control.classList.add('form-check-input');
+            } else {
+                control.classList.add('form-control');
+            }
+        });
+    });
+</script>
+{% endblock %}

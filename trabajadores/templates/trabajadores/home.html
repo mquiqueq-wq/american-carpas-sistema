@@ -1,0 +1,238 @@
+{% extends 'trabajadores/base.html' %}
+
+{% block title %}Inicio - American Carpas 1 SAS{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Encabezado de bienvenida -->
+    <div class="text-center mb-5">
+        <h1 class="display-4 fw-bold" style="background: linear-gradient(135deg, #1e40af, #059669); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+            Sistema de Gestión de Datos
+        </h1>
+        <p class="lead text-muted">American Carpas 1 SAS - Seleccione un módulo para continuar</p>
+    </div>
+
+    <!-- Separador decorativo -->
+    <div class="separador-custom"></div>
+
+    <!-- ================================================
+         MENÚ DE MÓDULOS CON ICONOS GRANDES
+         ================================================ -->
+    
+    <!-- MÓDULO: TRABAJADORES -->
+    <h2 class="mb-4">
+        <i class="bi bi-people-fill text-primary"></i> Módulo: Trabajadores
+    </h2>
+    
+    <div class="row g-4 mb-5">
+        <!-- Listado -->
+        <div class="col-6 col-md-4 col-lg-3">
+            <a href="{% url 'trabajadores:trabajador_list' %}" class="text-decoration-none">
+                <div class="card menu-card card-azul">
+                    <div class="card-body">
+                        <i class="bi bi-list-ul menu-icon-large"></i>
+                        <h6 class="fw-bold">Listado</h6>
+                        <small class="text-muted">Ver todos</small>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <!-- Registrar -->
+        <div class="col-6 col-md-4 col-lg-3">
+            <a href="{% url 'trabajadores:trabajador_create' %}" class="text-decoration-none">
+                <div class="card menu-card card-verde">
+                    <div class="card-body">
+                        <i class="bi bi-person-plus-fill menu-icon-large"></i>
+                        <h6 class="fw-bold">Registrar</h6>
+                        <small class="text-muted">Nuevo trabajador</small>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <!-- Dashboard General -->
+        <div class="col-6 col-md-4 col-lg-3">
+            <a href="{% url 'trabajadores:dashboard_general' %}" class="text-decoration-none">
+                <div class="card menu-card card-azul">
+                    <div class="card-body">
+                        <i class="bi bi-speedometer2 menu-icon-large"></i>
+                        <h6 class="fw-bold">Dashboard</h6>
+                        <small class="text-muted">General</small>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <!-- Alertas Cursos -->
+        <div class="col-6 col-md-4 col-lg-3">
+            <a href="{% url 'trabajadores:dashboard_alertas_cursos' %}" class="text-decoration-none">
+                <div class="card menu-card card-azul">
+                    <div class="card-body">
+                        <i class="bi bi-mortarboard-fill menu-icon-large"></i>
+                        <h6 class="fw-bold">Cursos</h6>
+                        <small class="text-muted">Alertas</small>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <!-- Alertas Dotaciones -->
+        <div class="col-6 col-md-4 col-lg-3">
+            <a href="{% url 'trabajadores:dashboard_alertas_dotaciones' %}" class="text-decoration-none">
+                <div class="card menu-card card-verde">
+                    <div class="card-body">
+                        <i class="bi bi-box-seam-fill menu-icon-large"></i>
+                        <h6 class="fw-bold">Dotaciones</h6>
+                        <small class="text-muted">Alertas EPP</small>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <!-- Documentación Incompleta -->
+        <div class="col-6 col-md-4 col-lg-3">
+            <a href="{% url 'trabajadores:reporte_documentacion_incompleta' %}" class="text-decoration-none">
+                <div class="card menu-card border-danger">
+                    <div class="card-body">
+                        <i class="bi bi-file-earmark-x-fill menu-icon-large text-danger"></i>
+                        <h6 class="fw-bold">Incompletos</h6>
+                        <small class="text-muted">Reporte</small>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <!-- Tipos de Cursos -->
+        <div class="col-6 col-md-4 col-lg-3">
+            <a href="{% url 'trabajadores:tipo_curso_list' %}" class="text-decoration-none">
+                <div class="card menu-card card-azul">
+                    <div class="card-body">
+                        <i class="bi bi-book-fill menu-icon-large"></i>
+                        <h6 class="fw-bold">Tipos Cursos</h6>
+                        <small class="text-muted">Catálogo</small>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <!-- Tipos de Dotaciones -->
+        <div class="col-6 col-md-4 col-lg-3">
+            <a href="{% url 'trabajadores:tipo_dotacion_list' %}" class="text-decoration-none">
+                <div class="card menu-card card-verde">
+                    <div class="card-body">
+                        <i class="bi bi-tools menu-icon-large"></i>
+                        <h6 class="fw-bold">Tipos EPP</h6>
+                        <small class="text-muted">Catálogo</small>
+                    </div>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    <!-- Separador -->
+    <div class="separador-custom"></div>
+
+    <!-- MÓDULOS FUTUROS -->
+    <h2 class="mb-4 text-muted">
+        <i class="bi bi-clock-history"></i> Próximamente
+    </h2>
+    
+    <div class="row g-4">
+        <!-- Inventarios -->
+        <div class="col-6 col-md-4 col-lg-3">
+            <div class="card menu-card" style="opacity: 0.5; cursor: not-allowed;">
+                <div class="card-body">
+                    <i class="bi bi-boxes menu-icon-large text-secondary"></i>
+                    <h6 class="fw-bold">Inventarios</h6>
+                    <small class="text-muted">En desarrollo</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Proveedores -->
+        <div class="col-6 col-md-4 col-lg-3">
+            <div class="card menu-card" style="opacity: 0.5; cursor: not-allowed;">
+                <div class="card-body">
+                    <i class="bi bi-truck menu-icon-large text-secondary"></i>
+                    <h6 class="fw-bold">Proveedores</h6>
+                    <small class="text-muted">En desarrollo</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Proyectos -->
+        <div class="col-6 col-md-4 col-lg-3">
+            <div class="card menu-card" style="opacity: 0.5; cursor: not-allowed;">
+                <div class="card-body">
+                    <i class="bi bi-diagram-3-fill menu-icon-large text-secondary"></i>
+                    <h6 class="fw-bold">Proyectos</h6>
+                    <small class="text-muted">En desarrollo</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Reportes -->
+        <div class="col-6 col-md-4 col-lg-3">
+            <div class="card menu-card" style="opacity: 0.5; cursor: not-allowed;">
+                <div class="card-body">
+                    <i class="bi bi-graph-up-arrow menu-icon-large text-secondary"></i>
+                    <h6 class="fw-bold">Reportes</h6>
+                    <small class="text-muted">En desarrollo</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Información del proyecto -->
+    <div class="alert alert-custom-info mt-5" role="alert">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h5 class="alert-heading">
+                    <i class="bi bi-info-circle-fill"></i> Proyecto de Grado
+                </h5>
+                <p class="mb-0">
+                    Sistema desarrollado como modalidad de grado para la <strong>Universidad La Gran Colombia</strong>.
+                    Herramienta de gestión empresarial para <strong>American Carpas 1 SAS</strong>.
+                </p>
+            </div>
+            <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                <a href="{% url 'admin:index' %}" class="btn btn-primary-custom">
+                    <i class="bi bi-gear-fill"></i> Administración
+                </a>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Animación de entrada para las tarjetas */
+    .menu-card {
+        animation: fadeInUp 0.5s ease forwards;
+        opacity: 0;
+    }
+    
+    .menu-card:nth-child(1) { animation-delay: 0.1s; }
+    .menu-card:nth-child(2) { animation-delay: 0.2s; }
+    .menu-card:nth-child(3) { animation-delay: 0.3s; }
+    .menu-card:nth-child(4) { animation-delay: 0.4s; }
+    .menu-card:nth-child(5) { animation-delay: 0.5s; }
+    .menu-card:nth-child(6) { animation-delay: 0.6s; }
+    .menu-card:nth-child(7) { animation-delay: 0.7s; }
+    .menu-card:nth-child(8) { animation-delay: 0.8s; }
+    
+    @keyframes fadeInUp {
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+    }
+</style>
+{% endblock %}

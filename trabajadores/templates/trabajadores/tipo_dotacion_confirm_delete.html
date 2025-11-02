@@ -1,0 +1,101 @@
+{% extends 'trabajadores/base.html' %}
+
+{% block title %}Confirmar Eliminación - Tipo de Dotación{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="contenedor-principal">
+        <!-- Encabezado -->
+        <div class="text-center mb-4">
+            <i class="bi bi-exclamation-triangle-fill text-danger" style="font-size: 4rem;"></i>
+            <h2 class="titulo-pagina mt-3">
+                ¿Está seguro de eliminar este tipo de dotación?
+            </h2>
+        </div>
+
+        <!-- Separador -->
+        <div class="separador-custom"></div>
+
+        <!-- Información del tipo de dotación -->
+        <div class="card border-danger mb-4">
+            <div class="card-header bg-danger text-white">
+                <h5 class="mb-0">
+                    <i class="bi bi-tools"></i> Información del Tipo de Dotación
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>Nombre:</strong> {{ tipo.nombre_tipo_dotacion }}</p>
+                        <p><strong>Vida útil:</strong> {{ tipo.vida_util_dias }} días</p>
+                        <p>
+                            <strong>Requiere talla:</strong> 
+                            {% if tipo.requiere_talla %}
+                                <span class="badge bg-success">Sí</span>
+                            {% else %}
+                                <span class="badge bg-secondary">No</span>
+                            {% endif %}
+                        </p>
+                    </div>
+                    <div class="col-md-6">
+                        <p>
+                            <strong>Estado:</strong> 
+                            {% if tipo.activo %}
+                                <span class="badge bg-success">Activo</span>
+                            {% else %}
+                                <span class="badge bg-secondary">Inactivo</span>
+                            {% endif %}
+                        </p>
+                        {% if tipo.normativa_referencia %}
+                            <p><strong>Normativa:</strong> {{ tipo.normativa_referencia }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+                {% if tipo.descripcion %}
+                    <hr>
+                    <p class="mb-0"><strong>Descripción:</strong></p>
+                    <p class="text-muted">{{ tipo.descripcion }}</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Advertencia de dotaciones asociadas -->
+        {% if dotaciones_asociadas > 0 %}
+            <div class="alert alert-warning" role="alert">
+                <h5 class="alert-heading">
+                    <i class="bi bi-exclamation-triangle-fill"></i> ¡Atención!
+                </h5>
+                <p>
+                    Este tipo de dotación tiene <strong>{{ dotaciones_asociadas }} dotación(es) asociada(s)</strong>.
+                </p>
+                <hr>
+                <p class="mb-0">
+                    Al eliminar este tipo de dotación, las dotaciones asociadas NO se eliminarán, 
+                    pero quedarán sin tipo asignado del catálogo y no se podrá calcular su fecha de vencimiento automáticamente.
+                </p>
+            </div>
+        {% else %}
+            <div class="alert alert-success" role="alert">
+                <i class="bi bi-check-circle-fill"></i> 
+                Este tipo de dotación no tiene dotaciones asociadas. Se puede eliminar sin problemas.
+            </div>
+        {% endif %}
+
+        <!-- Separador -->
+        <div class="separador-custom"></div>
+
+        <!-- Botones -->
+        <form method="post">
+            {% csrf_token %}
+            <div class="d-flex justify-content-between">
+                <a href="{% url 'trabajadores:tipo_dotacion_list' %}" class="btn btn-outline-secondary btn-lg">
+                    <i class="bi bi-arrow-left"></i> Cancelar
+                </a>
+                <button type="submit" class="btn btn-danger btn-lg">
+                    <i class="bi bi-trash-fill"></i> Sí, eliminar definitivamente
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

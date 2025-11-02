@@ -1,0 +1,163 @@
+{% extends 'trabajadores/base.html' %}
+
+{% block title %}Gestión de Tipos de Cursos{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="contenedor-principal">
+        <!-- Encabezado -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h2 class="titulo-pagina mb-1">
+                    <i class="bi bi-mortarboard"></i>
+                    Tipos de Cursos
+                </h2>
+                <p class="text-muted mb-0">Catálogo de cursos con vigencia y normativa</p>
+            </div>
+            <a href="{% url 'trabajadores:tipo_curso_create' %}" class="btn btn-primary-custom">
+                <i class="bi bi-plus-circle"></i> Nuevo Tipo de Curso
+            </a>
+        </div>
+
+        <!-- Separador -->
+        <div class="separador-custom"></div>
+
+        <!-- Estadísticas -->
+        <div class="row mb-4">
+            <div class="col-md-6 mb-3">
+                <div class="card card-azul">
+                    <div class="card-body text-center">
+                        <i class="bi bi-check-circle fs-1 text-success"></i>
+                        <h3 class="mt-2 mb-0">{{ total_activos }}</h3>
+                        <p class="text-muted mb-0">Tipos Activos</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 mb-3">
+                <div class="card border-secondary">
+                    <div class="card-body text-center">
+                        <i class="bi bi-x-circle fs-1 text-secondary"></i>
+                        <h3 class="mt-2 mb-0">{{ total_inactivos }}</h3>
+                        <p class="text-muted mb-0">Tipos Inactivos</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabla de tipos -->
+        <div class="card">
+            <div class="card-header">
+                <strong><i class="bi bi-table"></i> Listado de Tipos de Cursos</strong>
+            </div>
+            <div class="card-body">
+                {% if tipos %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Nombre</th>
+                                    <th>Vigencia</th>
+                                    <th>Días Alerta</th>
+                                    <th>Normativa</th>
+                                    <th class="text-center">Renovable</th>
+                                    <th class="text-center">Estado</th>
+                                    <th class="text-center">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for tipo in tipos %}
+                                <tr>
+                                    <td>
+                                        <i class="bi bi-mortarboard text-primary me-2"></i>
+                                        <strong>{{ tipo.nombre_tipo_curso }}</strong>
+                                    </td>
+                                    <td>
+                                        {% comment %} Calcular años/meses/días manualmente {% endcomment %}
+                                        {% if tipo.vigencia_dias >= 365 %}
+                                            {% comment %} Años {% endcomment %}
+                                            {% with anos=tipo.vigencia_dias|floatformat:0 %}
+                                                <span class="badge bg-success">
+                                                    {% if tipo.vigencia_dias == 365 %}1 año
+                                                    {% elif tipo.vigencia_dias == 730 %}2 años
+                                                    {% elif tipo.vigencia_dias == 1095 %}3 años
+                                                    {% else %}{{ anos }} días{% endif %}
+                                                </span>
+                                            {% endwith %}
+                                        {% elif tipo.vigencia_dias >= 30 %}
+                                            {% comment %} Meses {% endcomment %}
+                                            <span class="badge bg-info">
+                                                {% if tipo.vigencia_dias == 30 %}1 mes
+                                                {% elif tipo.vigencia_dias == 60 %}2 meses
+                                                {% elif tipo.vigencia_dias == 90 %}3 meses
+                                                {% elif tipo.vigencia_dias == 180 %}6 meses
+                                                {% else %}{{ tipo.vigencia_dias }} días{% endif %}
+                                            </span>
+                                        {% else %}
+                                            <span class="badge bg-warning text-dark">
+                                                {{ tipo.vigencia_dias }} días
+                                            </span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ tipo.dias_alerta_anticipada }} días</td>
+                                    <td>
+                                        {% if tipo.normativa_referencia %}
+                                            <small class="text-muted">{{ tipo.normativa_referencia|truncatewords:5 }}</small>
+                                        {% else %}
+                                            <span class="text-muted">-</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-center">
+                                        {% if tipo.requiere_renovacion %}
+                                            <i class="bi bi-check-circle-fill text-success"></i>
+                                        {% else %}
+                                            <i class="bi bi-x-circle text-secondary"></i>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-center">
+                                        {% if tipo.activo %}
+                                            <span class="badge bg-success">Activo</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">Inactivo</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-center">
+                                        <a href="{% url 'trabajadores:tipo_curso_update' tipo.id_tipo_curso %}" 
+                                           class="btn btn-sm btn-outline-secondary"
+                                           title="Editar">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                        <a href="{% url 'trabajadores:tipo_curso_delete' tipo.id_tipo_curso %}" 
+                                           class="btn btn-sm btn-outline-danger"
+                                           title="Eliminar">
+                                            <i class="bi bi-trash"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle me-2"></i>
+                        No hay tipos de cursos registrados. <a href="{% url 'trabajadores:tipo_curso_create' %}">Crear el primero</a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Separador -->
+        <div class="separador-custom"></div>
+
+        <!-- Botones de navegación -->
+        <div class="d-flex justify-content-between">
+            <a href="{% url 'trabajadores:trabajador_list' %}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i> Volver
+            </a>
+            <a href="{% url 'trabajadores:tipo_dotacion_list' %}" class="btn btn-outline-info">
+                <i class="bi bi-box-seam"></i> Ver Tipos de Dotaciones
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

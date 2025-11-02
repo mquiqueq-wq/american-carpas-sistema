@@ -1,0 +1,209 @@
+/* ============================================
+   ESTILOS PERSONALIZADOS - DISEÑO HÍBRIDO
+   American Carpas 1 SAS + Universidad La Gran Colombia
+   ============================================ */
+
+/* --- Variables de Colores --- */
+:root {
+    /* Colores American Carpas (Azul) */
+    --color-azul-primary: #1e40af;        /* Azul oscuro principal */
+    --color-azul-secondary: #3b82f6;      /* Azul medio */
+    --color-azul-light: #60a5fa;          /* Azul claro */
+    
+    /* Colores Universidad (Verde) */
+    --color-verde-primary: #059669;       /* Verde principal */
+    --color-verde-secondary: #10b981;     /* Verde medio */
+    --color-verde-light: #34d399;         /* Verde claro */
+    
+    /* Colores neutros */
+    --color-blanco: #ffffff;
+    --color-gris-claro: #f3f4f6;
+    --color-gris-medio: #6b7280;
+    --color-gris-oscuro: #1f2937;
+    
+    /* Colores de estado */
+    --color-exito: var(--color-verde-primary);
+    --color-advertencia: #f59e0b;
+    --color-peligro: #dc2626;
+    --color-info: var(--color-azul-secondary);
+}
+
+/* --- Navbar con diseño híbrido --- */
+.navbar-custom {
+    background: linear-gradient(135deg, var(--color-azul-primary) 0%, var(--color-azul-secondary) 50%, var(--color-verde-primary) 100%) !important;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+
+.navbar-brand img.logo-empresa {
+    height: 50px;
+    width: auto;
+    margin-right: 15px;
+}
+
+.navbar-brand img.logo-universidad {
+    height: 45px;
+    width: auto;
+    margin-left: 15px;
+    border-left: 2px solid rgba(255,255,255,0.3);
+    padding-left: 15px;
+}
+
+/* --- Botones con estilo híbrido --- */
+.btn-primary-custom {
+    background: linear-gradient(135deg, var(--color-azul-primary), var(--color-azul-secondary));
+    border: none;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.btn-primary-custom:hover {
+    background: linear-gradient(135deg, var(--color-azul-secondary), var(--color-verde-primary));
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(30, 64, 175, 0.4);
+}
+
+.btn-success-custom {
+    background: linear-gradient(135deg, var(--color-verde-primary), var(--color-verde-secondary));
+    border: none;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: 500;
+}
+
+.btn-success-custom:hover {
+    background: linear-gradient(135deg, var(--color-verde-secondary), var(--color-verde-light));
+    transform: translateY(-2px);
+}
+
+/* --- Cards con bordes de colores --- */
+.card-azul {
+    border-top: 4px solid var(--color-azul-primary);
+}
+
+.card-verde {
+    border-top: 4px solid var(--color-verde-primary);
+}
+
+/* --- Iconos grandes para móvil --- */
+.menu-icon-large {
+    font-size: 2.5rem !important;
+    margin-bottom: 10px;
+    display: block;
+}
+
+.menu-card {
+    text-align: center;
+    padding: 30px 20px;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    border-radius: 12px;
+    border: 2px solid transparent;
+}
+
+.menu-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+    border-color: var(--color-azul-secondary);
+}
+
+.menu-card.verde:hover {
+    border-color: var(--color-verde-primary);
+}
+
+.menu-card i {
+    color: var(--color-azul-primary);
+}
+
+.menu-card.verde i {
+    color: var(--color-verde-primary);
+}
+
+/* --- Badges con colores corporativos --- */
+.badge-azul {
+    background-color: var(--color-azul-primary) !important;
+}
+
+.badge-verde {
+    background-color: var(--color-verde-primary) !important;
+}
+
+/* --- Separador decorativo --- */
+.separador-custom {
+    height: 3px;
+    background: linear-gradient(90deg, var(--color-azul-primary), var(--color-verde-primary));
+    margin: 2rem 0;
+    border-radius: 2px;
+}
+
+/* --- Footer con gradiente --- */
+.footer-custom {
+    background: linear-gradient(135deg, var(--color-gris-oscuro) 0%, var(--color-azul-primary) 100%);
+    color: white;
+    padding: 20px 0;
+}
+
+/* --- Responsive Design --- */
+@media (max-width: 768px) {
+    .navbar-brand img {
+        height: 35px;
+    }
+    
+    .menu-icon-large {
+        font-size: 2rem !important;
+    }
+    
+    .menu-card {
+        padding: 20px 15px;
+        margin-bottom: 15px;
+    }
+}
+
+/* --- Animaciones --- */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.contenedor-principal {
+    animation: fadeInUp 0.5s ease;
+}
+
+/* --- Dropdown mejorado para móvil --- */
+@media (max-width: 992px) {
+    .dropdown-menu {
+        background: linear-gradient(135deg, rgba(30,64,175,0.95), rgba(5,150,105,0.95));
+        backdrop-filter: blur(10px);
+    }
+    
+    .dropdown-item {
+        color: white !important;
+        padding: 12px 20px;
+    }
+    
+    .dropdown-item:hover {
+        background-color: rgba(255,255,255,0.2);
+    }
+}
+
+/* --- Tablas mejoradas --- */
+.table thead {
+    background: linear-gradient(135deg, var(--color-azul-primary), var(--color-verde-primary));
+    color: white;
+}
+
+/* --- Alertas personalizadas --- */
+.alert-custom-info {
+    background: linear-gradient(135deg, rgba(59,130,246,0.1), rgba(5,150,105,0.1));
+    border-left: 4px solid var(--color-azul-primary);
+    color: var(--color-gris-oscuro);
+}

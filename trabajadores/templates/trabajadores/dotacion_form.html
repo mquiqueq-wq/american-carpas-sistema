@@ -1,0 +1,291 @@
+{% extends 'trabajadores/base.html' %}
+{% load static %}
+
+{% block title %}
+    {% if form.instance.pk %}Editar{% else %}Nueva{% endif %} Dotación
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>
+            <i class="bi bi-box-seam"></i>
+            {% if form.instance.pk %}Editar{% else %}Nueva{% endif %} Dotación
+        </h2>
+        <a href="{% url 'trabajadores:trabajador_detail' trabajador.id_trabajador %}" class="btn btn-secondary">
+            <i class="bi bi-arrow-left"></i> Volver
+        </a>
+    </div>
+
+    <div class="alert alert-info">
+        <i class="bi bi-person-badge"></i>
+        <strong>Trabajador:</strong> {{ trabajador.nombres }} {{ trabajador.apellidos }} ({{ trabajador.id_trabajador }})
+    </div>
+
+    {% if form.errors %}
+        <div class="alert alert-danger alert-dismissible fade show">
+            <i class="bi bi-exclamation-triangle-fill"></i>
+            <strong>Error al guardar la dotación. Verifique los datos.</strong>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            <ul class="mb-0 mt-2">
+                {% for field, errors in form.errors.items %}
+                    {% for error in errors %}
+                        <li>{{ field }}: {{ error }}</li>
+                    {% endfor %}
+                {% endfor %}
+            </ul>
+        </div>
+    {% endif %}
+
+    <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">
+                <i class="bi bi-box-seam-fill"></i> Información de la Dotación
+            </h5>
+        </div>
+        <div class="card-body">
+            <form method="post" id="formDotacion">
+                {% csrf_token %}
+                
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label for="{{ form.tipo_dotacion_catalogo.id_for_label }}" class="form-label">
+                            {{ form.tipo_dotacion_catalogo.label }} <span class="text-danger">*</span>
+                        </label>
+                        {{ form.tipo_dotacion_catalogo }}
+                        {% if form.tipo_dotacion_catalogo.help_text %}
+                            <small class="form-text text-muted">{{ form.tipo_dotacion_catalogo.help_text }}</small>
+                        {% endif %}
+                        {% if form.tipo_dotacion_catalogo.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.tipo_dotacion_catalogo.errors }}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="col-md-6">
+                        <div id="infoTipo" class="alert alert-light border d-none">
+                            <h6 class="mb-2"><i class="bi bi-info-circle"></i> Información del Tipo</h6>
+                            <p class="mb-1"><strong>Descripción:</strong> <span id="tipoDescripcion">-</span></p>
+                            <p class="mb-1"><strong>Vida útil:</strong> <span id="tipoVidaUtil">-</span></p>
+                            <p class="mb-0"><strong>Requiere talla:</strong> <span id="tipoRequiereTalla">-</span></p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <label for="{{ form.talla.id_for_label }}" class="form-label">
+                            {{ form.talla.label }} <span id="tallaMandatory" class="text-danger d-none">*</span>
+                        </label>
+                        {{ form.talla }}
+                        {% if form.talla.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.talla.errors }}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="col-md-4">
+                        <label for="{{ form.cantidad.id_for_label }}" class="form-label">
+                            {{ form.cantidad.label }} <span class="text-danger">*</span>
+                        </label>
+                        {{ form.cantidad }}
+                        {% if form.cantidad.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.cantidad.errors }}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="col-md-4">
+                        <label for="{{ form.fecha_entrega.id_for_label }}" class="form-label">
+                            {{ form.fecha_entrega.label }} <span class="text-danger">*</span>
+                        </label>
+                        {{ form.fecha_entrega }}
+                        {% if form.fecha_entrega.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.fecha_entrega.errors }}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label for="{{ form.fecha_vencimiento.id_for_label }}" class="form-label">
+                            {{ form.fecha_vencimiento.label }}
+                            <i class="bi bi-info-circle" data-bs-toggle="tooltip" title="Se calcula automáticamente"></i>
+                        </label>
+                        {{ form.fecha_vencimiento }}
+                        {% if form.fecha_vencimiento.help_text %}
+                            <small class="form-text text-muted">{{ form.fecha_vencimiento.help_text }}</small>
+                        {% endif %}
+                    </div>
+
+                    <div class="col-md-6">
+                        <label for="{{ form.observaciones.id_for_label }}" class="form-label">
+                            {{ form.observaciones.label }}
+                        </label>
+                        {{ form.observaciones }}
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <label for="{{ form.estado.id_for_label }}" class="form-label">
+                            {{ form.estado.label }}
+                        </label>
+                        {{ form.estado }}
+                        {% if form.estado.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.estado.errors }}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-end gap-2 mt-4">
+                    <a href="{% url 'trabajadores:trabajador_detail' trabajador.id_trabajador %}" class="btn btn-secondary">
+                        <i class="bi bi-x-circle"></i> Cancelar
+                    </a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-check-circle"></i> Guardar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="alert alert-warning mt-4">
+        <h6><i class="bi bi-lightbulb"></i> Ayuda</h6>
+        <ul class="mb-0">
+            <li>Seleccione el tipo de dotación del catálogo</li>
+            <li>La fecha de vencimiento se calcula automáticamente según la vida útil</li>
+            <li>Las tallas disponibles son las configuradas en el tipo de dotación</li>
+            <li>Puede agregar observaciones adicionales si es necesario</li>
+        </ul>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Datos de tipos de dotación desde el contexto
+const tiposDotacion = {
+  {% for tipo in tipos_dotacion %}
+  "{{ tipo.id_tipo_dotacion }}": {
+    nombre: "{{ tipo.nombre_tipo_dotacion|escapejs }}",
+    descripcion: "{{ tipo.descripcion|default:'Sin descripción'|escapejs }}",
+    vidaUtilDias: {{ tipo.vida_util_dias|default:0 }}, 
+    requiereTalla: {{ tipo.requiere_talla|yesno:"true,false" }},
+    tallasDisponibles: "{{ tipo.tallas_disponibles|default:''|escapejs }}"
+  }{% if not forloop.last %},{% endif %}
+  {% endfor %}
+};
+
+function actualizarInfoTipo() {
+  const tipoSelect = document.getElementById('id_tipo_dotacion_catalogo');
+  const tipoId = tipoSelect.value;
+  const infoContainer = document.getElementById('infoTipo');
+
+  if (tipoId && tiposDotacion[tipoId]) {
+    const tipo = tiposDotacion[tipoId];
+    infoContainer.classList.remove('d-none');
+    document.getElementById('tipoDescripcion').textContent = tipo.descripcion || 'Sin descripción';
+    document.getElementById('tipoVidaUtil').textContent = (tipo.vidaUtilDias || 0) + ' días';
+    document.getElementById('tipoRequiereTalla').textContent = tipo.requiereTalla ? 'Sí' : 'No';
+
+    const tallaSelect = document.getElementById('id_talla');
+    const tallaMandatory = document.getElementById('tallaMandatory');
+
+    if (tipo.requiereTalla) {
+      tallaMandatory.classList.remove('d-none');
+      tallaSelect.required = true;
+      cargarTallasDesdeModelo(tipo.tallasDisponibles);
+    } else {
+      tallaMandatory.classList.add('d-none');
+      tallaSelect.required = false;
+      tallaSelect.innerHTML = '<option value="N/A">No aplica</option>';
+    }
+
+    calcularFechaVencimiento(tipo.vidaUtilDias);
+  } else {
+    infoContainer.classList.add('d-none');
+  }
+}
+
+function cargarTallasDesdeModelo(tallasDisponibles) {
+  const tallaSelect = document.getElementById('id_talla');
+  const current = tallaSelect.getAttribute('data-current') || '';
+
+  tallaSelect.innerHTML = '';
+
+  const optionDefault = document.createElement('option');
+  optionDefault.value = '';
+  optionDefault.textContent = '-- Seleccione una talla --';
+  tallaSelect.appendChild(optionDefault);
+
+  if (tallasDisponibles && String(tallasDisponibles).trim() !== '') {
+    const tallas = String(tallasDisponibles)
+      .split(',')
+      .map(t => t.trim())
+      .filter(t => t !== '');
+    tallas.forEach(talla => {
+      const option = document.createElement('option');
+      option.value = talla;
+      option.textContent = talla;
+      tallaSelect.appendChild(option);
+    });
+  } else {
+    const optionSinTallas = document.createElement('option');
+    optionSinTallas.value = '';
+    optionSinTallas.textContent = '-- No hay tallas configuradas --';
+    optionSinTallas.disabled = true;
+    tallaSelect.appendChild(optionSinTallas);
+  }
+
+  // Re-seleccionar la talla anterior (si la hay)
+  if (current) {
+    const toSelect = Array.from(tallaSelect.options).find(o => o.value === current);
+    if (toSelect) toSelect.selected = true;
+  }
+}
+
+function calcularFechaVencimiento(vidaUtilDias) {
+  const fechaEntrega = document.getElementById('id_fecha_entrega').value;
+  if (fechaEntrega && vidaUtilDias) {
+    const fecha = new Date(fechaEntrega);
+    fecha.setDate(fecha.getDate() + Number(vidaUtilDias));
+    const year = fecha.getFullYear();
+    const month = String(fecha.getMonth() + 1).padStart(2, '0');
+    const day = String(fecha.getDate()).padStart(2, '0');
+    document.getElementById('id_fecha_vencimiento').value = `${year}-${month}-${day}`;
+  }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  const tipoSelect = document.getElementById('id_tipo_dotacion_catalogo');
+  const fechaEntregaInput = document.getElementById('id_fecha_entrega');
+  const tallaSelect = document.getElementById('id_talla');
+
+  // Establecer data-current con el valor actual del select talla proveniente del servidor
+  if (tallaSelect) {
+    tallaSelect.setAttribute('data-current', tallaSelect.value || '');
+  }
+
+  tipoSelect.addEventListener('change', actualizarInfoTipo);
+  fechaEntregaInput.addEventListener('change', function() {
+    const tipoId = tipoSelect.value;
+    if (tipoId && tiposDotacion[tipoId]) {
+      calcularFechaVencimiento(tiposDotacion[tipoId].vidaUtilDias);
+    }
+  });
+
+  // Inicializar si ya hay un tipo seleccionado (edición o re-render con errores)
+  if (tipoSelect.value) {
+    actualizarInfoTipo();
+  }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,237 @@
+{% extends 'trabajadores/base.html' %}
+{% load custom_filters %}
+
+{% block title %}Dashboard de Alertas - Dotaciones{% endblock %}
+
+{% block content %}
+<div class="contenedor-principal">
+    <!-- Encabezado -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="titulo-pagina mb-1">
+                <i class="bi bi-box-seam text-info"></i>
+                Dashboard de Alertas - Dotaciones
+            </h2>
+            <p class="text-muted mb-0">Control de vigencia de Elementos de Protección Personal (EPP)</p>
+        </div>
+        <a href="{% url 'trabajadores:dashboard_general' %}" class="btn btn-outline-secondary">
+            <i class="bi bi-speedometer2"></i> Dashboard General
+        </a>
+    </div>
+
+    <!-- Separador -->
+    <div class="separador"></div>
+
+    <!-- Tarjetas de estadísticas -->
+    <div class="row mb-4">
+        <!-- Total de dotaciones -->
+        <div class="col-md-3 mb-3">
+            <div class="card border-primary">
+                <div class="card-body text-center">
+                    <i class="bi bi-box-seam fs-1 text-primary"></i>
+                    <h3 class="mt-2 mb-0">{{ total_dotaciones }}</h3>
+                    <p class="text-muted mb-0">Total Dotaciones Activas</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Vigentes -->
+        <div class="col-md-3 mb-3">
+            <div class="card border-success">
+                <div class="card-body text-center">
+                    <i class="bi bi-check-circle-fill fs-1 text-success"></i>
+                    <h3 class="mt-2 mb-0">{{ vigentes }}</h3>
+                    <p class="text-muted mb-0">Vigentes</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Próximos a vencer -->
+        <div class="col-md-3 mb-3">
+            <div class="card border-warning">
+                <div class="card-body text-center">
+                    <i class="bi bi-exclamation-triangle-fill fs-1 text-warning"></i>
+                    <h3 class="mt-2 mb-0">{{ proximos_vencer }}</h3>
+                    <p class="text-muted mb-0">Próximos a Vencer</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Vencidos -->
+        <div class="col-md-3 mb-3">
+            <div class="card border-danger">
+                <div class="card-body text-center">
+                    <i class="bi bi-x-circle-fill fs-1 text-danger"></i>
+                    <h3 class="mt-2 mb-0">{{ vencidos }}</h3>
+                    <p class="text-muted mb-0">Vencidos</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filtros -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <i class="bi bi-funnel"></i> Filtrar por estado
+        </div>
+        <div class="card-body">
+            <div class="btn-group" role="group">
+                <a href="?" class="btn {% if not estado_filtro %}btn-primary{% else %}btn-outline-primary{% endif %}">
+                    <i class="bi bi-list"></i> Todos
+                </a>
+                <a href="?estado=vigente" class="btn {% if estado_filtro == 'vigente' %}btn-success{% else %}btn-outline-success{% endif %}">
+                    <i class="bi bi-check-circle"></i> Vigentes
+                </a>
+                <a href="?estado=proximo_vencer" class="btn {% if estado_filtro == 'proximo_vencer' %}btn-warning{% else %}btn-outline-warning{% endif %}">
+                    <i class="bi bi-exclamation-triangle"></i> Próximos a vencer
+                </a>
+                <a href="?estado=vencido" class="btn {% if estado_filtro == 'vencido' %}btn-danger{% else %}btn-outline-danger{% endif %}">
+                    <i class="bi bi-x-circle"></i> Vencidos
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabla de dotaciones -->
+    <div class="card">
+        <div class="card-header">
+            <strong>Listado de Dotaciones Activas</strong>
+            {% if estado_filtro %}
+                <span class="badge bg-primary ms-2">Filtrado por: {{ estado_filtro|title }}</span>
+            {% endif %}
+        </div>
+        <div class="card-body">
+            {% if dotaciones_evaluadas %}
+                <div class="table-responsive">
+                    <table class="table table-hover table-striped">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Trabajador</th>
+                                <th>Documento</th>
+                                <th>Tipo de Dotación</th>
+                                <th>Talla</th>
+                                <th>Fecha Entrega</th>
+                                <th>Fecha Vencimiento</th>
+                                <th class="text-center">Días Restantes</th>
+                                <th class="text-center">Estado</th>
+                                <th class="text-center">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in dotaciones_evaluadas %}
+                            <tr class="table-{{ item.dotacion.get_color_estado }}">
+                                <td>
+                                    <strong>{{ item.dotacion.id_trabajador.nombres }} {{ item.dotacion.id_trabajador.apellidos }}</strong>
+                                </td>
+                                <td>{{ item.dotacion.id_trabajador.id_trabajador }}</td>
+                                <td>
+                                    <span class="badge bg-info">
+                                        {{ item.dotacion.tipo_dotacion }}
+                                    </span>
+                                </td>
+                                <td>{{ item.dotacion.talla }}</td>
+                                <td>{{ item.dotacion.fecha_entrega|date:"d/m/Y" }}</td>
+                                <td>
+                                    {% if item.fecha_vencimiento %}
+                                        <strong>{{ item.fecha_vencimiento|date:"d/m/Y" }}</strong>
+                                    {% else %}
+                                        <span class="text-muted">Sin configurar</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-center">
+                                    {% if item.dias_restantes is not None %}
+                                        {% if item.dias_restantes < 0 %}
+                                            <span class="badge bg-danger">
+                                                Vencido hace {{ item.dias_restantes|abs }} días
+                                            </span>
+                                        {% elif item.dias_restantes == 0 %}
+                                            <span class="badge bg-danger">
+                                                ¡Vence hoy!
+                                            </span>
+                                        {% else %}
+                                            <span class="badge bg-{{ item.dotacion.get_color_estado }}">
+                                                {{ item.dias_restantes }} días
+                                            </span>
+                                        {% endif %}
+                                    {% else %}
+                                        <span class="text-muted">-</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-center">
+                                    <span class="badge bg-{{ item.dotacion.get_color_estado }}">
+                                        {{ item.dotacion.get_estado_display_vigencia }}
+                                    </span>
+                                </td>
+                                <td class="text-center">
+                                    <a href="{% url 'trabajadores:trabajador_detail' item.dotacion.id_trabajador.id_trabajador %}" 
+                                       class="btn btn-sm btn-outline-primary"
+                                       title="Ver trabajador">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                    <a href="{% url 'trabajadores:dotacion_update' item.dotacion.id_dotacion %}" 
+                                       class="btn btn-sm btn-outline-secondary"
+                                       title="Editar dotación">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle me-2"></i>
+                    No hay dotaciones para mostrar con el filtro actual.
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Separador -->
+    <div class="separador"></div>
+
+    <!-- Botones de navegación -->
+    <div class="d-flex justify-content-between">
+        <a href="{% url 'trabajadores:trabajador_list' %}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Volver al listado
+        </a>
+        <div>
+            <a href="{% url 'trabajadores:dashboard_alertas_cursos' %}" class="btn btn-outline-warning me-2">
+                <i class="bi bi-mortarboard"></i> Ver Alertas de Cursos
+            </a>
+            <a href="{% url 'trabajadores:reporte_documentacion_incompleta' %}" class="btn btn-outline-danger">
+                <i class="bi bi-file-earmark-x"></i> Trabajadores sin Documentación
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Animación para filas críticas */
+    @keyframes pulse-danger {
+        0%, 100% { background-color: rgba(220, 38, 38, 0.1); }
+        50% { background-color: rgba(220, 38, 38, 0.2); }
+    }
+    
+    .table-danger {
+        animation: pulse-danger 2s infinite;
+    }
+    
+    .badge {
+        font-size: 0.85rem;
+        padding: 0.4rem 0.7rem;
+    }
+    
+    .card {
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+    
+    .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+</style>
+{% endblock %}

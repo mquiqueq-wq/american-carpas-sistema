@@ -1,0 +1,863 @@
+{% extends 'trabajadores/base.html' %}
+
+<!-- Título de la página -->
+{% block title %}Listado de Trabajadores - American Carpas 1 SAS{% endblock %}
+
+{% block content %}
+<!-- Contenedor principal con fondo blanco -->
+<div class="contenedor-principal">
+    <!-- Encabezado con título y botón de acción -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="titulo-pagina mb-1">Listado de Trabajadores</h2>
+            <p class="text-muted mb-0">Gestión de personal de American Carpas 1 SAS</p>
+        </div>
+        <!-- Botón para registrar nuevo trabajador -->
+        <a href="{% url 'trabajadores:trabajador_create' %}" class="btn btn-primary">
+            <i class="bi bi-plus-circle"></i> Registrar nuevo trabajador
+        </a>
+    </div>
+
+    <!-- Separador visual -->
+    <div class="separador"></div>
+
+    <!-- ====
+    SECCIÓN: TRABAJADORES SELECCIONADOS PARA EXPORTAR
+    ==== -->
+    <div id="panelSeleccionados" class="alert alert-primary d-none mb-4" role="alert">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <i class="bi bi-folder"></i> 
+                <strong>Trabajadores seleccionados para exportar:</strong> 
+                <span id="contadorSeleccionados" class="badge bg-white text-primary">0</span>
+                <div id="listaSeleccionados" class="mt-2"></div>
+            </div>
+            <button class="btn btn-sm btn-outline-primary" onclick="limpiarSeleccion()">
+                <i class="bi bi-trash"></i> Limpiar selección
+            </button>
+        </div>
+        
+        <!-- Botones de exportación -->
+        <div class="mt-3">
+            <button class="btn btn-success" onclick="abrirModalExportacion('excel')">
+                <i class="bi bi-file-earmark-excel"></i> Seleccionar campos y exportar a Excel
+            </button>
+            <button class="btn btn-danger ms-2" onclick="abrirModalExportacion('pdf')">
+                <i class="bi bi-file-earmark-pdf"></i> Seleccionar campos y exportar a PDF
+            </button>
+            <p class="text-muted small mt-2 mb-0">Haz clic para elegir qué datos deseas incluir en la exportación</p>
+        </div>
+    </div>
+
+    <!-- ====
+    SECCIÓN: BÚSQUEDA Y FILTROS (COLAPSABLE)
+    ==== -->
+    <div class="card mb-4">
+        <!-- Encabezado del card con botón para colapsar -->
+        <div class="card-header d-flex justify-content-between align-items-center" 
+             style="cursor: pointer;" 
+             data-bs-toggle="collapse" 
+             data-bs-target="#filtrosCollapse" 
+             aria-expanded="true" 
+             aria-controls="filtrosCollapse">
+            <div>
+                <i class="bi bi-funnel"></i> Búsqueda y Filtros
+                <!-- Mostrar filtros activos cuando está colapsado -->
+                {% if query or tipo_documento or estado_civil or genero %}
+                <span class="badge bg-primary ms-2">Filtros activos</span>
+                {% endif %}
+            </div>
+            <!-- Icono que cambia según el estado del collapse -->
+            <i class="bi bi-chevron-down" id="iconoCollapse"></i>
+        </div>
+        
+        <!-- Contenido colapsable - Por defecto expandido -->
+        <div class="collapse" id="filtrosCollapse">
+            <div class="card-body">
+                <!-- Formulario de búsqueda y filtros -->
+                <form method="get" action="{% url 'trabajadores:trabajador_list' %}" class="row g-3">
+                    <!-- Barra de búsqueda -->
+                    <div class="col-md-12">
+                        <label for="searchInput" class="form-label">Buscar trabajador</label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="bi bi-search"></i>
+                            </span>
+                            <input type="text" 
+                                   class="form-control" 
+                                   id="searchInput" 
+                                   name="q" 
+                                   value="{{ query }}" 
+                                   placeholder="Buscar por nombre, apellido o documento...">
+                            <!-- Botón de búsqueda -->
+                            <button class="btn btn-primary" type="submit">
+                                <i class="bi bi-search"></i> Buscar
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Filtros -->
+                    <div class="col-md-3">
+                        <label for="tipoDocumento" class="form-label">Tipo de documento</label>
+                        <select class="form-select" id="tipoDocumento" name="tipo_documento">
+                            <option value="">Todos</option>
+                            {% for value, label in tipos_documento %}
+                            <option value="{{ value }}" {% if tipo_documento == value %}selected{% endif %}>
+                                {{ label }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label for="estadoCivil" class="form-label">Estado civil</label>
+                        <select class="form-select" id="estadoCivil" name="estado_civil">
+                            <option value="">Todos</option>
+                            {% for value, label in estados_civiles %}
+                            <option value="{{ value }}" {% if estado_civil == value %}selected{% endif %}>
+                                {{ label }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label for="genero" class="form-label">Género</label>
+                        <select class="form-select" id="genero" name="genero">
+                            <option value="">Todos</option>
+                            {% for value, label in generos %}
+                            <option value="{{ value }}" {% if genero == value %}selected{% endif %}>
+                                {{ label }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label for="ordenar" class="form-label">Ordenar por</label>
+                        <select class="form-select" id="ordenar" name="ordenar">
+                            <option value="apellidos" {% if ordenar == 'apellidos' %}selected{% endif %}>
+                                Apellidos (A-Z)
+                            </option>
+                            <option value="-apellidos" {% if ordenar == '-apellidos' %}selected{% endif %}>
+                                Apellidos (Z-A)
+                            </option>
+                            <option value="nombres" {% if ordenar == 'nombres' %}selected{% endif %}>
+                                Nombres (A-Z)
+                            </option>
+                            <option value="-nombres" {% if ordenar == '-nombres' %}selected{% endif %}>
+                                Nombres (Z-A)
+                            </option>
+                            <option value="id_trabajador" {% if ordenar == 'id_trabajador' %}selected{% endif %}>
+                                Documento (menor a mayor)
+                            </option>
+                            <option value="-id_trabajador" {% if ordenar == '-id_trabajador' %}selected{% endif %}>
+                                Documento (mayor a menor)
+                            </option>
+                        </select>
+                    </div>
+
+                    <!-- Botones de acción -->
+                    <div class="col-md-12">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-funnel-fill"></i> Aplicar filtros
+                        </button>
+                        <a href="{% url 'trabajadores:trabajador_list' %}" class="btn btn-outline-secondary">
+                            <i class="bi bi-x-circle"></i> Limpiar filtros
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- ====
+    SECCIÓN: RESULTADOS
+    ==== -->
+    
+    <!-- Información de resultados -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            {% if query or tipo_documento or estado_civil or genero %}
+            <!-- Mostrar mensaje cuando hay filtros activos -->
+            <p class="text-muted mb-0">
+                <i class="bi bi-info-circle"></i> 
+                Se encontraron <strong>{{ total_trabajadores }}</strong> resultado(s)
+                {% if query %}
+                para "<strong>{{ query }}</strong>"
+                {% endif %}
+            </p>
+            {% else %}
+            <!-- Mostrar total sin filtros -->
+            <p class="text-muted mb-0">
+                <i class="bi bi-people-fill"></i> 
+                Total de trabajadores registrados: <strong>{{ total_trabajadores }}</strong>
+            </p>
+            {% endif %}
+        </div>
+        
+        <!-- Información de paginación -->
+        {% if page_obj.has_other_pages %}
+        <div>
+            <p class="text-muted mb-0">
+                Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
+            </p>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Verificar si hay trabajadores -->
+    {% if trabajadores %}
+    <!-- Opciones de selección masiva -->
+    <div class="mb-3">
+        <button class="btn btn-sm btn-outline-primary" onclick="seleccionarTodosPagina()">
+            <i class="bi bi-check-square"></i> Seleccionar todos en esta página
+        </button>
+        <button class="btn btn-sm btn-outline-secondary" onclick="deseleccionarTodos()">
+            <i class="bi bi-square"></i> Deseleccionar todos
+        </button>
+        <button class="btn btn-sm btn-outline-info" onclick="agregarSeleccionadosALista()">
+            <i class="bi bi-plus-square"></i> Agregar seleccionados a la lista de exportación
+        </button>
+    </div>
+
+    <!-- Tabla de trabajadores con diseño Bootstrap -->
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <!-- Encabezado de la tabla -->
+            <thead>
+                <tr>
+                    <th scope="col">
+                        <input type="checkbox" id="selectAll" onchange="toggleSelectAll(this)">
+                    </th>
+                    <th scope="col">Documento</th>
+                    <th scope="col">Tipo Doc.</th>
+                    <th scope="col">Nombres</th>
+                    <th scope="col">Apellidos</th>
+                    <th scope="col">Teléfono</th>
+                    <th scope="col">Correo</th>
+                    <th scope="col" class="text-center">Acciones</th>
+                </tr>
+            </thead>
+            <!-- Cuerpo de la tabla -->
+            <tbody>
+                {% for trabajador in trabajadores %}
+                <tr>
+                    <!-- Checkbox de selección -->
+                    <td>
+                        <input type="checkbox" 
+                               class="trabajador-checkbox" 
+                               value="{{ trabajador.id_trabajador }}"
+                               data-nombre="{{ trabajador.nombres }} {{ trabajador.apellidos }}"
+                               onchange="actualizarSeleccionTemporal()">
+                    </td>
+                    <!-- Número de documento -->
+                    <td>
+                        <strong>{{ trabajador.id_trabajador }}</strong>
+                    </td>
+                    <!-- Tipo de documento con badge -->
+                    <td>
+                        <span class="badge bg-secondary">{{ trabajador.get_tipo_documento_display }}</span>
+                    </td>
+                    <!-- Nombres -->
+                    <td>{{ trabajador.nombres }}</td>
+                    <!-- Apellidos -->
+                    <td>{{ trabajador.apellidos }}</td>
+                    <!-- Teléfono celular -->
+                    <td>
+                        <i class="bi bi-phone"></i> {{ trabajador.telefono_celular }}
+                    </td>
+                    <!-- Correo personal -->
+                    <td>
+                        <i class="bi bi-envelope"></i> {{ trabajador.correo_personal }}
+                    </td>
+                    <!-- Botones de acción -->
+                    <td class="text-center">
+                        <div class="btn-group" role="group">
+                            <!-- Botón Ver detalle -->
+                            <a href="{% url 'trabajadores:trabajador_detail' trabajador.id_trabajador %}" 
+                               class="btn btn-sm btn-outline-primary" 
+                               title="Ver detalle">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                            <!-- Botón Editar -->
+                            <a href="{% url 'trabajadores:trabajador_update' trabajador.id_trabajador %}" 
+                               class="btn btn-sm btn-outline-secondary" 
+                               title="Editar">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <!-- Botón Eliminar -->
+                            <a href="{% url 'trabajadores:trabajador_delete' trabajador.id_trabajador %}" 
+                               class="btn btn-sm btn-outline-danger" 
+                               title="Eliminar">
+                                <i class="bi bi-trash"></i>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- ====
+    PAGINACIÓN
+    ==== -->
+    {% if page_obj.has_other_pages %}
+    <nav aria-label="Navegación de páginas">
+        <ul class="pagination justify-content-center">
+            <!-- Botón Primera página -->
+            {% if page_obj.has_previous %}
+            <li class="page-item">
+                <a class="page-link" href="?page=1{% if query %}&q={{ query }}{% endif %}{% if tipo_documento %}&tipo_documento={{ tipo_documento }}{% endif %}{% if estado_civil %}&estado_civil={{ estado_civil }}{% endif %}{% if genero %}&genero={{ genero }}{% endif %}{% if ordenar %}&ordenar={{ ordenar }}{% endif %}">
+                    <i class="bi bi-chevron-double-left"></i>
+                </a>
+            </li>
+            <!-- Botón Página anterior -->
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if query %}&q={{ query }}{% endif %}{% if tipo_documento %}&tipo_documento={{ tipo_documento }}{% endif %}{% if estado_civil %}&estado_civil={{ estado_civil }}{% endif %}{% if genero %}&genero={{ genero }}{% endif %}{% if ordenar %}&ordenar={{ ordenar }}{% endif %}">
+                    <i class="bi bi-chevron-left"></i>
+                </a>
+            </li>
+            {% else %}
+            <li class="page-item disabled">
+                <span class="page-link"><i class="bi bi-chevron-double-left"></i></span>
+            </li>
+            <li class="page-item disabled">
+                <span class="page-link"><i class="bi bi-chevron-left"></i></span>
+            </li>
+            {% endif %}
+
+            <!-- Números de página -->
+            {% for num in page_obj.paginator.page_range %}
+            {% if page_obj.number == num %}
+            <!-- Página actual -->
+            <li class="page-item active">
+                <span class="page-link">{{ num }}</span>
+            </li>
+            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+            <!-- Páginas cercanas a la actual -->
+            <li class="page-item">
+                <a class="page-link" href="?page={{ num }}{% if query %}&q={{ query }}{% endif %}{% if tipo_documento %}&tipo_documento={{ tipo_documento }}{% endif %}{% if estado_civil %}&estado_civil={{ estado_civil }}{% endif %}{% if genero %}&genero={{ genero }}{% endif %}{% if ordenar %}&ordenar={{ ordenar }}{% endif %}">
+                    {{ num }}
+                </a>
+            </li>
+            {% endif %}
+            {% endfor %}
+
+            <!-- Botón Página siguiente -->
+            {% if page_obj.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if query %}&q={{ query }}{% endif %}{% if tipo_documento %}&tipo_documento={{ tipo_documento }}{% endif %}{% if estado_civil %}&estado_civil={{ estado_civil }}{% endif %}{% if genero %}&genero={{ genero }}{% endif %}{% if ordenar %}&ordenar={{ ordenar }}{% endif %}">
+                    <i class="bi bi-chevron-right"></i>
+                </a>
+            </li>
+            <!-- Botón Última página -->
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if query %}&q={{ query }}{% endif %}{% if tipo_documento %}&tipo_documento={{ tipo_documento }}{% endif %}{% if estado_civil %}&estado_civil={{ estado_civil }}{% endif %}{% if genero %}&genero={{ genero }}{% endif %}{% if ordenar %}&ordenar={{ ordenar }}{% endif %}">
+                    <i class="bi bi-chevron-double-right"></i>
+                </a>
+            </li>
+            {% else %}
+            <li class="page-item disabled">
+                <span class="page-link"><i class="bi bi-chevron-right"></i></span>
+            </li>
+            <li class="page-item disabled">
+                <span class="page-link"><i class="bi bi-chevron-double-right"></i></span>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+
+    {% else %}
+    <!-- Mensaje cuando no hay trabajadores -->
+    <div class="alert alert-info d-flex align-items-center" role="alert">
+        <i class="bi bi-info-circle me-2 fs-4"></i>
+        <div>
+            {% if query or tipo_documento or estado_civil or genero %}
+            <strong>No se encontraron resultados.</strong><br>
+            Intenta ajustar los filtros de búsqueda.
+            {% else %}
+            <strong>No hay trabajadores registrados.</strong><br>
+            Haz clic en "Registrar nuevo trabajador" para agregar el primer registro.
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- ====
+MODAL: SELECCIÓN DE CAMPOS PARA EXPORTACIÓN
+==== -->
+<div class="modal fade" id="modalExportacion" tabindex="-1" aria-labelledby="modalExportacionLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalExportacionLabel">
+                    <i class="bi bi-file-earmark-spreadsheet"></i> Seleccionar campos para exportar
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="formExportacion" method="post" action="">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <p class="text-muted">Selecciona los campos que deseas incluir en la exportación:</p>
+                    
+                    <!-- Botones de selección rápida -->
+                    <div class="mb-3">
+                        <button type="button" class="btn btn-sm btn-outline-primary" onclick="seleccionarTodosCampos()">
+                            <i class="bi bi-check-all"></i> Seleccionar todos
+                        </button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="deseleccionarTodosCampos()">
+                            <i class="bi bi-x"></i> Deseleccionar todos
+                        </button>
+                    </div>
+
+                    <!-- Campos organizados por categorías -->
+                    <div class="row">
+                        <!-- Identificación -->
+                        <div class="col-md-4">
+                            <h6 class="fw-bold">Identificación</h6>
+                            <div class="form-check">
+                                <input class="form-check-input campo-checkbox" type="checkbox" name="fields" value="Documento" id="campo_documento" checked>
+                                <label class="form-check-label" for="campo_documento">Documento</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input campo-checkbox" type="checkbox" name="fields" value="Tipo Doc." id="campo_tipo_doc">
+                                <label class="form-check-label" for="campo_tipo_doc">Tipo de documento</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input campo-checkbox" type="checkbox" name="fields" value="Nombres" id="campo_nombres" checked>
+                                <label class="form-check-label" for="campo_nombres">Nombres</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input campo-checkbox" type="checkbox" name="fields" value="Apellidos" id="campo_apellidos" checked>
+                                <label class="form-check-label" for="campo_apellidos">Apellidos</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input campo-checkbox" type="checkbox" name="fields" value="Fecha expedición doc." id="campo_fecha_exp">
+                                <label class="form-check-label" for="campo_fecha_exp">Fecha expedición documento</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input campo-checkbox" type="checkbox" name="fields" value="Lugar expedición" id="campo_lugar_exp">
+                                <label class="form-check-label" for="campo_lugar_exp">Lugar expedición</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input campo-checkbox" type="checkbox" name="fields" value="Nacionalidad" id="campo_nacionalidad">
+                                <label class="form-check-label" for="campo_nacionalidad">Nacionalidad</label>
+                            </div>
+                        </div>
+
+                        <!-- Datos Personales -->
+                        <div class="col-md-4">
+                            <h6 class="fw-bold">Datos Personales</h6>
+                            <div class="form-check">
+                                <input class="form-check-input campo-checkbox" type="checkbox" name="fields" value="Fecha nacimiento" id="campo_fecha_nac">
+                                <label class="form-check-label" for="campo_fecha_nac">Fecha nacimiento</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input campo-checkbox" type="checkbox" name="fields" value="Lugar nacimiento" id="campo_lugar_nac">
+                                <label class="form-check-label" for="campo_lugar_nac">Lugar nacimiento</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input campo-checkbox" type="checkbox" name="fields" value="Género" id="campo_genero">
+                                <label class="form-check-label" for="campo_genero">Género</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input campo-checkbox" type="checkbox" name="fields" value="Estado civil" id="campo_estado_civil">
+                                <label class="form-check-label" for="campo_estado_civil">Estado civil</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input campo-checkbox" type="checkbox" name="fields" value="Grupo sanguíneo" id="campo_grupo_sang">
+                                <label class="form-check-label" for="campo_grupo_sang">Grupo sanguíneo</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input campo-checkbox" type="checkbox" name="fields" value="Número de hijos" id="campo_num_hijos">
+                                <label class="form-check-label" for="campo_num_hijos">Número de hijos</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input campo-checkbox" type="checkbox" name="fields" value="Nombre padre" id="campo_nombre_padre">
+                                <label class="form-check-label" for="campo_nombre_padre">Nombre padre</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input campo-checkbox" type="checkbox" name="fields" value="Nombre madre" id="campo_nombre_madre">
+                                <label class="form-check-label" for="campo_nombre_madre">Nombre madre</label>
+                            </div>
+                        </div>
+
+                        <!-- Contacto -->
+                        <div class="col-md-4">
+                            <h6 class="fw-bold">Contacto</h6>
+                            <div class="form-check">
+                                <input class="form-check-input campo-checkbox" type="checkbox" name="fields" value="Celular" id="campo_celular" checked>
+                                <label class="form-check-label" for="campo_celular">Celular</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input campo-checkbox" type="checkbox" name="fields" value="Correo" id="campo_correo" checked>
+                                <label class="form-check-label" for="campo_correo">Correo</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input campo-checkbox" type="checkbox" name="fields" value="Dirección" id="campo_direccion">
+                                <label class="form-check-label" for="campo_direccion">Dirección</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input campo-checkbox" type="checkbox" name="fields" value="Ciudad" id="campo_ciudad">
+                                <label class="form-check-label" for="campo_ciudad">Ciudad</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input campo-checkbox" type="checkbox" name="fields" value="Departamento" id="campo_departamento">
+                                <label class="form-check-label" for="campo_departamento">Departamento</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input campo-checkbox" type="checkbox" name="fields" value="Contacto emergencia" id="campo_contacto_emerg">
+                                <label class="form-check-label" for="campo_contacto_emerg">Contacto emergencia</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input campo-checkbox" type="checkbox" name="fields" value="Teléfono emergencia" id="campo_tel_emerg">
+                                <label class="form-check-label" for="campo_tel_emerg">Teléfono emergencia</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <div class="row">
+                        <!-- Datos Bancarios -->
+                        <div class="col-md-4">
+                            <h6 class="fw-bold">Datos Bancarios</h6>
+                            <div class="form-check">
+                                <input class="form-check-input campo-checkbox" type="checkbox" name="fields" value="Cuenta bancaria" id="campo_cuenta">
+                                <label class="form-check-label" for="campo_cuenta">Cuenta bancaria</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input campo-checkbox" type="checkbox" name="fields" value="Tipo cuenta" id="campo_tipo_cuenta">
+                                <label class="form-check-label" for="campo_tipo_cuenta">Tipo cuenta</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input campo-checkbox" type="checkbox" name="fields" value="Banco" id="campo_banco">
+                                <label class="form-check-label" for="campo_banco">Banco</label>
+                            </div>
+                        </div>
+
+                        <!-- Datos Laborales -->
+                        <div class="col-md-4">
+                            <h6 class="fw-bold">Datos Laborales (último contrato)</h6>
+                            <div class="form-check">
+                                <input class="form-check-input campo-checkbox" type="checkbox" name="fields" value="Cargo (último)" id="campo_cargo">
+                                <label class="form-check-label" for="campo_cargo">Cargo</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input campo-checkbox" type="checkbox" name="fields" value="Salario (último)" id="campo_salario">
+                                <label class="form-check-label" for="campo_salario">Salario</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input campo-checkbox" type="checkbox" name="fields" value="Tipo contrato (último)" id="campo_tipo_contrato">
+                                <label class="form-check-label" for="campo_tipo_contrato">Tipo contrato</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input campo-checkbox" type="checkbox" name="fields" value="Jornada (último)" id="campo_jornada">
+                                <label class="form-check-label" for="campo_jornada">Jornada</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input campo-checkbox" type="checkbox" name="fields" value="Sede trabajo (último)" id="campo_sede">
+                                <label class="form-check-label" for="campo_sede">Sede trabajo</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input campo-checkbox" type="checkbox" name="fields" value="Inicio contrato (último)" id="campo_inicio">
+                                <label class="form-check-label" for="campo_inicio">Inicio contrato</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input campo-checkbox" type="checkbox" name="fields" value="Fin contrato (último)" id="campo_fin">
+                                <label class="form-check-label" for="campo_fin">Fin contrato</label>
+                            </div>
+                        </div>
+
+                        <!-- Afiliaciones -->
+                        <div class="col-md-4">
+                            <h6 class="fw-bold">Afiliaciones</h6>
+                            <div class="form-check">
+                                <input class="form-check-input campo-checkbox" type="checkbox" name="fields" value="EPS" id="campo_eps">
+                                <label class="form-check-label" for="campo_eps">EPS</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input campo-checkbox" type="checkbox" name="fields" value="EPS número" id="campo_eps_num">
+                                <label class="form-check-label" for="campo_eps_num">EPS número</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input campo-checkbox" type="checkbox" name="fields" value="Fondo pensiones" id="campo_pension">
+                                <label class="form-check-label" for="campo_pension">Fondo pensiones</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input campo-checkbox" type="checkbox" name="fields" value="Fondo pensiones número" id="campo_pension_num">
+                                <label class="form-check-label" for="campo_pension_num">Fondo pensiones número</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input campo-checkbox" type="checkbox" name="fields" value="ARL" id="campo_arl">
+                                <label class="form-check-label" for="campo_arl">ARL</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input campo-checkbox" type="checkbox" name="fields" value="ARL número" id="campo_arl_num">
+                                <label class="form-check-label" for="campo_arl_num">ARL número</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input campo-checkbox" type="checkbox" name="fields" value="Caja compensación" id="campo_caja">
+                                <label class="form-check-label" for="campo_caja">Caja compensación</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input campo-checkbox" type="checkbox" name="fields" value="Caja compensación número" id="campo_caja_num">
+                                <label class="form-check-label" for="campo_caja_num">Caja compensación número</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <div class="row">
+                        <!-- Cursos -->
+                        <div class="col-md-6">
+                            <h6 class="fw-bold">Cursos</h6>
+                            <div class="form-check">
+                                <input class="form-check-input campo-checkbox" type="checkbox" name="fields" value="Cursos realizados" id="campo_cursos">
+                                <label class="form-check-label" for="campo_cursos">Lista de cursos realizados</label>
+                            </div>
+                        </div>
+
+                        <!-- Dotaciones -->
+                        <div class="col-md-6">
+                            <h6 class="fw-bold">Dotaciones</h6>
+                            <div class="form-check">
+                                <input class="form-check-input campo-checkbox" type="checkbox" name="fields" value="Dotaciones entregadas" id="campo_dotaciones">
+                                <label class="form-check-label" for="campo_dotaciones">Lista de dotaciones entregadas</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- IDs seleccionados (ocultos) -->
+                    <div id="idsSeleccionadosContainer"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-success" id="btnExportar">
+                        <i class="bi bi-download"></i> Exportar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- ====
+SCRIPTS: Funcionalidad de selección y exportación CON PERSISTENCIA
+==== -->
+<script>
+    // CLAVE PARA LOCALSTORAGE
+    const STORAGE_KEY = 'trabajadores_seleccionados_exportar';
+
+    // Cargar trabajadores seleccionados desde localStorage
+    function cargarSeleccionPersistente() {
+        const stored = localStorage.getItem(STORAGE_KEY);
+        return stored ? JSON.parse(stored) : [];
+    }
+
+    // Guardar trabajadores seleccionados en localStorage
+    function guardarSeleccionPersistente(trabajadores) {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(trabajadores));
+    }
+
+    // Array global para almacenar los trabajadores seleccionados
+    let trabajadoresSeleccionados = cargarSeleccionPersistente();
+
+    // Actualizar UI al cargar la página
+    document.addEventListener('DOMContentLoaded', function() {
+        actualizarUISeleccion();
+    });
+
+    // Función para actualizar la selección temporal (checkboxes en la página actual)
+    function actualizarSeleccionTemporal() {
+        // Esta función solo actualiza visualmente, no modifica la lista persistente
+        const checkboxes = document.querySelectorAll('.trabajador-checkbox:checked');
+        console.log(`Checkboxes marcados en esta página: ${checkboxes.length}`);
+    }
+
+    // Función para agregar los trabajadores seleccionados a la lista persistente
+    function agregarSeleccionadosALista() {
+        const checkboxes = document.querySelectorAll('.trabajador-checkbox:checked');
+        
+        if (checkboxes.length === 0) {
+            alert('Por favor, selecciona al menos un trabajador.');
+            return;
+        }
+
+        let agregados = 0;
+        checkboxes.forEach(checkbox => {
+            const id = checkbox.value;
+            const nombre = checkbox.dataset.nombre;
+            
+            // Verificar si ya está en la lista
+            const existe = trabajadoresSeleccionados.some(t => t.id === id);
+            if (!existe) {
+                trabajadoresSeleccionados.push({ id, nombre });
+                agregados++;
+            }
+        });
+
+        // Guardar en localStorage
+        guardarSeleccionPersistente(trabajadoresSeleccionados);
+        
+        // Actualizar UI
+        actualizarUISeleccion();
+        
+        // Desmarcar checkboxes
+        checkboxes.forEach(cb => cb.checked = false);
+        document.getElementById('selectAll').checked = false;
+
+        alert(`Se agregaron ${agregados} trabajador(es) a la lista de exportación.`);
+    }
+
+    // Función para actualizar la UI con la lista persistente
+    function actualizarUISeleccion() {
+        const panel = document.getElementById('panelSeleccionados');
+        const contador = document.getElementById('contadorSeleccionados');
+        const lista = document.getElementById('listaSeleccionados');
+
+        if (trabajadoresSeleccionados.length > 0) {
+            panel.classList.remove('d-none');
+            contador.textContent = trabajadoresSeleccionados.length;
+            
+            // Mostrar lista de seleccionados
+            let html = '<div class="d-flex flex-wrap gap-2">';
+            trabajadoresSeleccionados.forEach((t, index) => {
+                html += `<span class="badge bg-primary">
+                    ${t.nombre} (${t.id})
+                    <i class="bi bi-x-circle ms-1" style="cursor: pointer;" onclick="eliminarDeLista(${index})"></i>
+                </span>`;
+            });
+            html += '</div>';
+            lista.innerHTML = html;
+        } else {
+            panel.classList.add('d-none');
+        }
+    }
+
+    // Función para eliminar un trabajador de la lista persistente
+    function eliminarDeLista(index) {
+        trabajadoresSeleccionados.splice(index, 1);
+        guardarSeleccionPersistente(trabajadoresSeleccionados);
+        actualizarUISeleccion();
+    }
+
+    // Función para seleccionar/deseleccionar todos en la página actual
+    function toggleSelectAll(checkbox) {
+        const checkboxes = document.querySelectorAll('.trabajador-checkbox');
+        checkboxes.forEach(cb => {
+            cb.checked = checkbox.checked;
+        });
+    }
+
+    // Función para seleccionar todos en la página
+    function seleccionarTodosPagina() {
+        const checkboxes = document.querySelectorAll('.trabajador-checkbox');
+        checkboxes.forEach(cb => {
+            cb.checked = true;
+        });
+        document.getElementById('selectAll').checked = true;
+    }
+
+    // Función para deseleccionar todos en la página actual
+    function deseleccionarTodos() {
+        const checkboxes = document.querySelectorAll('.trabajador-checkbox');
+        checkboxes.forEach(cb => {
+            cb.checked = false;
+        });
+        document.getElementById('selectAll').checked = false;
+    }
+
+    // Función para limpiar toda la selección persistente
+    function limpiarSeleccion() {
+        if (confirm('¿Estás seguro de que deseas limpiar toda la lista de exportación?')) {
+            trabajadoresSeleccionados = [];
+            guardarSeleccionPersistente(trabajadoresSeleccionados);
+            actualizarUISeleccion();
+            deseleccionarTodos();
+        }
+    }
+
+    // Función para abrir el modal de exportación
+    function abrirModalExportacion(tipo) {
+        if (trabajadoresSeleccionados.length === 0) {
+            alert('Por favor, agrega al menos un trabajador a la lista de exportación.');
+            return;
+        }
+
+        // Configurar el formulario según el tipo de exportación
+        const form = document.getElementById('formExportacion');
+        const btnExportar = document.getElementById('btnExportar');
+        
+        if (tipo === 'excel') {
+            form.action = "{% url 'trabajadores:export_trabajadores_excel_custom' %}";
+            btnExportar.innerHTML = '<i class="bi bi-file-earmark-excel"></i> Exportar a Excel';
+            btnExportar.className = 'btn btn-success';
+        } else if (tipo === 'pdf') {
+            form.action = "{% url 'trabajadores:export_trabajadores_pdf_custom' %}";
+            btnExportar.innerHTML = '<i class="bi bi-file-earmark-pdf"></i> Exportar a PDF';
+            btnExportar.className = 'btn btn-danger';
+        }
+
+        // Agregar los IDs seleccionados al formulario
+        const container = document.getElementById('idsSeleccionadosContainer');
+        container.innerHTML = '';
+        trabajadoresSeleccionados.forEach(t => {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'selected_ids';
+            input.value = t.id;
+            container.appendChild(input);
+        });
+
+        // Mostrar el modal
+        const modal = new bootstrap.Modal(document.getElementById('modalExportacion'));
+        modal.show();
+    }
+
+    // Limpiar la lista después de exportar exitosamente
+    document.getElementById('formExportacion').addEventListener('submit', function() {
+        // Limpiar después de un pequeño delay para asegurar que se envió el formulario
+        setTimeout(function() {
+            trabajadoresSeleccionados = [];
+            guardarSeleccionPersistente(trabajadoresSeleccionados);
+            actualizarUISeleccion();
+        }, 1000);
+    });
+
+    // Función para seleccionar todos los campos
+    function seleccionarTodosCampos() {
+        const checkboxes = document.querySelectorAll('.campo-checkbox');
+        checkboxes.forEach(cb => {
+            cb.checked = true;
+        });
+    }
+
+    // Función para deseleccionar todos los campos
+    function deseleccionarTodosCampos() {
+        const checkboxes = document.querySelectorAll('.campo-checkbox');
+        checkboxes.forEach(cb => {
+            cb.checked = false;
+        });
+    }
+
+    // Animación del icono de collapse
+    const filtrosCollapse = document.getElementById('filtrosCollapse');
+    const iconoCollapse = document.getElementById('iconoCollapse');
+    
+    filtrosCollapse.addEventListener('show.bs.collapse', function () {
+        iconoCollapse.classList.remove('bi-chevron-up');
+        iconoCollapse.classList.add('bi-chevron-down');
+    });
+    
+    filtrosCollapse.addEventListener('hide.bs.collapse', function () {
+        iconoCollapse.classList.remove('bi-chevron-down');
+        iconoCollapse.classList.add('bi-chevron-up');
+    });
+</script>
+{% endblock %}

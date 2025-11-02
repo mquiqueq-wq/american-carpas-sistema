@@ -1,0 +1,18 @@
+# Django
+Django==4.2.7
+mysqlclient==2.2.0
+
+# Utilidades
+python-decouple==3.8
+gunicorn==21.2.0
+whitenoise==6.6.0
+
+# Reportes (si usas ReportLab o similar)
+reportlab==4.0.7
+openpyxl==3.1.2
+
+# CORS (si necesitas API)
+django-cors-headers==4.3.1
+
+# Pillow para imágenes
+Pillow==10.1.0
