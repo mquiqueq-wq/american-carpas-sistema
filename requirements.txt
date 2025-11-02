@@ -1,18 +1,31 @@
 # Django
 Django==4.2.7
+
+# Base de datos MySQL
 mysqlclient==2.2.0
 
-# Utilidades
+# Variables de entorno
 python-decouple==3.8
+
+# Servidor de producción
 gunicorn==21.2.0
+
+# Archivos estáticos
 whitenoise==6.6.0
 
-# Reportes (si usas ReportLab o similar)
+# Generación de reportes
 reportlab==4.0.7
 openpyxl==3.1.2
+xhtml2pdf==0.2.13
 
-# CORS (si necesitas API)
+# Manejo de imágenes
+Pillow==10.1.0
+
+# CORS (si necesitas API REST)
 django-cors-headers==4.3.1
 
-# Pillow para imágenes
-Pillow==10.1.0
+# Timezone
+pytz==2023.3
+
+# Utilidades
+python-dateutil==2.8.2
