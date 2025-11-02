@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -20,12 +21,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-s&b(1-wb_g@0(ck2%4i(im5s)t5k0yl#e&rld+h$0#g^&urcvl'
+SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-s&b(1-wb_g@0(ck2%4i(im5s)t5k0yl#e&rld+h$0#g^&urcvl')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
 
 
 # Application definition
@@ -42,6 +43,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',  # Para archivos estáticos en producción
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -77,11 +79,11 @@ WSGI_APPLICATION = 'american_carpas_project.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'american_carpas_db',           # Nombre de la BD
-        'USER': 'root',                         # Usuario de MySQL
-        'PASSWORD': '@PGym2025',                # Contraseña de MySQL
-        'HOST': 'localhost',                    # Servidor
-        'PORT': '3306',                         # Puerto por defecto de MySQL
+        'NAME': os.environ.get('DB_NAME', 'american_carpas_db'),
+        'USER': os.environ.get('DB_USER', 'root'),
+        'PASSWORD': os.environ.get('DB_PASSWORD', '@PGym2025'),
+        'HOST': os.environ.get('DB_HOST', 'localhost'),
+        'PORT': os.environ.get('DB_PORT', '3306'),
         'OPTIONS': {
             'charset': 'utf8mb4',
             'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
@@ -135,6 +137,9 @@ STATICFILES_DIRS = [
 # Directorio donde se recopilarán todos los archivos estáticos en producción
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
+# Configuración de WhiteNoise para servir archivos estáticos en producción
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
 
 # =====================================================
 # MEDIA FILES (Uploads de usuarios)
@@ -148,3 +153,26 @@ MEDIA_ROOT = BASE_DIR / 'media'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+# =====================================================
+# CONFIGURACIÓN DE SEGURIDAD PARA PRODUCCIÓN
+# =====================================================
+
+if not DEBUG:
+    # Redirigir HTTP a HTTPS
+    SECURE_SSL_REDIRECT = True
+    
+    # Cookies seguras
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    
+    # Seguridad adicional
+    SECURE_BROWSER_XSS_FILTER = True
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+    X_FRAME_OPTIONS = 'DENY'
+    
+    # HSTS (HTTP Strict Transport Security)
+    SECURE_HSTS_SECONDS = 31536000  # 1 año
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
