@@ -8,7 +8,7 @@ import openpyxl
 from openpyxl.utils import get_column_letter
 from openpyxl.styles import Font, Alignment, PatternFill
 from django.template.loader import get_template
-from xhtml2pdf import pisa
+from weasyprint import HTML
 from django.db.models import Q, Count
 from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse
@@ -286,20 +286,20 @@ def export_trabajadores_excel_custom(request):
 
 def render_to_pdf(template_src, context):
     """
-    Renderiza un template HTML a PDF usando xhtml2pdf (pisa).
+    Renderiza un template HTML a PDF usando WeasyPrint.
     Devuelve bytes del PDF o None si hay error.
     """
-    template = get_template(template_src)
-    html = template.render(context)
-    result = io.BytesIO()
-    pdf = pisa.pisaDocument(
-        io.BytesIO(html.encode("UTF-8")),
-        dest=result,
-        encoding='UTF-8'
-    )
-    if not pdf.err:
-        return result.getvalue()
-    return None
+    try:
+        template = get_template(template_src)
+        html = template.render(context)
+        
+        # Crear PDF con WeasyPrint
+        pdf_file = HTML(string=html).write_pdf()
+        
+        return pdf_file
+    except Exception as e:
+        print(f"Error generando PDF: {e}")
+        return None
 
 
 def export_trabajadores_pdf_custom(request):
