@@ -18,4 +18,4 @@ echo "Verificando migraciones..."
 python manage.py showmigrations
 
 echo "Iniciando servidor Gunicorn..."
-exec gunicorn american_carpas_project.wsgi:application --bind 0.0.0.0:8000 --workers 4 --log-level info
+exec gunicorn american_carpas_project.wsgi:application --bind 0.0.0.0:${PORT:-8000} --workers 4 --log-level info
