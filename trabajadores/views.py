@@ -1,6 +1,6 @@
 # Crear el archivo views.py corregido
 import io
-from django.contrib.auth.decorators import login_required
+#from django.contrib.auth.decorators import login_required
 from datetime import date, timedelta
 from django.http import HttpResponse, JsonResponse
 from django.template.loader import render_to_string
@@ -1065,7 +1065,7 @@ def reporte_trabajadores_sin_documentacion(request):
 # VISTAS PARA GESTIONAR TIPOS DE CURSOS
 # =====================================================
 
-@login_required
+#@login_required
 def tipo_curso_list(request):
     """Listado de tipos de cursos"""
     tipos = TipoCurso.objects.all().order_by('nombre_tipo_curso')
@@ -1077,7 +1077,7 @@ def tipo_curso_list(request):
     return render(request, 'trabajadores/tipo_curso_list.html', context)
 
 
-@login_required
+#@login_required
 def tipo_curso_create(request):
     """Crear nuevo tipo de curso"""
     if request.method == 'POST':
@@ -1095,7 +1095,7 @@ def tipo_curso_create(request):
     })
 
 
-@login_required
+#@login_required
 def tipo_curso_update(request, id_tipo_curso):
     """Editar tipo de curso existente"""
     tipo = get_object_or_404(TipoCurso, id_tipo_curso=id_tipo_curso)
@@ -1116,7 +1116,7 @@ def tipo_curso_update(request, id_tipo_curso):
     })
 
 
-@login_required
+#@login_required
 def tipo_curso_delete(request, id_tipo_curso):
     """Eliminar tipo de curso"""
     tipo = get_object_or_404(TipoCurso, id_tipo_curso=id_tipo_curso)
@@ -1140,7 +1140,7 @@ def tipo_curso_delete(request, id_tipo_curso):
 # VISTAS PARA GESTIONAR TIPOS DE DOTACIÓN
 # =====================================================
 
-@login_required
+#@login_required
 def tipo_dotacion_list(request):
     """Listado de tipos de dotaciones"""
     tipos = TipoDotacion.objects.all().order_by('nombre_tipo_dotacion')
@@ -1152,7 +1152,7 @@ def tipo_dotacion_list(request):
     return render(request, 'trabajadores/tipo_dotacion_list.html', context)
 
 
-@login_required
+#@login_required
 def tipo_dotacion_create(request):
     """Crear nuevo tipo de dotación"""
     if request.method == 'POST':
@@ -1170,7 +1170,7 @@ def tipo_dotacion_create(request):
     })
 
 
-@login_required
+#@login_required
 def tipo_dotacion_update(request, id_tipo_dotacion):
     """Editar tipo de dotación existente"""
     tipo = get_object_or_404(TipoDotacion, id_tipo_dotacion=id_tipo_dotacion)
@@ -1191,7 +1191,7 @@ def tipo_dotacion_update(request, id_tipo_dotacion):
     })
 
 
-@login_required
+#@login_required
 def tipo_dotacion_delete(request, id_tipo_dotacion):
     """Eliminar tipo de dotación"""
     tipo = get_object_or_404(TipoDotacion, id_tipo_dotacion=id_tipo_dotacion)
