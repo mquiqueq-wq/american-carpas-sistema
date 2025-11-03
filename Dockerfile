@@ -33,6 +33,10 @@ RUN pip install --no-cache-dir --upgrade pip && \
 # Copiar el código de la aplicación
 COPY . .
 
+# Copiar script de inicio
+COPY start.sh /start.sh
+RUN chmod +x /start.sh
+
 # Recolectar archivos estáticos
 RUN python manage.py collectstatic --noinput || true
 
@@ -40,5 +44,4 @@ RUN python manage.py collectstatic --noinput || true
 EXPOSE 8000
 
 # Comando para ejecutar la aplicación
-CMD python manage.py migrate --noinput && \
-    gunicorn american_carpas_project.wsgi:application --bind 0.0.0.0:8000 --workers 4
+CMD ["/start.sh"]
