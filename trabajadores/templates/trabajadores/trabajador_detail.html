@@ -628,6 +628,195 @@
                 </div>
             </div>
         </div>
+        <!-- ==========================================
+             SECCIÓN: DOCUMENTOS
+             ========================================== -->
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="headingDocumentos">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" 
+                        data-bs-target="#collapseDocumentos" aria-expanded="false" 
+                        aria-controls="collapseDocumentos">
+                    <i class="bi bi-file-earmark-text me-2"></i> 
+                    <strong>Documentos</strong>
+                    <span class="badge bg-primary ms-2">{{ trabajador.documentos.count }}</span>
+                </button>
+            </h2>
+            <div id="collapseDocumentos" class="accordion-collapse collapse" 
+                 aria-labelledby="headingDocumentos" data-bs-parent="#accordionTrabajador">
+                <div class="accordion-body">
+                    <!-- Botones de acción -->
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="mb-0">
+                            <i class="bi bi-files"></i> Documentos Adjuntos
+                        </h5>
+                        <div>
+                            <a href="{% url 'trabajadores:documento_create' trabajador.id_trabajador %}" 
+                               class="btn btn-sm btn-success me-2">
+                                <i class="bi bi-plus-circle"></i> Agregar Documento
+                            </a>
+                            {% if trabajador.documentos.exists %}
+                            <a href="{% url 'trabajadores:export_documentos_trabajador_zip' trabajador.id_trabajador %}" 
+                               class="btn btn-sm btn-primary">
+                                <i class="bi bi-download"></i> Exportar ZIP
+                            </a>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    {% if trabajador.documentos.exists %}
+                    <!-- Tabla de documentos -->
+                    <div class="table-responsive">
+                        <table class="table table-hover table-sm">
+                            <thead class="table-light">
+                                <tr>
+                                    <th style="width: 40px;"></th>
+                                    <th>Tipo de Documento</th>
+                                    <th>Archivo</th>
+                                    <th>Vigencia</th>
+                                    <th>Estado</th>
+                                    <th class="text-center">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for doc in trabajador.documentos.all %}
+                                <tr>
+                                    <td class="text-center">
+                                        <i class="bi {{ doc.get_icono_tipo }} text-{{ doc.get_color_tipo }} fs-5"></i>
+                                    </td>
+                                    <td>
+                                        <strong>{{ doc.tipo_documento.nombre_tipo_documento }}</strong>
+                                        {% if doc.tipo_documento.es_obligatorio %}
+                                            <span class="badge bg-danger badge-sm">Obligatorio</span>
+                                        {% endif %}
+                                        {% if doc.observaciones %}
+                                            <br><small class="text-muted">{{ doc.observaciones|truncatewords:10 }}</small>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <small>{{ doc.nombre_archivo_original|truncatechars:30 }}</small>
+                                        <br><small class="text-muted">{{ doc.get_tamano_archivo }}</small>
+                                    </td>
+                                    <td>
+                                        {% if doc.tipo_documento.requiere_vigencia %}
+                                            {% if doc.vigencia_desde %}
+                                                <small>Desde: {{ doc.vigencia_desde|date:"d/m/Y" }}</small><br>
+                                            {% endif %}
+                                            {% if doc.vigencia_hasta %}
+                                                <small>Hasta: {{ doc.vigencia_hasta|date:"d/m/Y" }}</small>
+                                            {% endif %}
+                                        {% else %}
+                                            <small class="text-muted">Sin control</small>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if doc.tipo_documento.requiere_vigencia %}
+                                            <span class="badge bg-{{ doc.get_color_vigencia }}">
+                                                {{ doc.get_estado_display_vigencia }}
+                                            </span>
+                                            {% if doc.dias_para_vencer != None %}
+                                                {% if doc.dias_para_vencer >= 0 %}
+                                                    <br><small class="text-muted">{{ doc.dias_para_vencer }} días</small>
+                                                {% else %}
+                                                    <br><small class="text-danger">Vencido</small>
+                                                {% endif %}
+                                            {% endif %}
+                                        {% else %}
+                                            <span class="badge bg-secondary">N/A</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-center">
+                                        <div class="btn-group btn-group-sm">
+                                            <a href="{% url 'trabajadores:documento_download' doc.id_documento %}" 
+                                               class="btn btn-outline-info btn-sm" 
+                                               title="Descargar">
+                                                <i class="bi bi-download"></i>
+                                            </a>
+                                            <a href="{% url 'trabajadores:documento_update' doc.id_documento %}" 
+                                               class="btn btn-outline-primary btn-sm" 
+                                               title="Editar">
+                                                <i class="bi bi-pencil"></i>
+                                            </a>
+                                            <a href="{% url 'trabajadores:documento_delete' doc.id_documento %}" 
+                                               class="btn btn-outline-danger btn-sm" 
+                                               title="Eliminar">
+                                                <i class="bi bi-trash"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Alertas de documentos -->
+                    {% if trabajador.documentos.all %}
+                    <div class="row mt-3">
+                        <!-- Documentos vencidos -->
+                        {% with vencidos=trabajador.documentos.all|filter_vencidos %}
+                        {% if vencidos %}
+                        <div class="col-md-6">
+                            <div class="alert alert-danger">
+                                <h6 class="alert-heading">
+                                    <i class="bi bi-x-circle-fill"></i> Documentos Vencidos ({{ vencidos|length }})
+                                </h6>
+                                <ul class="mb-0 small">
+                                    {% for doc in vencidos %}
+                                    <li>{{ doc.tipo_documento.nombre_tipo_documento }} 
+                                        - Vencido hace {{ doc.dias_para_vencer|abs }} días</li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        </div>
+                        {% endif %}
+                        {% endwith %}
+
+                        <!-- Documentos próximos a vencer -->
+                        {% with proximos=trabajador.documentos.all|filter_proximos_vencer %}
+                        {% if proximos %}
+                        <div class="col-md-6">
+                            <div class="alert alert-warning">
+                                <h6 class="alert-heading">
+                                    <i class="bi bi-exclamation-triangle-fill"></i> Próximos a Vencer ({{ proximos|length }})
+                                </h6>
+                                <ul class="mb-0 small">
+                                    {% for doc in proximos %}
+                                    <li>{{ doc.tipo_documento.nombre_tipo_documento }} 
+                                        - Vence en {{ doc.dias_para_vencer }} días</li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        </div>
+                        {% endif %}
+                        {% endwith %}
+                    </div>
+                    {% endif %}
+
+                    {% else %}
+                    <!-- Sin documentos -->
+                    <div class="alert alert-info text-center">
+                        <i class="bi bi-inbox fs-1"></i>
+                        <h5 class="mt-3">No hay documentos cargados</h5>
+                        <p class="text-muted mb-3">Comienza agregando el primer documento para este trabajador</p>
+                        <a href="{% url 'trabajadores:documento_create' trabajador.id_trabajador %}" 
+                           class="btn btn-success">
+                            <i class="bi bi-plus-circle"></i> Agregar Primer Documento
+                        </a>
+                    </div>
+                    {% endif %}
+
+                    <!-- Información de tipos obligatorios -->
+                    <div class="alert alert-light mt-3">
+                        <h6><i class="bi bi-info-circle"></i> Documentos Obligatorios</h6>
+                        <p class="mb-0 small">
+                            Asegúrate de que este trabajador tenga todos los documentos marcados como obligatorios 
+                            en el sistema. Puedes verificar el listado completo en 
+                            <a href="{% url 'trabajadores:tipo_documento_list' %}">Tipos de Documentos</a>.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
 
     </div>
     <!-- Fin del acordeón principal -->

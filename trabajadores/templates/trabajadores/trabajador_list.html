@@ -2,7 +2,7 @@
 
 <!-- Título de la página -->
 {% block title %}Listado de Trabajadores - American Carpas 1 SAS{% endblock %}
-
+{% csrf_token %}
 {% block content %}
 <!-- Contenedor principal con fondo blanco -->
 <div class="contenedor-principal">
@@ -44,6 +44,9 @@
             </button>
             <button class="btn btn-danger ms-2" onclick="abrirModalExportacion('pdf')">
                 <i class="bi bi-file-earmark-pdf"></i> Seleccionar campos y exportar a PDF
+            </button>
+            <button class="btn btn-info ms-2" onclick="exportarDocumentosZIP()">
+                <i class="bi bi-file-earmark-zip"></i> Exportar Documentos (ZIP)
             </button>
             <p class="text-muted small mt-2 mb-0">Haz clic para elegir qué datos deseas incluir en la exportación</p>
         </div>
@@ -845,6 +848,51 @@ SCRIPTS: Funcionalidad de selección y exportación CON PERSISTENCIA
             cb.checked = false;
         });
     }
+
+    // Función para exportar documentos de trabajadores seleccionados
+    function exportarDocumentosZIP() {
+        if (trabajadoresSeleccionados.length === 0) {
+            alert('Por favor, agrega al menos un trabajador a la lista de exportación.');
+            return;
+        }
+
+        if (confirm(`¿Deseas exportar los documentos de ${trabajadoresSeleccionados.length} trabajador(es)?`)) {
+            // Crear formulario dinámico
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = "{% url 'trabajadores:export_documentos_multiple_zip' %}";
+            
+            // Agregar CSRF token
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+            const csrfInput = document.createElement('input');
+            csrfInput.type = 'hidden';
+            csrfInput.name = 'csrfmiddlewaretoken';
+            csrfInput.value = csrfToken;
+            form.appendChild(csrfInput);
+            
+            // Agregar IDs de trabajadores seleccionados
+            trabajadoresSeleccionados.forEach(t => {
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'trabajador_ids';
+                input.value = t.id;
+                form.appendChild(input);
+            });
+            
+            // Enviar formulario
+            document.body.appendChild(form);
+            form.submit();
+            document.body.removeChild(form);
+            
+            // Limpiar selección después de exportar
+            setTimeout(function() {
+                trabajadoresSeleccionados = [];
+                guardarSeleccionPersistente(trabajadoresSeleccionados);
+                actualizarUISeleccion();
+            }, 1000);
+        }
+    }
+
 
     // Animación del icono de collapse
     const filtrosCollapse = document.getElementById('filtrosCollapse');

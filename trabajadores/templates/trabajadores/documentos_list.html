@@ -1,0 +1,184 @@
+{% extends 'trabajadores/base.html' %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Encabezado -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="titulo-pagina mb-1">
+                <i class="bi bi-files"></i> {{ title }}
+            </h2>
+            <p class="text-muted mb-0">Listado completo de documentos cargados</p>
+        </div>
+        <a href="{% url 'trabajadores:home' %}" class="btn btn-outline-secondary">
+            <i class="bi bi-house"></i> Inicio
+        </a>
+    </div>
+
+    <!-- Filtros -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-light">
+            <h6 class="mb-0"><i class="bi bi-funnel"></i> Filtros de Búsqueda</h6>
+        </div>
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-3">
+                    <label class="form-label small">Tipo de Documento</label>
+                    <select name="tipo" class="form-select">
+                        <option value="">-- Todos los tipos --</option>
+                        {% for tipo in tipos %}
+                            <option value="{{ tipo.id_tipo_documento }}" {% if tipo_seleccionado == tipo.id_tipo_documento|stringformat:"s" %}selected{% endif %}>
+                                {{ tipo.nombre_tipo_documento }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label small">Estado de Vigencia</label>
+                    <select name="estado" class="form-select">
+                        <option value="">-- Todos --</option>
+                        <option value="vigente" {% if estado_seleccionado == 'vigente' %}selected{% endif %}>Vigente</option>
+                        <option value="proximo_vencer" {% if estado_seleccionado == 'proximo_vencer' %}selected{% endif %}>Próximo a vencer</option>
+                        <option value="vencido" {% if estado_seleccionado == 'vencido' %}selected{% endif %}>Vencido</option>
+                        <option value="sin_control" {% if estado_seleccionado == 'sin_control' %}selected{% endif %}>Sin control</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label small">Buscar Trabajador</label>
+                    <input type="text" name="trabajador" class="form-control" 
+                           placeholder="Nombre, apellido o documento..." 
+                           value="{{ trabajador_query }}">
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-search"></i> Buscar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Tabla de documentos -->
+    {% if documentos %}
+    <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">
+                <i class="bi bi-list-ul"></i> Documentos ({{ documentos.paginator.count }})
+            </h5>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Trabajador</th>
+                            <th>Tipo</th>
+                            <th>Archivo</th>
+                            <th class="text-center">Vigencia</th>
+                            <th class="text-center">Fecha Carga</th>
+                            <th class="text-center">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for doc in documentos %}
+                        <tr>
+                            <td>
+                                <a href="{% url 'trabajadores:trabajador_detail' doc.id_trabajador.id_trabajador %}" class="text-decoration-none">
+                                    <strong>{{ doc.id_trabajador.nombres }} {{ doc.id_trabajador.apellidos }}</strong>
+                                </a>
+                                <br><small class="text-muted">{{ doc.id_trabajador.id_trabajador }}</small>
+                            </td>
+                            <td>
+                                <i class="bi {{ doc.tipo_documento.icono_bootstrap|default:'bi-file-earmark' }} text-primary"></i>
+                                {{ doc.tipo_documento.nombre_tipo_documento }}
+                            </td>
+                            <td>
+                                <i class="bi {{ doc.get_icono_tipo }} text-{{ doc.get_color_tipo }}"></i>
+                                {{ doc.nombre_archivo_original|truncatechars:30 }}
+                                <br><small class="text-muted">{{ doc.get_tamano_archivo }}</small>
+                            </td>
+                            <td class="text-center">
+                                {% if doc.tipo_documento.requiere_vigencia %}
+                                    <span class="badge bg-{{ doc.get_color_vigencia }}">
+                                        {{ doc.get_estado_display_vigencia }}
+                                    </span>
+                                    {% if doc.vigencia_hasta %}
+                                        <br><small class="text-muted">{{ doc.vigencia_hasta }}</small>
+                                    {% endif %}
+                                {% else %}
+                                    <span class="badge bg-secondary">Sin control</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-center">
+                                <small>{{ doc.fecha_carga|date:"d/m/Y" }}</small>
+                            </td>
+                            <td class="text-center">
+                                <div class="btn-group btn-group-sm">
+                                    <a href="{% url 'trabajadores:documento_download' doc.id_documento %}" 
+                                       class="btn btn-outline-info" 
+                                       title="Descargar">
+                                        <i class="bi bi-download"></i>
+                                    </a>
+                                    <a href="{% url 'trabajadores:documento_update' doc.id_documento %}" 
+                                       class="btn btn-outline-primary" 
+                                       title="Editar">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    <a href="{% url 'trabajadores:documento_delete' doc.id_documento %}" 
+                                       class="btn btn-outline-danger" 
+                                       title="Eliminar">
+                                        <i class="bi bi-trash"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Paginación -->
+    {% if documentos.has_other_pages %}
+    <nav class="mt-4">
+        <ul class="pagination justify-content-center">
+            {% if documentos.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page=1{% if tipo_seleccionado %}&tipo={{ tipo_seleccionado }}{% endif %}{% if estado_seleccionado %}&estado={{ estado_seleccionado }}{% endif %}{% if trabajador_query %}&trabajador={{ trabajador_query }}{% endif %}">Primera</a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ documentos.previous_page_number }}{% if tipo_seleccionado %}&tipo={{ tipo_seleccionado }}{% endif %}{% if estado_seleccionado %}&estado={{ estado_seleccionado }}{% endif %}{% if trabajador_query %}&trabajador={{ trabajador_query }}{% endif %}">Anterior</a>
+                </li>
+            {% endif %}
+
+            <li class="page-item active">
+                <span class="page-link">
+                    Página {{ documentos.number }} de {{ documentos.paginator.num_pages }}
+                </span>
+            </li>
+
+            {% if documentos.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ documentos.next_page_number }}{% if tipo_seleccionado %}&tipo={{ tipo_seleccionado }}{% endif %}{% if estado_seleccionado %}&estado={{ estado_seleccionado }}{% endif %}{% if trabajador_query %}&trabajador={{ trabajador_query }}{% endif %}">Siguiente</a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ documentos.paginator.num_pages }}{% if tipo_seleccionado %}&tipo={{ tipo_seleccionado }}{% endif %}{% if estado_seleccionado %}&estado={{ estado_seleccionado }}{% endif %}{% if trabajador_query %}&trabajador={{ trabajador_query }}{% endif %}">Última</a>
+                </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+
+    {% else %}
+    <!-- Sin resultados -->
+    <div class="alert alert-warning text-center py-5">
+        <i class="bi bi-inbox fs-1"></i>
+        <h4 class="mt-3">No se encontraron documentos</h4>
+        <p class="text-muted">Intenta ajustar los filtros de búsqueda</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

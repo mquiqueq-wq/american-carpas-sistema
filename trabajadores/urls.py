@@ -30,12 +30,25 @@ urlpatterns = [
     path('catalogos/tipos-dotaciones/<int:id_tipo_dotacion>/editar/', views.tipo_dotacion_update, name='tipo_dotacion_update'),
     path('catalogos/tipos-dotaciones/<int:id_tipo_dotacion>/eliminar/', views.tipo_dotacion_delete, name='tipo_dotacion_delete'),
     
+     # Tipos de Documentos
+    path('catalogos/tipos-documentos/', views.tipo_documento_list, name='tipo_documento_list'),
+    path('catalogos/tipos-documentos/nuevo/', views.tipo_documento_create, name='tipo_documento_create'),
+    path('catalogos/tipos-documentos/<int:id_tipo_documento>/editar/', views.tipo_documento_update, name='tipo_documento_update'),
+    path('catalogos/tipos-documentos/<int:id_tipo_documento>/eliminar/', views.tipo_documento_delete, name='tipo_documento_delete'),
+
     # ====================================
     # DASHBOARDS (ANTES de rutas dinámicas)
     # ====================================
     path('dashboard/', views.dashboard_general, name='dashboard_general'),
     path('dashboard/alertas-cursos/', views.dashboard_alertas_cursos, name='dashboard_alertas_cursos'),
     path('dashboard/alertas-dotaciones/', views.dashboard_alertas_dotaciones, name='dashboard_alertas_dotaciones'),
+
+    # ====================================
+    # LISTADOS Y REPORTES DE DOCUMENTOS
+    # ====================================
+    path('documentos/', views.documentos_list, name='documentos_list'),
+    path('documentos/alertas/', views.documentos_vencidos, name='documentos_vencidos'),
+    path('documentos/faltantes/', views.documentos_faltantes, name='documentos_faltantes'),
     
     # ====================================
     # REPORTES (ANTES de rutas dinámicas)
@@ -47,6 +60,9 @@ urlpatterns = [
     # ====================================
     path('exportar/custom/excel/', views.export_trabajadores_excel_custom, name='export_trabajadores_excel_custom'),
     path('exportar/custom/pdf/', views.export_trabajadores_pdf_custom, name='export_trabajadores_pdf_custom'),
+
+    # Exportación de documentos múltiples
+    path('documentos/exportar/zip/', views.export_documentos_multiple_zip, name='export_documentos_multiple_zip'),
     
     # ====================================
     # URLs con parámetros dinámicos (AL FINAL)
@@ -87,6 +103,15 @@ urlpatterns = [
     path('<str:id_trabajador>/curso/nuevo/', views.curso_create, name='curso_create'),
     path('curso/<int:id_curso>/editar/', views.curso_update, name='curso_update'),
     path('curso/<int:id_curso>/eliminar/', views.curso_delete, name='curso_delete'),
+
+    # ====================================
+    # CRUD: Documentos
+    # ====================================
+    path('<str:id_trabajador>/documento/nuevo/', views.documento_create, name='documento_create'),
+    path('<str:id_trabajador>/documentos/exportar/zip/', views.export_documentos_trabajador_zip, name='export_documentos_trabajador_zip'),
+    path('documento/<int:id_documento>/editar/', views.documento_update, name='documento_update'),
+    path('documento/<int:id_documento>/eliminar/', views.documento_delete, name='documento_delete'),
+    path('documento/<int:id_documento>/descargar/', views.documento_download, name='documento_download'),
 
     # ====================================
     # CRUD: Roles

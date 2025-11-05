@@ -489,3 +489,241 @@ class TrabajadorRol(models.Model):
 
     def __str__(self):
         return f"{self.id_trabajador} - {self.rol_sistema}"
+class TipoDocumento(models.Model):
+    """
+    Catálogo de tipos de documentos que pueden ser adjuntados a los trabajadores.
+    Ejemplos: Fotocopia CC, Certificado Curso, Afiliación EPS, etc.
+    """
+    id_tipo_documento = models.AutoField(primary_key=True)
+    nombre_tipo_documento = models.CharField(
+        max_length=100,
+        verbose_name="Nombre del Tipo de Documento",
+        help_text="Ej: Fotocopia Cédula, Certificado Curso, Afiliación EPS"
+    )
+    descripcion = models.TextField(
+        blank=True,
+        null=True,
+        verbose_name="Descripción",
+        help_text="Descripción detallada del tipo de documento"
+    )
+    es_obligatorio = models.BooleanField(
+        default=False,
+        verbose_name="¿Es obligatorio?",
+        help_text="Indica si este documento es obligatorio para todos los trabajadores"
+    )
+    requiere_vigencia = models.BooleanField(
+        default=False,
+        verbose_name="¿Requiere control de vigencia?",
+        help_text="Indica si el documento tiene fecha de vencimiento"
+    )
+    icono_bootstrap = models.CharField(
+        max_length=50,
+        blank=True,
+        null=True,
+        verbose_name="Icono Bootstrap",
+        help_text="Ej: bi-file-earmark-text, bi-card-checklist"
+    )
+    orden_visualizacion = models.IntegerField(
+        default=0,
+        verbose_name="Orden de visualización",
+        help_text="Orden en que se muestra en el detalle del trabajador (menor = primero)"
+    )
+    activo = models.BooleanField(
+        default=True,
+        verbose_name="Activo",
+        help_text="Si está activo, aparecerá disponible para asignar"
+    )
+    fecha_creacion = models.DateTimeField(auto_now_add=True)
+    fecha_modificacion = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'tipos_documentos'
+        verbose_name = 'Tipo de Documento'
+        verbose_name_plural = 'Tipos de Documentos'
+        ordering = ['orden_visualizacion', 'nombre_tipo_documento']
+
+    def __str__(self):
+        return self.nombre_tipo_documento
+
+    def count_documentos_activos(self):
+        """Retorna la cantidad de documentos activos de este tipo"""
+        return self.documentos_trabajadores.count()
+
+
+class TrabajadorDocumento(models.Model):
+    """
+    Documentos adjuntos a cada trabajador (PDFs, imágenes, etc.)
+    """
+    id_documento = models.AutoField(primary_key=True)
+    id_trabajador = models.ForeignKey(
+        TrabajadorPersonal,
+        on_delete=models.CASCADE,
+        db_column='id_trabajador',
+        related_name='documentos',
+        verbose_name="Trabajador"
+    )
+    tipo_documento = models.ForeignKey(
+        TipoDocumento,
+        on_delete=models.PROTECT,
+        related_name='documentos_trabajadores',
+        verbose_name="Tipo de Documento",
+        help_text="Seleccione el tipo de documento del catálogo"
+    )
+    archivo = models.FileField(
+        upload_to='documentos_trabajadores/%Y/%m/',
+        verbose_name="Archivo",
+        help_text="Archivo PDF, imagen (JPG, PNG) u otro formato"
+    )
+    nombre_archivo_original = models.CharField(
+        max_length=255,
+        blank=True,
+        verbose_name="Nombre del archivo original",
+        help_text="Se guarda automáticamente al subir el archivo"
+    )
+    fecha_carga = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name="Fecha de carga"
+    )
+    vigencia_desde = models.DateField(
+        blank=True,
+        null=True,
+        verbose_name="Vigente desde",
+        help_text="Fecha de inicio de vigencia (opcional)"
+    )
+    vigencia_hasta = models.DateField(
+        blank=True,
+        null=True,
+        verbose_name="Vigente hasta",
+        help_text="Fecha de vencimiento del documento (opcional)"
+    )
+    observaciones = models.TextField(
+        blank=True,
+        null=True,
+        verbose_name="Observaciones",
+        help_text="Notas adicionales sobre el documento"
+    )
+    cargado_por = models.CharField(
+        max_length=100,
+        blank=True,
+        null=True,
+        verbose_name="Cargado por",
+        help_text="Usuario que cargó el documento"
+    )
+
+    class Meta:
+        db_table = 'trabajadores_documentos'
+        verbose_name = 'Documento del Trabajador'
+        verbose_name_plural = 'Documentos de Trabajadores'
+        ordering = ['-fecha_carga']
+
+    def __str__(self):
+        return f"{self.tipo_documento.nombre_tipo_documento} - {self.id_trabajador.nombres} {self.id_trabajador.apellidos}"
+
+    def save(self, *args, **kwargs):
+        # Guardar el nombre original del archivo
+        if self.archivo and not self.nombre_archivo_original:
+            self.nombre_archivo_original = self.archivo.name
+        super().save(*args, **kwargs)
+
+    def get_extension(self):
+        """Retorna la extensión del archivo"""
+        import os
+        if self.archivo:
+            return os.path.splitext(self.archivo.name)[1].lower()
+        return ''
+
+    def es_imagen(self):
+        """Verifica si el archivo es una imagen"""
+        extensiones_imagen = ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp']
+        return self.get_extension() in extensiones_imagen
+
+    def es_pdf(self):
+        """Verifica si el archivo es un PDF"""
+        return self.get_extension() == '.pdf'
+
+    def get_icono_tipo(self):
+        """Retorna el icono de Bootstrap según el tipo de archivo"""
+        ext = self.get_extension()
+        if ext in ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp']:
+            return 'bi-file-earmark-image'
+        elif ext == '.pdf':
+            return 'bi-file-earmark-pdf'
+        elif ext in ['.doc', '.docx']:
+            return 'bi-file-earmark-word'
+        elif ext in ['.xls', '.xlsx']:
+            return 'bi-file-earmark-excel'
+        else:
+            return 'bi-file-earmark'
+
+    def get_color_tipo(self):
+        """Retorna el color Bootstrap según el tipo de archivo"""
+        ext = self.get_extension()
+        if ext in ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp']:
+            return 'primary'
+        elif ext == '.pdf':
+            return 'danger'
+        elif ext in ['.doc', '.docx']:
+            return 'info'
+        elif ext in ['.xls', '.xlsx']:
+            return 'success'
+        else:
+            return 'secondary'
+
+    def esta_vigente(self):
+        """Verifica si el documento está vigente (si tiene control de vigencia)"""
+        if not self.tipo_documento.requiere_vigencia:
+            return None  # No aplica control de vigencia
+        
+        if not self.vigencia_hasta:
+            return None  # No tiene fecha configurada
+        
+        from datetime import date
+        return date.today() <= self.vigencia_hasta
+
+    def dias_para_vencer(self):
+        """Retorna los días restantes para que venza el documento"""
+        if not self.tipo_documento.requiere_vigencia or not self.vigencia_hasta:
+            return None
+        
+        from datetime import date
+        delta = self.vigencia_hasta - date.today()
+        return delta.days
+
+    def get_estado_vigencia(self):
+        """Retorna el estado de vigencia del documento"""
+        if not self.tipo_documento.requiere_vigencia:
+            return 'sin_control'
+        
+        dias = self.dias_para_vencer()
+        if dias is None:
+            return 'sin_configurar'
+        elif dias < 0:
+            return 'vencido'
+        elif dias <= 30:
+            return 'proximo_vencer'
+        else:
+            return 'vigente'
+
+    def get_color_vigencia(self):
+        """Retorna el color Bootstrap según el estado de vigencia"""
+        estado = self.get_estado_vigencia()
+        colores = {
+            'vigente': 'success',
+            'proximo_vencer': 'warning',
+            'vencido': 'danger',
+            'sin_control': 'secondary',
+            'sin_configurar': 'secondary'
+        }
+        return colores.get(estado, 'secondary')
+
+    def get_tamano_archivo(self):
+        """Retorna el tamaño del archivo en formato legible"""
+        if not self.archivo:
+            return "0 B"
+        
+        size = self.archivo.size
+        for unit in ['B', 'KB', 'MB', 'GB']:
+            if size < 1024.0:
+                return f"{size:.1f} {unit}"
+            size /= 1024.0
+        return f"{size:.1f} TB"

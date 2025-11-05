@@ -4,7 +4,7 @@ from datetime import date, timedelta
 
 from .models import (
     TrabajadorPersonal, TrabajadorLaboral, TrabajadorAfiliaciones,
-    TrabajadorDotacion, TrabajadorCurso, TrabajadorRol, TipoCurso, TipoDotacion
+    TrabajadorDotacion, TrabajadorCurso, TrabajadorRol, TipoCurso, TipoDotacion, TipoDocumento, TrabajadorDocumento
 )
 
 # Widgets comunes
@@ -563,3 +563,340 @@ class TrabajadorRolForm(forms.ModelForm):
             'password_hash': 'Hash de contraseña',
             'ultimo_inicio_sesion': 'Último inicio de sesión',
         }
+class TipoDocumentoForm(forms.ModelForm):
+    """
+    Formulario para crear/editar tipos de documentos en el catálogo.
+    Permite configurar si es obligatorio, requiere vigencia, etc.
+    """
+    
+    nombre_tipo_documento = forms.CharField(
+        label='Nombre del Tipo de Documento',
+        max_length=100,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Ej: Fotocopia Cédula, Certificado Curso, Afiliación EPS'
+        }),
+        help_text='Nombre descriptivo del tipo de documento'
+    )
+    
+    descripcion = forms.CharField(
+        label='Descripción',
+        required=False,
+        widget=forms.Textarea(attrs={
+            'class': 'form-control',
+            'rows': 3,
+            'placeholder': 'Descripción detallada del tipo de documento...'
+        }),
+        help_text='Descripción opcional del documento'
+    )
+    
+    icono_bootstrap = forms.CharField(
+        label='Icono Bootstrap',
+        max_length=50,
+        required=False,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'bi-file-earmark-text'
+        }),
+        help_text='Ej: bi-file-earmark-text, bi-card-checklist, bi-hospital'
+    )
+    
+    orden_visualizacion = forms.IntegerField(
+        label='Orden de Visualización',
+        initial=0,
+        widget=forms.NumberInput(attrs={
+            'class': 'form-control',
+            'min': '0'
+        }),
+        help_text='Número de orden (menor = aparece primero)'
+    )
+
+    class Meta:
+        model = TipoDocumento
+        fields = [
+            'nombre_tipo_documento',
+            'descripcion',
+            'es_obligatorio',
+            'requiere_vigencia',
+            'icono_bootstrap',
+            'orden_visualizacion',
+            'activo'
+        ]
+        widgets = {
+            'es_obligatorio': forms.CheckboxInput(attrs={
+                'class': 'form-check-input',
+                'id': 'id_es_obligatorio'
+            }),
+            'requiere_vigencia': forms.CheckboxInput(attrs={
+                'class': 'form-check-input',
+                'id': 'id_requiere_vigencia'
+            }),
+            'activo': forms.CheckboxInput(attrs={
+                'class': 'form-check-input',
+                'id': 'id_activo'
+            }),
+        }
+        labels = {
+            'es_obligatorio': '¿Es obligatorio?',
+            'requiere_vigencia': '¿Requiere control de vigencia?',
+            'activo': 'Activo'
+        }
+        help_texts = {
+            'es_obligatorio': 'Marca si este documento es obligatorio para todos los trabajadores',
+            'requiere_vigencia': 'Marca si el documento tiene fecha de vencimiento',
+            'activo': 'Solo los tipos activos están disponibles para asignar'
+        }
+
+    def clean_nombre_tipo_documento(self):
+        """Validar que no exista otro tipo con el mismo nombre"""
+        nombre = self.cleaned_data.get('nombre_tipo_documento')
+        
+        # Verificar duplicados (excepto la misma instancia en edición)
+        qs = TipoDocumento.objects.filter(nombre_tipo_documento__iexact=nombre)
+        if self.instance and self.instance.pk:
+            qs = qs.exclude(pk=self.instance.pk)
+        
+        if qs.exists():
+            raise ValidationError(
+                'Ya existe un tipo de documento con este nombre. '
+                'Por favor, usa un nombre diferente.'
+            )
+        
+        return nombre
+
+    def clean_orden_visualizacion(self):
+        """Validar que el orden sea un número positivo"""
+        orden = self.cleaned_data.get('orden_visualizacion')
+        if orden is not None and orden < 0:
+            raise ValidationError('El orden debe ser un número positivo o cero.')
+        return orden
+
+
+class TrabajadorDocumentoForm(forms.ModelForm):
+    """
+    Formulario para agregar/editar documentos de un trabajador.
+    Maneja la subida de archivos y control de vigencia opcional.
+    """
+    
+    tipo_documento = forms.ModelChoiceField(
+        queryset=TipoDocumento.objects.filter(activo=True).order_by('orden_visualizacion', 'nombre_tipo_documento'),
+        required=True,
+        label='Tipo de Documento',
+        empty_label='-- Seleccione un tipo de documento --',
+        widget=forms.Select(attrs={
+            'class': 'form-select',
+            'id': 'id_tipo_documento'
+        }),
+        help_text='Seleccione el tipo de documento del catálogo'
+    )
+    
+    archivo = forms.FileField(
+        label='Archivo',
+        required=True,
+        widget=forms.FileInput(attrs={
+            'class': 'form-control',
+            'id': 'id_archivo',
+            'accept': '.pdf,.jpg,.jpeg,.png,.doc,.docx,.xls,.xlsx'
+        }),
+        help_text='Formatos permitidos: PDF, Imágenes (JPG, PNG), Word, Excel. Tamaño máximo: 10 MB'
+    )
+    
+    vigencia_desde = forms.DateField(
+        label='Vigente desde',
+        required=False,
+        widget=forms.DateInput(attrs={
+            'type': 'date',
+            'class': 'form-control',
+            'id': 'id_vigencia_desde'
+        }),
+        help_text='Fecha de inicio de vigencia (opcional)'
+    )
+    
+    vigencia_hasta = forms.DateField(
+        label='Vigente hasta',
+        required=False,
+        widget=forms.DateInput(attrs={
+            'type': 'date',
+            'class': 'form-control',
+            'id': 'id_vigencia_hasta'
+        }),
+        help_text='Fecha de vencimiento del documento (solo si el tipo requiere vigencia)'
+    )
+    
+    observaciones = forms.CharField(
+        label='Observaciones',
+        required=False,
+        widget=forms.Textarea(attrs={
+            'class': 'form-control',
+            'rows': 3,
+            'placeholder': 'Notas adicionales sobre el documento...'
+        }),
+        help_text='Observaciones opcionales sobre el documento'
+    )
+
+    class Meta:
+        model = TrabajadorDocumento
+        fields = [
+            'tipo_documento',
+            'archivo',
+            'vigencia_desde',
+            'vigencia_hasta',
+            'observaciones'
+        ]
+
+    def __init__(self, *args, **kwargs):
+        """
+        Inicializar el formulario.
+        En edición, el archivo no es obligatorio (ya existe uno)
+        """
+        super().__init__(*args, **kwargs)
+        
+        # Si estamos editando, hacer el archivo opcional
+        if self.instance and self.instance.pk:
+            self.fields['archivo'].required = False
+            self.fields['archivo'].help_text = 'Deja vacío para mantener el archivo actual. Sube uno nuevo para reemplazarlo.'
+
+    def clean_archivo(self):
+        """Validar tamaño y tipo de archivo"""
+        archivo = self.cleaned_data.get('archivo')
+        
+        # Si es edición y no se subió archivo nuevo, retornar None
+        if not archivo and self.instance and self.instance.pk:
+            return archivo
+        
+        if archivo:
+            # Validar tamaño (10 MB máximo)
+            max_size = 10 * 1024 * 1024  # 10 MB en bytes
+            if archivo.size > max_size:
+                raise ValidationError(
+                    f'El archivo es demasiado grande ({archivo.size / (1024*1024):.1f} MB). '
+                    f'El tamaño máximo permitido es 10 MB.'
+                )
+            
+            # Validar extensión
+            import os
+            ext = os.path.splitext(archivo.name)[1].lower()
+            extensiones_permitidas = [
+                '.pdf', '.jpg', '.jpeg', '.png', '.gif', 
+                '.doc', '.docx', '.xls', '.xlsx'
+            ]
+            
+            if ext not in extensiones_permitidas:
+                raise ValidationError(
+                    f'Tipo de archivo no permitido ({ext}). '
+                    f'Formatos permitidos: PDF, JPG, PNG, DOC, DOCX, XLS, XLSX.'
+                )
+        
+        return archivo
+
+    def clean(self):
+        """Validaciones adicionales del formulario completo"""
+        cleaned_data = super().clean()
+        tipo_documento = cleaned_data.get('tipo_documento')
+        vigencia_desde = cleaned_data.get('vigencia_desde')
+        vigencia_hasta = cleaned_data.get('vigencia_hasta')
+        
+        # Si el tipo requiere vigencia, validar fechas
+        if tipo_documento and tipo_documento.requiere_vigencia:
+            if not vigencia_hasta:
+                self.add_error(
+                    'vigencia_hasta',
+                    'Este tipo de documento requiere fecha de vencimiento.'
+                )
+        
+        # Validar que fecha_hasta sea posterior a fecha_desde
+        if vigencia_desde and vigencia_hasta:
+            if vigencia_hasta < vigencia_desde:
+                self.add_error(
+                    'vigencia_hasta',
+                    'La fecha de vencimiento debe ser posterior a la fecha de inicio.'
+                )
+            
+            # Advertencia si la vigencia es muy corta (menos de 7 días)
+            delta = vigencia_hasta - vigencia_desde
+            if delta.days < 7:
+                self.add_error(
+                    'vigencia_hasta',
+                    'La vigencia es muy corta (menos de 7 días). Verifica las fechas.'
+                )
+        
+        # Validar que la fecha de vencimiento no esté en el pasado (solo en creación)
+        if not self.instance.pk and vigencia_hasta:
+            if vigencia_hasta < date.today():
+                self.add_error(
+                    'vigencia_hasta',
+                    'La fecha de vencimiento no puede estar en el pasado.'
+                )
+        
+        return cleaned_data
+
+    def save(self, commit=True):
+        """
+        Guardar el documento.
+        Automáticamente guarda el nombre original del archivo y el usuario.
+        """
+        instance = super().save(commit=False)
+        
+        # Si hay un archivo nuevo, guardar su nombre original
+        if self.cleaned_data.get('archivo'):
+            instance.nombre_archivo_original = self.cleaned_data['archivo'].name
+        
+        # Guardar el usuario que cargó el documento (si está disponible en el request)
+        # Esto se puede configurar pasando el request al formulario
+        # if hasattr(self, 'request') and self.request.user.is_authenticated:
+        #     instance.cargado_por = self.request.user.username
+        
+        if commit:
+            instance.save()
+        
+        return instance
+
+
+# ================================================================
+# FORMULARIO DE BÚSQUEDA/FILTRO (OPCIONAL)
+# ================================================================
+
+class DocumentoFilterForm(forms.Form):
+    """
+    Formulario para filtrar documentos en el listado.
+    Útil para búsquedas avanzadas.
+    """
+    
+    tipo_documento = forms.ModelChoiceField(
+        queryset=TipoDocumento.objects.filter(activo=True).order_by('nombre_tipo_documento'),
+        required=False,
+        empty_label='-- Todos los tipos --',
+        widget=forms.Select(attrs={'class': 'form-select'}),
+        label='Tipo de Documento'
+    )
+    
+    estado_vigencia = forms.ChoiceField(
+        choices=[
+            ('', '-- Todos los estados --'),
+            ('vigente', 'Vigente'),
+            ('proximo_vencer', 'Próximo a vencer'),
+            ('vencido', 'Vencido'),
+            ('sin_control', 'Sin control de vigencia')
+        ],
+        required=False,
+        widget=forms.Select(attrs={'class': 'form-select'}),
+        label='Estado de Vigencia'
+    )
+    
+    fecha_desde = forms.DateField(
+        required=False,
+        widget=forms.DateInput(attrs={
+            'type': 'date',
+            'class': 'form-control'
+        }),
+        label='Cargado desde'
+    )
+    
+    fecha_hasta = forms.DateField(
+        required=False,
+        widget=forms.DateInput(attrs={
+            'type': 'date',
+            'class': 'form-control'
+        }),
+        label='Cargado hasta'
+    )

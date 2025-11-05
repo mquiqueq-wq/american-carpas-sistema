@@ -16,13 +16,16 @@ from django.contrib import messages
 from django.core.paginator import Paginator
 from django.shortcuts import render
 from django.db.models import Prefetch
+import os
+import zipfile
+from django.http import FileResponse
 from .models import (
     TrabajadorPersonal, TrabajadorLaboral, TrabajadorAfiliaciones,
-    TrabajadorDotacion, TrabajadorCurso, TrabajadorRol, TipoCurso, TipoDotacion
+    TrabajadorDotacion, TrabajadorCurso, TrabajadorRol, TipoCurso, TipoDotacion, TipoDocumento, TrabajadorDocumento
 )
 from .forms import (
     TrabajadorPersonalForm, TrabajadorLaboralForm, TrabajadorAfiliacionesForm,
-    TrabajadorDotacionForm, TrabajadorCursoForm, TrabajadorRolForm, TipoCursoForm, TipoDotacionForm
+    TrabajadorDotacionForm, TrabajadorCursoForm, TrabajadorRolForm, TipoCursoForm, TipoDotacionForm, TipoDocumentoForm, TrabajadorDocumentoForm
 )
 
 def home(request):
@@ -290,15 +293,28 @@ def render_to_pdf(template_src, context):
     Devuelve bytes del PDF o None si hay error.
     """
     try:
+        from django.template.loader import get_template
+        from weasyprint import HTML
+        import io
+        
+        # Renderizar template
         template = get_template(template_src)
-        html = template.render(context)
+        html_string = template.render(context)
         
-        # Crear PDF con WeasyPrint
-        pdf_file = HTML(string=html).write_pdf()
+        # Crear PDF con buffer
+        pdf_buffer = io.BytesIO()
+        HTML(string=html_string).write_pdf(target=pdf_buffer)
         
-        return pdf_file
+        # Obtener bytes y cerrar buffer
+        pdf_bytes = pdf_buffer.getvalue()
+        pdf_buffer.close()
+        
+        return pdf_bytes
+        
     except Exception as e:
         print(f"Error generando PDF: {e}")
+        import traceback
+        traceback.print_exc()
         return None
 
 
@@ -1212,3 +1228,474 @@ def tipo_dotacion_delete(request, id_tipo_dotacion):
 def home(request):
     """Página de inicio con menú de módulos"""
     return render(request, 'trabajadores/home.html')
+
+def tipo_documento_list(request):
+    """
+    Listado de tipos de documentos del catálogo.
+    Muestra todos los tipos ordenados por orden_visualizacion.
+    """
+    tipos = TipoDocumento.objects.all().order_by('orden_visualizacion', 'nombre_tipo_documento')
+    
+    # Contar documentos por tipo
+    for tipo in tipos:
+        tipo.total_documentos = tipo.documentos_trabajadores.count()
+    
+    context = {
+        'tipos': tipos,
+        'title': 'Tipos de Documentos'
+    }
+    return render(request, 'trabajadores/tipo_documento_list.html', context)
+
+
+def tipo_documento_create(request):
+    """
+    Crear un nuevo tipo de documento en el catálogo.
+    """
+    if request.method == 'POST':
+        form = TipoDocumentoForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Tipo de documento creado exitosamente.')
+            return redirect('trabajadores:tipo_documento_list')
+    else:
+        form = TipoDocumentoForm()
+    
+    context = {
+        'form': form,
+        'title': 'Nuevo Tipo de Documento'
+    }
+    return render(request, 'trabajadores/tipo_documento_form.html', context)
+
+
+def tipo_documento_update(request, id_tipo_documento):
+    """
+    Editar un tipo de documento existente.
+    """
+    tipo = get_object_or_404(TipoDocumento, pk=id_tipo_documento)
+    
+    if request.method == 'POST':
+        form = TipoDocumentoForm(request.POST, instance=tipo)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Tipo de documento actualizado exitosamente.')
+            return redirect('trabajadores:tipo_documento_list')
+    else:
+        form = TipoDocumentoForm(instance=tipo)
+    
+    context = {
+        'form': form,
+        'title': 'Editar Tipo de Documento',
+        'tipo': tipo
+    }
+    return render(request, 'trabajadores/tipo_documento_form.html', context)
+
+
+def tipo_documento_delete(request, id_tipo_documento):
+    """
+    Eliminar un tipo de documento del catálogo.
+    Solo permite eliminar si no tiene documentos asociados.
+    """
+    tipo = get_object_or_404(TipoDocumento, pk=id_tipo_documento)
+    
+    # Verificar si tiene documentos asociados
+    documentos_count = tipo.documentos_trabajadores.count()
+    
+    if request.method == 'POST':
+        if documentos_count > 0:
+            messages.error(
+                request, 
+                f'No se puede eliminar este tipo porque tiene {documentos_count} documento(s) asociado(s). '
+                'Primero elimina o reasigna esos documentos.'
+            )
+            return redirect('trabajadores:tipo_documento_list')
+        
+        tipo.delete()
+        messages.success(request, 'Tipo de documento eliminado exitosamente.')
+        return redirect('trabajadores:tipo_documento_list')
+    
+    context = {
+        'obj': tipo,
+        'cancel_url': reverse('trabajadores:tipo_documento_list'),
+        'documentos_count': documentos_count,
+        'obj_type': 'tipo de documento'
+    }
+    return render(request, 'trabajadores/confirm_delete.html', context)
+
+
+# ====================================================================
+# VISTAS CRUD - DOCUMENTOS DE TRABAJADORES
+# ====================================================================
+
+def documento_create(request, id_trabajador):
+    """
+    Agregar un nuevo documento a un trabajador.
+    Maneja la subida de archivos.
+    """
+    trabajador = get_object_or_404(TrabajadorPersonal, pk=id_trabajador)
+    
+    if request.method == 'POST':
+        form = TrabajadorDocumentoForm(request.POST, request.FILES)
+        if form.is_valid():
+            documento = form.save(commit=False)
+            documento.id_trabajador = trabajador
+            
+            # Guardar el usuario que cargó el documento (si hay autenticación)
+            if request.user.is_authenticated:
+                documento.cargado_por = request.user.username
+            
+            documento.save()
+            messages.success(request, f'Documento "{documento.tipo_documento.nombre_tipo_documento}" cargado exitosamente.')
+            return redirect('trabajadores:trabajador_detail', id_trabajador=id_trabajador)
+    else:
+        form = TrabajadorDocumentoForm()
+    
+    context = {
+        'form': form,
+        'trabajador': trabajador,
+        'title': 'Agregar Documento'
+    }
+    return render(request, 'trabajadores/documento_form.html', context)
+
+
+def documento_update(request, id_documento):
+    """
+    Editar un documento existente.
+    Permite cambiar tipo, fechas de vigencia y archivo.
+    """
+    documento = get_object_or_404(TrabajadorDocumento, pk=id_documento)
+    trabajador = documento.id_trabajador
+    
+    if request.method == 'POST':
+        form = TrabajadorDocumentoForm(request.POST, request.FILES, instance=documento)
+        if form.is_valid():
+            # Si hay archivo nuevo, el método save del form ya lo maneja
+            form.save()
+            messages.success(request, 'Documento actualizado exitosamente.')
+            return redirect('trabajadores:trabajador_detail', id_trabajador=trabajador.id_trabajador)
+    else:
+        form = TrabajadorDocumentoForm(instance=documento)
+    
+    context = {
+        'form': form,
+        'trabajador': trabajador,
+        'documento': documento,
+        'title': 'Editar Documento'
+    }
+    return render(request, 'trabajadores/documento_form.html', context)
+
+
+def documento_delete(request, id_documento):
+    """
+    Eliminar un documento de un trabajador.
+    También elimina el archivo físico del servidor.
+    """
+    documento = get_object_or_404(TrabajadorDocumento, pk=id_documento)
+    trabajador_id = documento.id_trabajador.id_trabajador
+    
+    if request.method == 'POST':
+        # Guardar la ruta del archivo antes de eliminar
+        archivo_path = documento.archivo.path if documento.archivo else None
+        
+        # Eliminar el registro de la base de datos
+        documento.delete()
+        
+        # Eliminar el archivo físico si existe
+        if archivo_path and os.path.exists(archivo_path):
+            try:
+                os.remove(archivo_path)
+            except Exception as e:
+                # Log del error pero no detener el flujo
+                print(f"Error al eliminar archivo físico: {e}")
+        
+        messages.success(request, 'Documento eliminado exitosamente.')
+        return redirect('trabajadores:trabajador_detail', id_trabajador=trabajador_id)
+    
+    context = {
+        'obj': documento,
+        'cancel_url': reverse('trabajadores:trabajador_detail', kwargs={'id_trabajador': trabajador_id}),
+        'obj_type': 'documento'
+    }
+    return render(request, 'trabajadores/confirm_delete.html', context)
+
+
+def documento_download(request, id_documento):
+    """
+    Descargar un documento específico.
+    Retorna el archivo para descarga con su nombre original.
+    """
+    documento = get_object_or_404(TrabajadorDocumento, pk=id_documento)
+    
+    if not documento.archivo:
+        messages.error(request, 'El documento no tiene un archivo asociado.')
+        return redirect('trabajadores:trabajador_detail', id_trabajador=documento.id_trabajador.id_trabajador)
+    
+    try:
+        # Abrir el archivo
+        archivo = open(documento.archivo.path, 'rb')
+        
+        # Determinar el content type
+        content_type = 'application/octet-stream'
+        if documento.es_pdf():
+            content_type = 'application/pdf'
+        elif documento.es_imagen():
+            ext = documento.get_extension()
+            if ext == '.jpg' or ext == '.jpeg':
+                content_type = 'image/jpeg'
+            elif ext == '.png':
+                content_type = 'image/png'
+            elif ext == '.gif':
+                content_type = 'image/gif'
+        
+        # Crear respuesta con el archivo
+        response = FileResponse(archivo, content_type=content_type)
+        response['Content-Disposition'] = f'attachment; filename="{documento.nombre_archivo_original}"'
+        
+        return response
+        
+    except Exception as e:
+        messages.error(request, f'Error al descargar el archivo: {str(e)}')
+        return redirect('trabajadores:trabajador_detail', id_trabajador=documento.id_trabajador.id_trabajador)
+
+
+# ====================================================================
+# VISTAS DE LISTADO Y REPORTES DE DOCUMENTOS
+# ====================================================================
+
+def documentos_list(request):
+    """
+    Listado general de todos los documentos con filtros.
+    Útil para administración y búsqueda.
+    """
+    documentos = TrabajadorDocumento.objects.select_related(
+        'id_trabajador', 
+        'tipo_documento'
+    ).order_by('-fecha_carga')
+    
+    # Aplicar filtros si existen
+    tipo_id = request.GET.get('tipo')
+    if tipo_id:
+        documentos = documentos.filter(tipo_documento_id=tipo_id)
+    
+    estado = request.GET.get('estado')
+    if estado:
+        # Filtrar por estado de vigencia (esto requiere iterar)
+        documentos_filtrados = []
+        for doc in documentos:
+            if doc.get_estado_vigencia() == estado:
+                documentos_filtrados.append(doc.id_documento)
+        documentos = documentos.filter(id_documento__in=documentos_filtrados)
+    
+    trabajador_query = request.GET.get('trabajador')
+    if trabajador_query:
+        documentos = documentos.filter(
+            Q(id_trabajador__nombres__icontains=trabajador_query) |
+            Q(id_trabajador__apellidos__icontains=trabajador_query) |
+            Q(id_trabajador__id_trabajador__icontains=trabajador_query)
+        )
+    
+    # Paginación
+    paginator = Paginator(documentos, 20)
+    page = request.GET.get('page', 1)
+    documentos_page = paginator.get_page(page)
+    
+    # Tipos para el filtro
+    tipos = TipoDocumento.objects.filter(activo=True).order_by('nombre_tipo_documento')
+    
+    context = {
+        'documentos': documentos_page,
+        'tipos': tipos,
+        'tipo_seleccionado': tipo_id,
+        'estado_seleccionado': estado,
+        'trabajador_query': trabajador_query,
+        'title': 'Todos los Documentos'
+    }
+    return render(request, 'trabajadores/documentos_list.html', context)
+
+
+def documentos_vencidos(request):
+    """
+    Reporte de documentos vencidos o próximos a vencer.
+    Muestra alertas de documentación no vigente.
+    """
+    # Documentos que requieren vigencia
+    documentos_con_vigencia = TrabajadorDocumento.objects.filter(
+        tipo_documento__requiere_vigencia=True,
+        vigencia_hasta__isnull=False
+    ).select_related('id_trabajador', 'tipo_documento').order_by('vigencia_hasta')
+    
+    # Clasificar documentos
+    hoy = date.today()
+    fecha_alerta = hoy + timedelta(days=30)
+    
+    vencidos = []
+    proximos_vencer = []
+    vigentes = []
+    
+    for doc in documentos_con_vigencia:
+        dias = doc.dias_para_vencer()
+        if dias is not None:
+            if dias < 0:
+                vencidos.append(doc)
+            elif dias <= 30:
+                proximos_vencer.append(doc)
+            else:
+                vigentes.append(doc)
+    
+    context = {
+        'vencidos': vencidos,
+        'proximos_vencer': proximos_vencer,
+        'vigentes': vigentes,
+        'total_vencidos': len(vencidos),
+        'total_proximos': len(proximos_vencer),
+        'total_vigentes': len(vigentes),
+        'title': 'Alertas de Documentación'
+    }
+    return render(request, 'trabajadores/documentos_vencidos.html', context)
+
+
+def documentos_faltantes(request):
+    """
+    Reporte de trabajadores con documentación obligatoria faltante.
+    Muestra qué documentos obligatorios faltan por trabajador.
+    """
+    # Obtener tipos obligatorios
+    tipos_obligatorios = TipoDocumento.objects.filter(
+        es_obligatorio=True,
+        activo=True
+    ).order_by('orden_visualizacion')
+    
+    # Obtener todos los trabajadores
+    trabajadores = TrabajadorPersonal.objects.prefetch_related(
+        'documentos', 
+        'documentos__tipo_documento'
+    ).all()
+    
+    trabajadores_incompletos = []
+    
+    for trabajador in trabajadores:
+        faltantes = []
+        vencidos = []
+        
+        for tipo in tipos_obligatorios:
+            # Verificar si tiene documento de este tipo
+            docs = trabajador.documentos.filter(tipo_documento=tipo)
+            
+            if not docs.exists():
+                faltantes.append(tipo.nombre_tipo_documento)
+            elif tipo.requiere_vigencia:
+                # Verificar si alguno está vigente
+                tiene_vigente = False
+                for doc in docs:
+                    if doc.esta_vigente() == True:
+                        tiene_vigente = True
+                        break
+                
+                if not tiene_vigente:
+                    vencidos.append(tipo.nombre_tipo_documento)
+        
+        if faltantes or vencidos:
+            trabajadores_incompletos.append({
+                'trabajador': trabajador,
+                'faltantes': faltantes,
+                'vencidos': vencidos
+            })
+    
+    context = {
+        'trabajadores_incompletos': trabajadores_incompletos,
+        'tipos_obligatorios': tipos_obligatorios,
+        'total_incompletos': len(trabajadores_incompletos),
+        'title': 'Documentación Obligatoria Faltante'
+    }
+    return render(request, 'trabajadores/documentos_faltantes.html', context)
+
+
+# ====================================================================
+# EXPORTACIÓN DE DOCUMENTOS
+# ====================================================================
+
+def export_documentos_trabajador_zip(request, id_trabajador):
+    """
+    Exportar todos los documentos de un trabajador en un archivo ZIP.
+    """
+    trabajador = get_object_or_404(TrabajadorPersonal, pk=id_trabajador)
+    documentos = trabajador.documentos.all()
+    
+    if not documentos.exists():
+        messages.warning(request, 'Este trabajador no tiene documentos cargados.')
+        return redirect('trabajadores:trabajador_detail', id_trabajador=id_trabajador)
+    
+    # Crear archivo ZIP en memoria
+    zip_buffer = io.BytesIO()
+    
+    with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
+        for doc in documentos:
+            if doc.archivo:
+                try:
+                    # Leer el archivo
+                    with open(doc.archivo.path, 'rb') as f:
+                        archivo_data = f.read()
+                    
+                    # Crear nombre organizado para el ZIP
+                    nombre_en_zip = f"{doc.tipo_documento.nombre_tipo_documento}/{doc.nombre_archivo_original}"
+                    
+                    # Agregar al ZIP
+                    zip_file.writestr(nombre_en_zip, archivo_data)
+                except Exception as e:
+                    print(f"Error al agregar {doc.nombre_archivo_original}: {e}")
+    
+    # Preparar respuesta
+    zip_buffer.seek(0)
+    response = HttpResponse(zip_buffer.read(), content_type='application/zip')
+    nombre_zip = f"Documentos_{trabajador.nombres}_{trabajador.apellidos}_{trabajador.id_trabajador}.zip"
+    response['Content-Disposition'] = f'attachment; filename="{nombre_zip}"'
+    
+    return response
+
+
+def export_documentos_multiple_zip(request):
+    """
+    Exportar documentos de múltiples trabajadores seleccionados.
+    Recibe los IDs vía POST.
+    """
+    if request.method != 'POST':
+        messages.error(request, 'Método no permitido.')
+        return redirect('trabajadores:trabajador_list')
+    
+    # Obtener IDs seleccionados
+    trabajador_ids = request.POST.getlist('trabajador_ids')
+    
+    if not trabajador_ids:
+        messages.warning(request, 'No se seleccionaron trabajadores.')
+        return redirect('trabajadores:trabajador_list')
+    
+    trabajadores = TrabajadorPersonal.objects.filter(id_trabajador__in=trabajador_ids)
+    
+    # Crear archivo ZIP en memoria
+    zip_buffer = io.BytesIO()
+    
+    with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
+        for trabajador in trabajadores:
+            documentos = trabajador.documentos.all()
+            
+            for doc in documentos:
+                if doc.archivo:
+                    try:
+                        # Leer el archivo
+                        with open(doc.archivo.path, 'rb') as f:
+                            archivo_data = f.read()
+                        
+                        # Crear estructura de carpetas: Trabajador/TipoDoc/archivo
+                        carpeta_trabajador = f"{trabajador.nombres}_{trabajador.apellidos}_{trabajador.id_trabajador}"
+                        nombre_en_zip = f"{carpeta_trabajador}/{doc.tipo_documento.nombre_tipo_documento}/{doc.nombre_archivo_original}"
+                        
+                        # Agregar al ZIP
+                        zip_file.writestr(nombre_en_zip, archivo_data)
+                    except Exception as e:
+                        print(f"Error al agregar {doc.nombre_archivo_original}: {e}")
+    
+    # Preparar respuesta
+    zip_buffer.seek(0)
+    response = HttpResponse(zip_buffer.read(), content_type='application/zip')
+    response['Content-Disposition'] = 'attachment; filename="Documentos_Trabajadores.zip"'
+    
+    return response

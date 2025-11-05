@@ -1,0 +1,156 @@
+{% extends 'trabajadores/base.html' %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Encabezado -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="titulo-pagina mb-1">
+                <i class="bi bi-file-earmark-x-fill text-danger"></i> {{ title }}
+            </h2>
+            <p class="text-muted mb-0">Trabajadores sin documentación obligatoria completa</p>
+        </div>
+        <a href="{% url 'trabajadores:home' %}" class="btn btn-outline-secondary">
+            <i class="bi bi-house"></i> Inicio
+        </a>
+    </div>
+
+    <!-- Estadísticas -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card border-danger">
+                <div class="card-body text-center">
+                    <i class="bi bi-people fs-1 text-danger"></i>
+                    <h2 class="text-danger">{{ total_incompletos }}</h2>
+                    <p class="text-muted mb-0">Trabajadores con Documentación Incompleta</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card border-info">
+                <div class="card-body text-center">
+                    <i class="bi bi-file-earmark-check fs-1 text-info"></i>
+                    <h2 class="text-info">{{ tipos_obligatorios|length }}</h2>
+                    <p class="text-muted mb-0">Tipos de Documentos Obligatorios</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lista de tipos obligatorios -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-info text-white">
+            <h6 class="mb-0">
+                <i class="bi bi-info-circle"></i> Documentos Obligatorios Configurados
+            </h6>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                {% for tipo in tipos_obligatorios %}
+                <div class="col-md-4 mb-2">
+                    <i class="bi {{ tipo.icono_bootstrap|default:'bi-file-earmark' }} text-primary"></i>
+                    {{ tipo.nombre_tipo_documento }}
+                    {% if tipo.requiere_vigencia %}
+                        <span class="badge bg-warning text-dark">Con vigencia</span>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Trabajadores con documentación incompleta -->
+    {% if trabajadores_incompletos %}
+    <div class="card shadow-sm">
+        <div class="card-header bg-danger text-white">
+            <h5 class="mb-0">
+                <i class="bi bi-exclamation-triangle-fill"></i> Trabajadores con Documentación Pendiente ({{ total_incompletos }})
+            </h5>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th style="width: 30%;">Trabajador</th>
+                            <th>Documentos Faltantes</th>
+                            <th>Documentos Vencidos</th>
+                            <th class="text-center" style="width: 150px;">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in trabajadores_incompletos %}
+                        <tr>
+                            <td>
+                                <a href="{% url 'trabajadores:trabajador_detail' item.trabajador.id_trabajador %}" class="text-decoration-none">
+                                    <strong>{{ item.trabajador.nombres }} {{ item.trabajador.apellidos }}</strong>
+                                </a>
+                                <br><small class="text-muted">{{ item.trabajador.id_trabajador }}</small>
+                            </td>
+                            <td>
+                                {% if item.faltantes %}
+                                    {% for faltante in item.faltantes %}
+                                        <span class="badge bg-danger mb-1">
+                                            <i class="bi bi-x-circle"></i> {{ faltante }}
+                                        </span>
+                                        {% if not forloop.last %}<br>{% endif %}
+                                    {% endfor %}
+                                {% else %}
+                                    <span class="text-muted">-</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if item.vencidos %}
+                                    {% for vencido in item.vencidos %}
+                                        <span class="badge bg-warning text-dark mb-1">
+                                            <i class="bi bi-clock-history"></i> {{ vencido }}
+                                        </span>
+                                        {% if not forloop.last %}<br>{% endif %}
+                                    {% endfor %}
+                                {% else %}
+                                    <span class="text-muted">-</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-center">
+                                <div class="btn-group-vertical btn-group-sm">
+                                    <a href="{% url 'trabajadores:trabajador_detail' item.trabajador.id_trabajador %}" 
+                                       class="btn btn-outline-primary" 
+                                       title="Ver detalle">
+                                        <i class="bi bi-eye"></i> Ver Detalle
+                                    </a>
+                                    <a href="{% url 'trabajadores:documento_create' item.trabajador.id_trabajador %}" 
+                                       class="btn btn-outline-success" 
+                                       title="Agregar documento">
+                                        <i class="bi bi-plus-circle"></i> Agregar Doc
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recomendación -->
+    <div class="alert alert-warning mt-4">
+        <h6><i class="bi bi-lightbulb-fill"></i> Recomendación</h6>
+        <p class="mb-0">
+            Es importante mantener la documentación obligatoria completa y vigente para todos los trabajadores.
+            Programa recordatorios periódicos para renovar documentos próximos a vencer.
+        </p>
+    </div>
+
+    {% else %}
+    <!-- Sin trabajadores incompletos -->
+    <div class="alert alert-success text-center py-5">
+        <i class="bi bi-check-circle fs-1"></i>
+        <h4 class="mt-3">¡Excelente! Documentación Completa</h4>
+        <p class="text-muted">Todos los trabajadores tienen su documentación obligatoria al día</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -90,19 +90,6 @@
             </a>
         </div>
 
-        <!-- Documentación Incompleta -->
-        <div class="col-6 col-md-4 col-lg-3">
-            <a href="{% url 'trabajadores:reporte_documentacion_incompleta' %}" class="text-decoration-none">
-                <div class="card menu-card border-danger">
-                    <div class="card-body">
-                        <i class="bi bi-file-earmark-x-fill menu-icon-large text-danger"></i>
-                        <h6 class="fw-bold">Incompletos</h6>
-                        <small class="text-muted">Reporte</small>
-                    </div>
-                </div>
-            </a>
-        </div>
-
         <!-- Tipos de Cursos -->
         <div class="col-6 col-md-4 col-lg-3">
             <a href="{% url 'trabajadores:tipo_curso_list' %}" class="text-decoration-none">
@@ -128,8 +115,60 @@
                 </div>
             </a>
         </div>
-    </div>
+    
 
+        <!-- Tipos de Documentos -->
+        <div class="col-6 col-md-4 col-lg-3">
+            <a href="{% url 'trabajadores:tipo_documento_list' %}" class="text-decoration-none">
+                <div class="card menu-card card-azul">
+                    <div class="card-body">
+                        <i class="bi bi-file-earmark-text menu-icon-large"></i>
+                        <h6 class="fw-bold">Tipos Docs</h6>
+                        <small class="text-muted">Catálogo</small>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <!-- Listado de Documentos -->
+        <div class="col-6 col-md-4 col-lg-3">
+            <a href="{% url 'trabajadores:documentos_list' %}" class="text-decoration-none">
+                <div class="card menu-card card-verde">
+                    <div class="card-body">
+                        <i class="bi bi-files menu-icon-large"></i>
+                        <h6 class="fw-bold">Documentos</h6>
+                        <small class="text-muted">Ver todos</small>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <!-- Alertas Documentos -->
+        <div class="col-6 col-md-4 col-lg-3">
+            <a href="{% url 'trabajadores:documentos_vencidos' %}" class="text-decoration-none">
+                <div class="card menu-card border-warning">
+                    <div class="card-body">
+                        <i class="bi bi-exclamation-triangle-fill menu-icon-large text-warning"></i>
+                        <h6 class="fw-bold">Alertas Docs</h6>
+                        <small class="text-muted">Vencimientos</small>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <!-- Documentación Faltante -->
+        <div class="col-6 col-md-4 col-lg-3">
+            <a href="{% url 'trabajadores:documentos_faltantes' %}" class="text-decoration-none">
+                <div class="card menu-card border-danger">
+                    <div class="card-body">
+                        <i class="bi bi-file-earmark-x-fill menu-icon-large text-danger"></i>
+                        <h6 class="fw-bold">Docs Faltantes</h6>
+                        <small class="text-muted">Obligatorios</small>
+                    </div>
+                </div>
+            </a>
+        </div>
+     </div>   
     <!-- Separador -->
     <div class="separador-custom"></div>
 

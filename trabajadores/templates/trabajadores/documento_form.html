@@ -1,0 +1,233 @@
+{% extends 'trabajadores/base.html' %}
+{% load static %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>
+            <i class="bi bi-cloud-upload"></i>
+            {{ title }}
+        </h2>
+        <a href="{% url 'trabajadores:trabajador_detail' trabajador.id_trabajador %}" class="btn btn-secondary">
+            <i class="bi bi-arrow-left"></i> Volver
+        </a>
+    </div>
+
+    <!-- Info del trabajador -->
+    <div class="alert alert-info">
+        <i class="bi bi-person-badge"></i>
+        <strong>Trabajador:</strong> {{ trabajador.nombres }} {{ trabajador.apellidos }} ({{ trabajador.id_trabajador }})
+    </div>
+
+    <!-- Errores del formulario -->
+    {% if form.errors %}
+        <div class="alert alert-danger alert-dismissible fade show">
+            <i class="bi bi-exclamation-triangle-fill"></i>
+            <strong>Error al guardar el documento. Verifique los datos:</strong>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            <ul class="mb-0 mt-2">
+                {% for field, errors in form.errors.items %}
+                    {% for error in errors %}
+                        <li>{{ field }}: {{ error }}</li>
+                    {% endfor %}
+                {% endfor %}
+            </ul>
+        </div>
+    {% endif %}
+
+    <!-- Formulario -->
+    <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">
+                <i class="bi bi-file-earmark-arrow-up"></i> Información del Documento
+            </h5>
+        </div>
+        <div class="card-body">
+            <form method="post" enctype="multipart/form-data" id="formDocumento">
+                {% csrf_token %}
+                
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label for="{{ form.tipo_documento.id_for_label }}" class="form-label fw-bold">
+                            {{ form.tipo_documento.label }} <span class="text-danger">*</span>
+                        </label>
+                        {{ form.tipo_documento }}
+                        {% if form.tipo_documento.help_text %}
+                            <small class="form-text text-muted">{{ form.tipo_documento.help_text }}</small>
+                        {% endif %}
+                        {% if form.tipo_documento.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.tipo_documento.errors }}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="col-md-6">
+                        <div id="infoTipo" class="alert alert-light border d-none">
+                            <h6 class="mb-2"><i class="bi bi-info-circle"></i> Información del Tipo</h6>
+                            <p class="mb-1"><strong>Obligatorio:</strong> <span id="tipoObligatorio">-</span></p>
+                            <p class="mb-0"><strong>Requiere vigencia:</strong> <span id="tipoVigencia">-</span></p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Archivo -->
+                <div class="mb-3">
+                    <label for="{{ form.archivo.id_for_label }}" class="form-label fw-bold">
+                        {{ form.archivo.label }} 
+                        {% if not documento %}<span class="text-danger">*</span>{% endif %}
+                    </label>
+                    
+                    {% if documento and documento.archivo %}
+                        <div class="alert alert-warning mb-2">
+                            <i class="bi bi-file-earmark-check"></i>
+                            <strong>Archivo actual:</strong> {{ documento.nombre_archivo_original }}
+                            <br><small>Sube un nuevo archivo solo si deseas reemplazarlo</small>
+                        </div>
+                    {% endif %}
+                    
+                    {{ form.archivo }}
+                    {% if form.archivo.help_text %}
+                        <small class="form-text text-muted d-block mt-1">
+                            <i class="bi bi-info-circle"></i> {{ form.archivo.help_text }}
+                        </small>
+                    {% endif %}
+                    {% if form.archivo.errors %}
+                        <div class="invalid-feedback d-block">
+                            {{ form.archivo.errors }}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Fechas de vigencia -->
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label for="{{ form.vigencia_desde.id_for_label }}" class="form-label fw-bold">
+                            {{ form.vigencia_desde.label }}
+                        </label>
+                        {{ form.vigencia_desde }}
+                        {% if form.vigencia_desde.help_text %}
+                            <small class="form-text text-muted">{{ form.vigencia_desde.help_text }}</small>
+                        {% endif %}
+                        {% if form.vigencia_desde.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.vigencia_desde.errors }}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="col-md-6">
+                        <label for="{{ form.vigencia_hasta.id_for_label }}" class="form-label fw-bold">
+                            {{ form.vigencia_hasta.label }}
+                            <span id="vigenciaRequerida" class="text-danger d-none">*</span>
+                        </label>
+                        {{ form.vigencia_hasta }}
+                        {% if form.vigencia_hasta.help_text %}
+                            <small class="form-text text-muted">{{ form.vigencia_hasta.help_text }}</small>
+                        {% endif %}
+                        {% if form.vigencia_hasta.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.vigencia_hasta.errors }}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Observaciones -->
+                <div class="mb-3">
+                    <label for="{{ form.observaciones.id_for_label }}" class="form-label fw-bold">
+                        {{ form.observaciones.label }}
+                    </label>
+                    {{ form.observaciones }}
+                    {% if form.observaciones.help_text %}
+                        <small class="form-text text-muted">{{ form.observaciones.help_text }}</small>
+                    {% endif %}
+                    {% if form.observaciones.errors %}
+                        <div class="invalid-feedback d-block">
+                            {{ form.observaciones.errors }}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Botones -->
+                <div class="d-flex justify-content-end gap-2 mt-4">
+                    <a href="{% url 'trabajadores:trabajador_detail' trabajador.id_trabajador %}" class="btn btn-secondary">
+                        <i class="bi bi-x-circle"></i> Cancelar
+                    </a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-check-circle"></i> Guardar Documento
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Ayuda -->
+    <div class="alert alert-warning mt-4">
+        <h6><i class="bi bi-lightbulb"></i> Ayuda</h6>
+        <ul class="mb-0">
+            <li>Selecciona el tipo de documento del catálogo</li>
+            <li>Sube el archivo (máximo 10 MB)</li>
+            <li>Si el tipo requiere vigencia, ingresa las fechas correspondientes</li>
+            <li>Formatos permitidos: PDF, JPG, PNG, DOC, DOCX, XLS, XLSX</li>
+        </ul>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Datos de tipos de documentos
+const tiposDocumento = {
+  {% for tipo in form.fields.tipo_documento.queryset %}
+  "{{ tipo.id_tipo_documento }}": {
+    nombre: "{{ tipo.nombre_tipo_documento|escapejs }}",
+    esObligatorio: {{ tipo.es_obligatorio|yesno:"true,false" }},
+    requiereVigencia: {{ tipo.requiere_vigencia|yesno:"true,false" }}
+  }{% if not forloop.last %},{% endif %}
+  {% endfor %}
+};
+
+function actualizarInfoTipo() {
+  const tipoSelect = document.getElementById('id_tipo_documento');
+  const tipoId = tipoSelect.value;
+  const infoContainer = document.getElementById('infoTipo');
+  const vigenciaRequerida = document.getElementById('vigenciaRequerida');
+  const vigenciaHastaInput = document.getElementById('id_vigencia_hasta');
+
+  if (tipoId && tiposDocumento[tipoId]) {
+    const tipo = tiposDocumento[tipoId];
+    infoContainer.classList.remove('d-none');
+    
+    document.getElementById('tipoObligatorio').textContent = tipo.esObligatorio ? 'Sí' : 'No';
+    document.getElementById('tipoVigencia').textContent = tipo.requiereVigencia ? 'Sí' : 'No';
+
+    // Mostrar/ocultar asterisco de vigencia requerida
+    if (tipo.requiereVigencia) {
+      vigenciaRequerida.classList.remove('d-none');
+      vigenciaHastaInput.required = true;
+    } else {
+      vigenciaRequerida.classList.add('d-none');
+      vigenciaHastaInput.required = false;
+    }
+  } else {
+    infoContainer.classList.add('d-none');
+    vigenciaRequerida.classList.add('d-none');
+    vigenciaHastaInput.required = false;
+  }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  const tipoSelect = document.getElementById('id_tipo_documento');
+  if (tipoSelect) {
+    tipoSelect.addEventListener('change', actualizarInfoTipo);
+    // Inicializar si ya hay un tipo seleccionado
+    if (tipoSelect.value) {
+      actualizarInfoTipo();
+    }
+  }
+});
+</script>
+{% endblock %}
