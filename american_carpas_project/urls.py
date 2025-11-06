@@ -16,6 +16,9 @@ urlpatterns = [
     
     # App trabajadores
     path('trabajadores/', include('trabajadores.urls')),
+
+    # App proveedores
+    path('proveedores/', include('proveedores.urls')),
 ]
 
 # Servir archivos estáticos y media en desarrollo
