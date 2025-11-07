@@ -67,23 +67,48 @@
     <!-- Separador -->
     <div class="separador-custom"></div>
 
+    <!-- PROVEEDORES - ACTIVADO EN FASE 2 -->
+    <h2 class="mb-4">
+        <i class="bi bi-truck text-success"></i> Proveedores
+    </h2>
+    
+    <div class="row g-4 mb-5">
+        <!-- Listado -->
+        <div class="col-6 col-md-4 col-lg-3">
+            <a href="{% url 'proveedores:proveedor_list' %}" class="text-decoration-none">
+                <div class="card menu-card card-verde">
+                    <div class="card-body">
+                        <i class="bi bi-list-ul menu-icon-large"></i>
+                        <h6 class="fw-bold">Listado</h6>
+                        <small class="text-muted">Ver todos</small>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <!-- Registrar -->
+        <div class="col-6 col-md-4 col-lg-3">
+            <a href="{% url 'proveedores:proveedor_create' %}" class="text-decoration-none">
+                <div class="card menu-card card-azul">
+                    <div class="card-body">
+                        <i class="bi bi-plus-circle-fill menu-icon-large"></i>
+                        <h6 class="fw-bold">Registrar</h6>
+                        <small class="text-muted">Nuevo proveedor</small>
+                    </div>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    <!-- Separador -->
+    <div class="separador-custom"></div>
+
     <!-- PRÓXIMAMENTE -->
     <h2 class="mb-4 text-muted">
         <i class="bi bi-clock-history"></i> Próximamente
     </h2>
     
     <div class="row g-4">
-        <!-- Proveedores -->
-        <div class="col-6 col-md-4 col-lg-3">
-            <div class="card menu-card" style="opacity: 0.5; cursor: not-allowed;">
-                <div class="card-body">
-                    <i class="bi bi-people-fill menu-icon-large text-secondary"></i>
-                    <h6 class="fw-bold">Proveedores</h6>
-                    <small class="text-muted">Fase 2</small>
-                </div>
-            </div>
-        </div>
-
         <!-- Contactos -->
         <div class="col-6 col-md-4 col-lg-3">
             <div class="card menu-card" style="opacity: 0.5; cursor: not-allowed;">
@@ -123,11 +148,11 @@
         <div class="row align-items-center">
             <div class="col-md-8">
                 <h5 class="alert-heading">
-                    <i class="bi bi-info-circle-fill"></i> Módulo en desarrollo
+                    <i class="bi bi-info-circle-fill"></i> Módulo en desarrollo - FASE 2
                 </h5>
                 <p class="mb-0">
-                    <strong>Fase 1:</strong> Configuración de catálogos base completada. 
-                    Configure primero los tipos, categorías y tipos de documentos antes de registrar proveedores.
+                    <strong>Completado:</strong> Catálogos base + Modelo Proveedor + CRUD completo.
+                    Configure los catálogos y registre sus proveedores.
                 </p>
             </div>
             <div class="col-md-4 text-md-end mt-3 mt-md-0">

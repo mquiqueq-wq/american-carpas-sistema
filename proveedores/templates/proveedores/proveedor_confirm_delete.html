@@ -1,0 +1,51 @@
+{% extends 'proveedores/base.html' %}
+
+{% block title %}Eliminar Proveedor{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+            <div class="card border-danger">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-exclamation-triangle-fill"></i> Confirmar Eliminación
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <p>¿Está seguro que desea eliminar este proveedor?</p>
+                    
+                    <div class="alert alert-warning">
+                        <h6><strong>Razón Social:</strong> {{ proveedor.razon_social }}</h6>
+                        {% if proveedor.nombre_comercial %}
+                            <p><strong>Nombre Comercial:</strong> {{ proveedor.nombre_comercial }}</p>
+                        {% endif %}
+                        <p><strong>Documento:</strong> {{ proveedor.get_documento_completo }}</p>
+                        <p><strong>Tipo:</strong> {{ proveedor.tipo_proveedor.nombre_tipo }}</p>
+                        <p class="mb-0"><strong>Categoría:</strong> {{ proveedor.categoria_principal.nombre_categoria }}</p>
+                    </div>
+
+                    <div class="alert alert-danger">
+                        <i class="bi bi-exclamation-circle"></i> 
+                        <strong>¡Atención!</strong> Esta acción no se puede deshacer.
+                        Se eliminarán todos los registros relacionados (contactos, documentos, etc.)
+                    </div>
+
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'proveedores:proveedor_detail' proveedor.id_proveedor %}" 
+                               class="btn btn-secondary">
+                                <i class="bi bi-arrow-left"></i> Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-danger">
+                                <i class="bi bi-trash"></i> Sí, Eliminar Proveedor
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,141 @@
+{% extends 'proveedores/base.html' %}
+
+{% block title %}{{ titulo }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Encabezado -->
+            <div class="mb-4">
+                <h2><i class="bi bi-person-plus text-success"></i> {{ titulo }}</h2>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="{% url 'proveedores:home' %}">Proveedores</a></li>
+                        <li class="breadcrumb-item"><a href="{% url 'proveedores:proveedor_list' %}">Listado</a></li>
+                        <li class="breadcrumb-item"><a href="{% url 'proveedores:proveedor_detail' proveedor.id_proveedor %}">{{ proveedor.razon_social }}</a></li>
+                        <li class="breadcrumb-item active">{{ action }} Contacto</li>
+                    </ol>
+                </nav>
+            </div>
+
+            <!-- Info del Proveedor -->
+            <div class="alert alert-info mb-4">
+                <strong><i class="bi bi-building"></i> Proveedor:</strong> {{ proveedor.razon_social }}
+            </div>
+
+            <!-- Formulario -->
+            <div class="card">
+                <div class="card-body">
+                    <form method="post" novalidate>
+                        {% csrf_token %}
+                        
+                        <!-- Información del Contacto -->
+                        <div class="section-header mb-3">
+                            <h5 class="border-bottom pb-2"><i class="bi bi-person"></i> Información del Contacto</h5>
+                        </div>
+                        <div class="row mb-4">
+                            <div class="col-md-12 mb-3">
+                                {{ form.nombre_completo.label_tag }}
+                                {{ form.nombre_completo }}
+                                {% if form.nombre_completo.errors %}
+                                    <div class="text-danger small">{{ form.nombre_completo.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                {{ form.cargo.label_tag }}
+                                {{ form.cargo }}
+                                {% if form.cargo.errors %}
+                                    <div class="text-danger small">{{ form.cargo.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                {{ form.departamento.label_tag }}
+                                {{ form.departamento }}
+                                {% if form.departamento.errors %}
+                                    <div class="text-danger small">{{ form.departamento.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-12 mb-3">
+                                {{ form.area_responsabilidad.label_tag }}
+                                {{ form.area_responsabilidad }}
+                                {% if form.area_responsabilidad.errors %}
+                                    <div class="text-danger small">{{ form.area_responsabilidad.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Datos de Contacto -->
+                        <div class="section-header mb-3">
+                            <h5 class="border-bottom pb-2"><i class="bi bi-telephone"></i> Datos de Contacto</h5>
+                        </div>
+                        <div class="row mb-4">
+                            <div class="col-md-6 mb-3">
+                                {{ form.telefono_celular.label_tag }}
+                                {{ form.telefono_celular }}
+                                {% if form.telefono_celular.errors %}
+                                    <div class="text-danger small">{{ form.telefono_celular.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                {{ form.telefono_directo.label_tag }}
+                                {{ form.telefono_directo }}
+                                {% if form.telefono_directo.errors %}
+                                    <div class="text-danger small">{{ form.telefono_directo.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-12 mb-3">
+                                {{ form.email.label_tag }}
+                                {{ form.email }}
+                                {% if form.email.errors %}
+                                    <div class="text-danger small">{{ form.email.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Configuración -->
+                        <div class="section-header mb-3">
+                            <h5 class="border-bottom pb-2"><i class="bi bi-gear"></i> Configuración</h5>
+                        </div>
+                        <div class="mb-4">
+                            <div class="form-check mb-3">
+                                {{ form.es_contacto_principal }}
+                                {{ form.es_contacto_principal.label_tag }}
+                                <small class="text-muted d-block">{{ form.es_contacto_principal.help_text }}</small>
+                                {% if form.es_contacto_principal.errors %}
+                                    <div class="text-danger small">{{ form.es_contacto_principal.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="form-check mb-3">
+                                {{ form.activo }}
+                                {{ form.activo.label_tag }}
+                                {% if form.activo.errors %}
+                                    <div class="text-danger small">{{ form.activo.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="mb-3">
+                                {{ form.observaciones.label_tag }}
+                                {{ form.observaciones }}
+                                {% if form.observaciones.errors %}
+                                    <div class="text-danger small">{{ form.observaciones.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Botones -->
+                        <div class="d-flex justify-content-between mt-4">
+                            <a href="{% url 'proveedores:proveedor_detail' proveedor.id_proveedor %}" 
+                               class="btn btn-secondary">
+                                <i class="bi bi-arrow-left"></i> Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-success-custom">
+                                <i class="bi bi-save"></i> {{ action }} Contacto
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

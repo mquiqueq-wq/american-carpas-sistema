@@ -1,6 +1,7 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib import messages
 from django.core.paginator import Paginator
+from django.db import models  # Para usar Q
 from .models import TipoProveedor, CategoriaProveedor, TipoDocumentoProveedor
 from .forms import TipoProveedorForm, CategoriaProveedorForm, TipoDocumentoProveedorForm
 
@@ -266,3 +267,218 @@ def tipo_documento_delete(request, id_tipo_documento):
         'tipo': tipo,
     }
     return render(request, 'proveedores/catalogos/tipo_documento_confirm_delete.html', context)
+
+
+# =====================================================
+# CRUD PROVEEDORES - FASE 2
+# =====================================================
+
+from .models import Proveedor
+from .forms import ProveedorForm
+
+
+def proveedor_list(request):
+    """Listado de proveedores con búsqueda y filtros"""
+    query = request.GET.get('q', '')
+    estado_filtro = request.GET.get('estado', '')
+    tipo_filtro = request.GET.get('tipo', '')
+    
+    proveedores = Proveedor.objects.select_related(
+        'tipo_proveedor', 'categoria_principal'
+    ).all()
+    
+    # Filtros
+    if query:
+        proveedores = proveedores.filter(
+            models.Q(razon_social__icontains=query) |
+            models.Q(nombre_comercial__icontains=query) |
+            models.Q(numero_documento__icontains=query)
+        )
+    
+    if estado_filtro:
+        proveedores = proveedores.filter(estado=estado_filtro)
+    
+    if tipo_filtro:
+        proveedores = proveedores.filter(tipo_proveedor__id_tipo_proveedor=tipo_filtro)
+    
+    proveedores = proveedores.order_by('razon_social')
+    
+    # Paginación
+    paginator = Paginator(proveedores, 12)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    # Para los filtros
+    from .models import TipoProveedor, ESTADO_PROVEEDOR_CHOICES
+    tipos_proveedor = TipoProveedor.objects.filter(activo=True)
+    
+    context = {
+        'page_obj': page_obj,
+        'query': query,
+        'estado_filtro': estado_filtro,
+        'tipo_filtro': tipo_filtro,
+        'tipos_proveedor': tipos_proveedor,
+        'estados': ESTADO_PROVEEDOR_CHOICES,
+    }
+    return render(request, 'proveedores/proveedor_list.html', context)
+
+
+def proveedor_detail(request, id_proveedor):
+    """Detalle completo del proveedor"""
+    proveedor = get_object_or_404(
+        Proveedor.objects.select_related(
+            'tipo_proveedor', 'categoria_principal'
+        ).prefetch_related('contactos'),
+        id_proveedor=id_proveedor
+    )
+    
+    context = {
+        'proveedor': proveedor,
+    }
+    return render(request, 'proveedores/proveedor_detail.html', context)
+
+
+def proveedor_create(request):
+    """Crear nuevo proveedor"""
+    if request.method == 'POST':
+        form = ProveedorForm(request.POST)
+        if form.is_valid():
+            proveedor = form.save(commit=False)
+            # Registrar quién creó el proveedor (puedes usar request.user si tienes auth)
+            proveedor.registrado_por = 'Admin'  # O request.user.username
+            proveedor.save()
+            messages.success(
+                request, 
+                f'✅ Proveedor "{proveedor.razon_social}" creado exitosamente.'
+            )
+            return redirect('proveedores:proveedor_detail', id_proveedor=proveedor.id_proveedor)
+    else:
+        form = ProveedorForm()
+    
+    context = {
+        'form': form,
+        'titulo': 'Registrar Nuevo Proveedor',
+        'action': 'Crear'
+    }
+    return render(request, 'proveedores/proveedor_form.html', context)
+
+
+def proveedor_update(request, id_proveedor):
+    """Editar proveedor existente"""
+    proveedor = get_object_or_404(Proveedor, id_proveedor=id_proveedor)
+    
+    if request.method == 'POST':
+        form = ProveedorForm(request.POST, instance=proveedor)
+        if form.is_valid():
+            proveedor = form.save()
+            messages.success(
+                request, 
+                f'✅ Proveedor "{proveedor.razon_social}" actualizado exitosamente.'
+            )
+            return redirect('proveedores:proveedor_detail', id_proveedor=proveedor.id_proveedor)
+    else:
+        form = ProveedorForm(instance=proveedor)
+    
+    context = {
+        'form': form,
+        'proveedor': proveedor,
+        'titulo': 'Editar Proveedor',
+        'action': 'Actualizar'
+    }
+    return render(request, 'proveedores/proveedor_form.html', context)
+
+
+def proveedor_delete(request, id_proveedor):
+    """Eliminar proveedor"""
+    proveedor = get_object_or_404(Proveedor, id_proveedor=id_proveedor)
+    
+    if request.method == 'POST':
+        razon_social = proveedor.razon_social
+        proveedor.delete()
+        messages.success(request, f'🗑️ Proveedor "{razon_social}" eliminado exitosamente.')
+        return redirect('proveedores:proveedor_list')
+    
+    context = {
+        'proveedor': proveedor,
+    }
+    return render(request, 'proveedores/proveedor_confirm_delete.html', context)
+
+
+# =====================================================
+# GESTIÓN DE CONTACTOS - FASE 3
+# =====================================================
+
+from .models import ContactoProveedor
+from .forms import ContactoProveedorForm
+
+
+def contacto_create(request, id_proveedor):
+    """Crear nuevo contacto para un proveedor"""
+    proveedor = get_object_or_404(Proveedor, id_proveedor=id_proveedor)
+    
+    if request.method == 'POST':
+        form = ContactoProveedorForm(request.POST, proveedor=proveedor)
+        if form.is_valid():
+            contacto = form.save(commit=False)
+            contacto.id_proveedor = proveedor
+            contacto.save()
+            messages.success(
+                request,
+                f'✅ Contacto "{contacto.nombre_completo}" agregado exitosamente.'
+            )
+            return redirect('proveedores:proveedor_detail', id_proveedor=proveedor.id_proveedor)
+    else:
+        form = ContactoProveedorForm(proveedor=proveedor)
+    
+    context = {
+        'form': form,
+        'proveedor': proveedor,
+        'titulo': 'Agregar Contacto',
+        'action': 'Guardar'
+    }
+    return render(request, 'proveedores/contacto_form.html', context)
+
+
+def contacto_update(request, id_contacto):
+    """Editar contacto existente"""
+    contacto = get_object_or_404(ContactoProveedor, id_contacto=id_contacto)
+    proveedor = contacto.id_proveedor
+    
+    if request.method == 'POST':
+        form = ContactoProveedorForm(request.POST, instance=contacto, proveedor=proveedor)
+        if form.is_valid():
+            contacto = form.save()
+            messages.success(
+                request,
+                f'✅ Contacto "{contacto.nombre_completo}" actualizado exitosamente.'
+            )
+            return redirect('proveedores:proveedor_detail', id_proveedor=proveedor.id_proveedor)
+    else:
+        form = ContactoProveedorForm(instance=contacto, proveedor=proveedor)
+    
+    context = {
+        'form': form,
+        'contacto': contacto,
+        'proveedor': proveedor,
+        'titulo': 'Editar Contacto',
+        'action': 'Actualizar'
+    }
+    return render(request, 'proveedores/contacto_form.html', context)
+
+
+def contacto_delete(request, id_contacto):
+    """Eliminar contacto"""
+    contacto = get_object_or_404(ContactoProveedor, id_contacto=id_contacto)
+    proveedor = contacto.id_proveedor
+    
+    if request.method == 'POST':
+        nombre = contacto.nombre_completo
+        contacto.delete()
+        messages.success(request, f'🗑️ Contacto "{nombre}" eliminado exitosamente.')
+        return redirect('proveedores:proveedor_detail', id_proveedor=proveedor.id_proveedor)
+    
+    context = {
+        'contacto': contacto,
+        'proveedor': proveedor,
+    }
+    return render(request, 'proveedores/contacto_confirm_delete.html', context)

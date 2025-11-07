@@ -1,0 +1,48 @@
+{% extends 'proveedores/base.html' %}
+
+{% block title %}Eliminar Contacto{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+            <div class="card border-danger">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-exclamation-triangle-fill"></i> Confirmar Eliminación
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <p>¿Está seguro que desea eliminar este contacto?</p>
+                    
+                    <div class="alert alert-warning">
+                        <h6><strong>Contacto:</strong> {{ contacto.nombre_completo }}</h6>
+                        <p><strong>Cargo:</strong> {{ contacto.cargo }}</p>
+                        <p><strong>Email:</strong> {{ contacto.email }}</p>
+                        <p><strong>Teléfono:</strong> {{ contacto.telefono_celular }}</p>
+                        <p class="mb-0"><strong>Proveedor:</strong> {{ proveedor.razon_social }}</p>
+                    </div>
+
+                    <div class="alert alert-danger">
+                        <i class="bi bi-exclamation-circle"></i> 
+                        <strong>¡Atención!</strong> Esta acción no se puede deshacer.
+                    </div>
+
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'proveedores:proveedor_detail' proveedor.id_proveedor %}" 
+                               class="btn btn-secondary">
+                                <i class="bi bi-arrow-left"></i> Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-danger">
+                                <i class="bi bi-trash"></i> Sí, Eliminar Contacto
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

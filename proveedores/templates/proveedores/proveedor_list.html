@@ -1,0 +1,168 @@
+{% extends 'proveedores/base.html' %}
+
+{% block title %}Listado de Proveedores{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Encabezado -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2><i class="bi bi-truck text-success"></i> Listado de Proveedores</h2>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'proveedores:home' %}">Proveedores</a></li>
+                    <li class="breadcrumb-item active">Listado</li>
+                </ol>
+            </nav>
+        </div>
+        <a href="{% url 'proveedores:proveedor_create' %}" class="btn btn-success-custom">
+            <i class="bi bi-plus-circle"></i> Nuevo Proveedor
+        </a>
+    </div>
+
+    <!-- Filtros y Búsqueda -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-5">
+                    <input type="text" name="q" class="form-control" 
+                           placeholder="Buscar por razón social, nombre o documento..." 
+                           value="{{ query }}">
+                </div>
+                <div class="col-md-3">
+                    <select name="estado" class="form-select">
+                        <option value="">Todos los estados</option>
+                        {% for valor, nombre in estados %}
+                            <option value="{{ valor }}" {% if estado_filtro == valor %}selected{% endif %}>
+                                {{ nombre }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <select name="tipo" class="form-select">
+                        <option value="">Todos los tipos</option>
+                        {% for tipo in tipos_proveedor %}
+                            <option value="{{ tipo.id_tipo_proveedor }}" {% if tipo_filtro == tipo.id_tipo_proveedor|stringformat:"s" %}selected{% endif %}>
+                                {{ tipo.nombre_tipo }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-1">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-search"></i>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Grid de Tarjetas -->
+    {% if page_obj %}
+        <div class="row g-4 mb-4">
+            {% for proveedor in page_obj %}
+            <div class="col-md-6 col-lg-4 col-xl-3">
+                <div class="card h-100 shadow-sm hover-card">
+                    <div class="card-body">
+                        <!-- Encabezado -->
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <div class="flex-grow-1">
+                                <h6 class="card-title mb-1 fw-bold text-truncate" title="{{ proveedor.razon_social }}">
+                                    {{ proveedor.razon_social }}
+                                </h6>
+                                {% if proveedor.nombre_comercial %}
+                                    <small class="text-muted">{{ proveedor.nombre_comercial }}</small>
+                                {% endif %}
+                            </div>
+                            <span class="badge {{ proveedor.get_estado_badge_class }}">
+                                {{ proveedor.get_estado_display }}
+                            </span>
+                        </div>
+
+                        <!-- Información -->
+                        <div class="mb-3">
+                            <div class="small mb-1">
+                                <i class="bi bi-file-text text-primary"></i>
+                                <strong>Doc:</strong> {{ proveedor.get_documento_completo }}
+                            </div>
+                            <div class="small mb-1">
+                                <i class="bi bi-tag text-success"></i>
+                                <strong>Tipo:</strong> {{ proveedor.tipo_proveedor.nombre_tipo }}
+                            </div>
+                            <div class="small mb-1">
+                                <i class="bi bi-folder text-warning"></i>
+                                <strong>Cat:</strong> {{ proveedor.categoria_principal.nombre_categoria }}
+                            </div>
+                            <div class="small mb-1">
+                                <i class="bi bi-geo-alt text-danger"></i>
+                                <strong>Ubi:</strong> {{ proveedor.ciudad }}
+                            </div>
+                            <div class="small">
+                                <i class="bi bi-telephone text-info"></i>
+                                <strong>Tel:</strong> {{ proveedor.telefono_principal }}
+                            </div>
+                        </div>
+
+                        <!-- Acciones -->
+                        <div class="d-grid gap-2">
+                            <a href="{% url 'proveedores:proveedor_detail' proveedor.id_proveedor %}" 
+                               class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-eye"></i> Ver Detalle
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Paginación -->
+        {% if page_obj.has_other_pages %}
+        <nav aria-label="Page navigation">
+            <ul class="pagination justify-content-center">
+                {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page=1{% if query %}&q={{ query }}{% endif %}{% if estado_filtro %}&estado={{ estado_filtro }}{% endif %}{% if tipo_filtro %}&tipo={{ tipo_filtro }}{% endif %}">Primera</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if query %}&q={{ query }}{% endif %}{% if estado_filtro %}&estado={{ estado_filtro }}{% endif %}{% if tipo_filtro %}&tipo={{ tipo_filtro }}{% endif %}">Anterior</a>
+                    </li>
+                {% endif %}
+
+                <li class="page-item active">
+                    <span class="page-link">Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+                </li>
+
+                {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if query %}&q={{ query }}{% endif %}{% if estado_filtro %}&estado={{ estado_filtro }}{% endif %}{% if tipo_filtro %}&tipo={{ tipo_filtro }}{% endif %}">Siguiente</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if query %}&q={{ query }}{% endif %}{% if estado_filtro %}&estado={{ estado_filtro }}{% endif %}{% if tipo_filtro %}&tipo={{ tipo_filtro }}{% endif %}">Última</a>
+                    </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+    {% else %}
+        <div class="text-center text-muted py-5">
+            <i class="bi bi-inbox" style="font-size: 3rem;"></i>
+            <p class="mt-3">No hay proveedores registrados</p>
+            <a href="{% url 'proveedores:proveedor_create' %}" class="btn btn-success-custom">
+                <i class="bi bi-plus-circle"></i> Registrar el primero
+            </a>
+        </div>
+    {% endif %}
+</div>
+
+<style>
+.hover-card {
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+.hover-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.15) !important;
+}
+</style>
+{% endblock %}

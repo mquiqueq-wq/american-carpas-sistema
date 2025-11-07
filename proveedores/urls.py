@@ -30,4 +30,20 @@ urlpatterns = [
     path('catalogos/tipos-documentos/nuevo/', views.tipo_documento_create, name='tipo_documento_create'),
     path('catalogos/tipos-documentos/<int:id_tipo_documento>/editar/', views.tipo_documento_update, name='tipo_documento_update'),
     path('catalogos/tipos-documentos/<int:id_tipo_documento>/eliminar/', views.tipo_documento_delete, name='tipo_documento_delete'),
+    
+    # ====================================
+    # CRUD PROVEEDORES - FASE 2
+    # ====================================
+    path('listado/', views.proveedor_list, name='proveedor_list'),
+    path('nuevo/', views.proveedor_create, name='proveedor_create'),
+    path('<int:id_proveedor>/', views.proveedor_detail, name='proveedor_detail'),
+    path('<int:id_proveedor>/editar/', views.proveedor_update, name='proveedor_update'),
+    path('<int:id_proveedor>/eliminar/', views.proveedor_delete, name='proveedor_delete'),
+    
+    # ====================================
+    # GESTIÓN DE CONTACTOS - FASE 3
+    # ====================================
+    path('<int:id_proveedor>/contacto/nuevo/', views.contacto_create, name='contacto_create'),
+    path('contacto/<int:id_contacto>/editar/', views.contacto_update, name='contacto_update'),
+    path('contacto/<int:id_contacto>/eliminar/', views.contacto_delete, name='contacto_delete'),
 ]

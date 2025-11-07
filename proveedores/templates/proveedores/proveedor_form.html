@@ -1,0 +1,112 @@
+{% extends 'proveedores/base.html' %}
+{% block title %}{{ titulo }}{% endblock %}
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="mb-4">
+                <h2><i class="bi bi-building text-success"></i> {{ titulo }}</h2>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="{% url 'proveedores:home' %}">Proveedores</a></li>
+                        <li class="breadcrumb-item"><a href="{% url 'proveedores:proveedor_list' %}">Listado</a></li>
+                        <li class="breadcrumb-item active">{{ action }}</li>
+                    </ol>
+                </nav>
+            </div>
+
+            <div class="card">
+                <div class="card-body">
+                    <form method="post" novalidate>
+                        {% csrf_token %}
+                        
+                        <!-- IDENTIFICACIÓN -->
+                        <div class="section-header mb-3">
+                            <h5 class="border-bottom pb-2"><i class="bi bi-card-text"></i> Identificación Básica</h5>
+                        </div>
+                        <div class="row mb-4">
+                            <div class="col-md-6 mb-3">{{ form.razon_social.label_tag }}{{ form.razon_social }}{% if form.razon_social.errors %}<div class="text-danger small">{{ form.razon_social.errors }}</div>{% endif %}</div>
+                            <div class="col-md-6 mb-3">{{ form.nombre_comercial.label_tag }}{{ form.nombre_comercial }}{% if form.nombre_comercial.errors %}<div class="text-danger small">{{ form.nombre_comercial.errors }}</div>{% endif %}</div>
+                            <div class="col-md-4 mb-3">{{ form.tipo_documento.label_tag }}{{ form.tipo_documento }}{% if form.tipo_documento.errors %}<div class="text-danger small">{{ form.tipo_documento.errors }}</div>{% endif %}</div>
+                            <div class="col-md-4 mb-3">{{ form.numero_documento.label_tag }}{{ form.numero_documento }}{% if form.numero_documento.errors %}<div class="text-danger small">{{ form.numero_documento.errors }}</div>{% endif %}</div>
+                            <div class="col-md-4 mb-3">{{ form.digito_verificacion.label_tag }}{{ form.digito_verificacion }}{% if form.digito_verificacion.errors %}<div class="text-danger small">{{ form.digito_verificacion.errors }}</div>{% endif %}</div>
+                            <div class="col-md-4 mb-3">{{ form.tipo_proveedor.label_tag }}{{ form.tipo_proveedor }}{% if form.tipo_proveedor.errors %}<div class="text-danger small">{{ form.tipo_proveedor.errors }}</div>{% endif %}</div>
+                            <div class="col-md-4 mb-3">{{ form.categoria_principal.label_tag }}{{ form.categoria_principal }}{% if form.categoria_principal.errors %}<div class="text-danger small">{{ form.categoria_principal.errors }}</div>{% endif %}</div>
+                            <div class="col-md-4 mb-3">{{ form.estado.label_tag }}{{ form.estado }}{% if form.estado.errors %}<div class="text-danger small">{{ form.estado.errors }}</div>{% endif %}</div>
+                        </div>
+
+                        <!-- LEGAL Y TRIBUTARIA -->
+                        <div class="section-header mb-3">
+                            <h5 class="border-bottom pb-2"><i class="bi bi-file-earmark-ruled"></i> Información Legal y Tributaria</h5>
+                        </div>
+                        <div class="row mb-4">
+                            <div class="col-md-4 mb-3">{{ form.regimen_tributario.label_tag }}{{ form.regimen_tributario }}</div>
+                            <div class="col-md-4 mb-3">{{ form.responsabilidad_fiscal.label_tag }}{{ form.responsabilidad_fiscal }}</div>
+                            <div class="col-md-4 mb-3">{{ form.pais_origen.label_tag }}{{ form.pais_origen }}</div>
+                            <div class="col-md-8 mb-3">{{ form.actividad_economica.label_tag }}{{ form.actividad_economica }}</div>
+                            <div class="col-md-4 mb-3">{{ form.codigo_ciiu.label_tag }}{{ form.codigo_ciiu }}</div>
+                        </div>
+
+                        <!-- CONTACTO -->
+                        <div class="section-header mb-3">
+                            <h5 class="border-bottom pb-2"><i class="bi bi-telephone"></i> Información de Contacto</h5>
+                        </div>
+                        <div class="row mb-4">
+                            <div class="col-md-12 mb-3">{{ form.direccion_principal.label_tag }}{{ form.direccion_principal }}</div>
+                            <div class="col-md-4 mb-3">{{ form.ciudad.label_tag }}{{ form.ciudad }}</div>
+                            <div class="col-md-4 mb-3">{{ form.departamento.label_tag }}{{ form.departamento }}</div>
+                            <div class="col-md-4 mb-3">{{ form.pais.label_tag }}{{ form.pais }}</div>
+                            <div class="col-md-6 mb-3">{{ form.telefono_principal.label_tag }}{{ form.telefono_principal }}</div>
+                            <div class="col-md-6 mb-3">{{ form.telefono_secundario.label_tag }}{{ form.telefono_secundario }}</div>
+                            <div class="col-md-6 mb-3">{{ form.email_principal.label_tag }}{{ form.email_principal }}</div>
+                            <div class="col-md-6 mb-3">{{ form.email_facturacion.label_tag }}{{ form.email_facturacion }}</div>
+                            <div class="col-md-12 mb-3">{{ form.sitio_web.label_tag }}{{ form.sitio_web }}</div>
+                            <div class="col-md-12 mb-3">{{ form.horario_atencion.label_tag }}{{ form.horario_atencion }}</div>
+                        </div>
+
+                        <!-- BANCARIA -->
+                        <div class="section-header mb-3">
+                            <h5 class="border-bottom pb-2"><i class="bi bi-bank"></i> Información Bancaria (Opcional)</h5>
+                        </div>
+                        <div class="row mb-4">
+                            <div class="col-md-6 mb-3">{{ form.banco.label_tag }}{{ form.banco }}</div>
+                            <div class="col-md-6 mb-3">{{ form.tipo_cuenta.label_tag }}{{ form.tipo_cuenta }}</div>
+                            <div class="col-md-6 mb-3">{{ form.numero_cuenta.label_tag }}{{ form.numero_cuenta }}</div>
+                            <div class="col-md-6 mb-3">{{ form.titular_cuenta.label_tag }}{{ form.titular_cuenta }}</div>
+                        </div>
+
+                        <!-- COMERCIAL -->
+                        <div class="section-header mb-3">
+                            <h5 class="border-bottom pb-2"><i class="bi bi-cash-stack"></i> Condiciones Comerciales</h5>
+                        </div>
+                        <div class="row mb-4">
+                            <div class="col-md-4 mb-3">{{ form.plazo_entrega_dias.label_tag }}{{ form.plazo_entrega_dias }}</div>
+                            <div class="col-md-4 mb-3">{{ form.tiempo_credito_dias.label_tag }}{{ form.tiempo_credito_dias }}</div>
+                            <div class="col-md-4 mb-3">{{ form.descuento_pronto_pago.label_tag }}{{ form.descuento_pronto_pago }}</div>
+                            <div class="col-md-6 mb-3">{{ form.monto_minimo_pedido.label_tag }}{{ form.monto_minimo_pedido }}</div>
+                            <div class="col-md-6 mb-3 form-check mt-4"><div class="form-check">{{ form.acepta_credito }}{{ form.acepta_credito.label_tag }}</div></div>
+                            <div class="col-md-12 mb-3">{{ form.metodos_pago_aceptados.label_tag }}{{ form.metodos_pago_aceptados }}</div>
+                        </div>
+
+                        <!-- OBSERVACIONES -->
+                        <div class="section-header mb-3">
+                            <h5 class="border-bottom pb-2"><i class="bi bi-chat-text"></i> Observaciones</h5>
+                        </div>
+                        <div class="mb-4">{{ form.observaciones_generales.label_tag }}{{ form.observaciones_generales }}</div>
+
+                        <!-- BOTONES -->
+                        <div class="d-flex justify-content-between mt-4">
+                            <a href="{% if proveedor %}{% url 'proveedores:proveedor_detail' proveedor.id_proveedor %}{% else %}{% url 'proveedores:proveedor_list' %}{% endif %}" class="btn btn-secondary">
+                                <i class="bi bi-arrow-left"></i> Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-success-custom btn-lg">
+                                <i class="bi bi-save"></i> {{ action }} Proveedor
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
