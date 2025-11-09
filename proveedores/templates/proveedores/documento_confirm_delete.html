@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 
-{% block title %}Eliminar Contacto{% endblock %}
+{% block title %}Eliminar Documento{% endblock %}
 
 {% block content %}
 <div class="container py-4">
@@ -13,19 +13,26 @@
                     </h5>
                 </div>
                 <div class="card-body">
-                    <p>¿Está seguro que desea eliminar este contacto?</p>
+                    <p>¿Está seguro que desea eliminar este documento?</p>
                     
                     <div class="alert alert-warning">
-                        <h6><strong>Contacto:</strong> {{ contacto.nombre_completo }}</h6>
-                        <p><strong>Cargo:</strong> {{ contacto.cargo }}</p>
-                        <p><strong>Email:</strong> {{ contacto.email }}</p>
-                        <p><strong>Teléfono:</strong> {{ contacto.telefono_celular }}</p>
-                        <p class="mb-0"><strong>Proveedor:</strong> {{ proveedor.razon_social }}</p>
+                        <h6><strong>Documento:</strong> {{ documento.id_tipo_documento.nombre_tipo_documento }}</h6>
+                        <p><strong>Proveedor:</strong> {{ proveedor.razon_social }}</p>
+                        {% if documento.numero_documento %}
+                            <p><strong>Número:</strong> {{ documento.numero_documento }}</p>
+                        {% endif %}
+                        <p><strong>Archivo:</strong> {{ documento.nombre_archivo_original }}</p>
+                        <p><strong>Fecha emisión:</strong> {{ documento.fecha_emision|date:"d/m/Y" }}</p>
+                        {% if documento.fecha_vencimiento %}
+                            <p><strong>Fecha vencimiento:</strong> {{ documento.fecha_vencimiento|date:"d/m/Y" }}</p>
+                        {% endif %}
+                        <p class="mb-0"><strong>Estado:</strong> <span class="badge {{ documento.get_estado_badge_class }}">{{ documento.get_estado_display }}</span></p>
                     </div>
 
                     <div class="alert alert-danger">
                         <i class="bi bi-exclamation-circle"></i> 
                         <strong>¡Atención!</strong> Esta acción no se puede deshacer.
+                        El archivo físico también será eliminado del servidor.
                     </div>
 
                     <form method="post">
@@ -36,7 +43,7 @@
                                 <i class="bi bi-arrow-left"></i> Cancelar
                             </a>
                             <button type="submit" class="btn btn-danger">
-                                <i class="bi bi-trash"></i> Sí, Eliminar Contacto
+                                <i class="bi bi-trash"></i> Sí, Eliminar Documento
                             </button>
                         </div>
                     </form>

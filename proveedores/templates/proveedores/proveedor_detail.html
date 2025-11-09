@@ -1,4 +1,6 @@
-{% extends 'proveedores/base.html' %}
+{% extends 'base.html' %}
+{% block navigation_tabs %}
+    
 {% block title %}{{ proveedor.razon_social }} - Detalle{% endblock %}
 {% block content %}
 <div class="container-fluid py-4">
@@ -50,6 +52,18 @@
             <button class="nav-link" id="contactos-tab" data-bs-toggle="tab" data-bs-target="#contactos" type="button">
                 <i class="bi bi-people"></i> Contactos
                 <span class="badge bg-primary">{{ proveedor.contactos.count }}</span>
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="documentos-tab" data-bs-toggle="tab" data-bs-target="#documentos" type="button">
+                <i class="bi bi-files"></i> Documentos
+                <span class="badge bg-primary">{{ proveedor.documentos.count }}</span>
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="productos-tab" data-bs-toggle="tab" data-bs-target="#productos" type="button">
+                <i class="bi bi-box-seam"></i> Productos/Servicios
+                <span class="badge bg-primary">{{ proveedor.productos_servicios.count }}</span>
             </button>
         </li>
     </ul>
@@ -194,6 +208,189 @@
                     <p class="mt-3">No hay contactos registrados para este proveedor</p>
                     <a href="{% url 'proveedores:contacto_create' proveedor.id_proveedor %}" class="btn btn-success-custom">
                         <i class="bi bi-plus-circle"></i> Agregar el primer contacto
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- TAB DOCUMENTOS - NUEVO FASE 4 -->
+        <div class="tab-pane fade" id="documentos" role="tabpanel">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5><i class="bi bi-files"></i> Documentos del Proveedor</h5>
+                <a href="{% url 'proveedores:documento_create' proveedor.id_proveedor %}" class="btn btn-success-custom">
+                    <i class="bi bi-upload"></i> Cargar Documento
+                </a>
+            </div>
+
+            {% if proveedor.documentos.all %}
+                <div class="row">
+                    {% for doc in proveedor.documentos.all %}
+                    <div class="col-md-6 col-lg-4 mb-3">
+                        <div class="card h-100 {% if doc.estado == 'VENCIDO' %}border-danger{% elif doc.estado == 'POR_VENCER' %}border-warning{% endif %}">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <i class="{{ doc.get_icono_archivo }} text-primary" style="font-size: 2rem;"></i>
+                                    <span class="badge {{ doc.get_estado_badge_class }}">
+                                        {{ doc.get_estado_display }}
+                                    </span>
+                                </div>
+                                
+                                <h6 class="card-title">{{ doc.id_tipo_documento.nombre_tipo_documento }}</h6>
+                                
+                                <div class="small mb-2">
+                                    <p class="mb-1"><strong>Archivo:</strong> {{ doc.nombre_archivo_original|truncatechars:30 }}</p>
+                                    <p class="mb-1"><strong>Tamaño:</strong> {{ doc.get_tamano_archivo }}</p>
+                                    
+                                    {% if doc.numero_documento %}
+                                        <p class="mb-1"><strong>Número:</strong> {{ doc.numero_documento }}</p>
+                                    {% endif %}
+                                    
+                                    <p class="mb-1"><strong>Emisión:</strong> {{ doc.fecha_emision|date:"d/m/Y" }}</p>
+                                    
+                                    {% if doc.fecha_vencimiento %}
+                                        <p class="mb-1"><strong>Vencimiento:</strong> {{ doc.fecha_vencimiento|date:"d/m/Y" }}</p>
+                                        {% if doc.dias_para_vencimiento != None %}
+                                            {% if doc.dias_para_vencimiento < 0 %}
+                                                <p class="mb-1 text-danger"><strong>Vencido hace {{ doc.dias_para_vencimiento|add:"-1" }} días</strong></p>
+                                            {% elif doc.dias_para_vencimiento <= 30 %}
+                                                <p class="mb-1 text-warning"><strong>Vence en {{ doc.dias_para_vencimiento }} días</strong></p>
+                                            {% endif %}
+                                        {% endif %}
+                                    {% endif %}
+                                    
+                                    {% if doc.entidad_emisora %}
+                                        <p class="mb-1"><strong>Emisor:</strong> {{ doc.entidad_emisora }}</p>
+                                    {% endif %}
+                                </div>
+
+                                <div class="mt-3 d-flex gap-2 flex-wrap">
+                                    <a href="{% url 'proveedores:documento_download' doc.id_documento %}" 
+                                       class="btn btn-sm btn-primary flex-fill">
+                                        <i class="bi bi-download"></i> Descargar
+                                    </a>
+                                    <a href="{% url 'proveedores:documento_update' doc.id_documento %}" 
+                                       class="btn btn-sm btn-outline-primary">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    <a href="{% url 'proveedores:documento_delete' doc.id_documento %}" 
+                                       class="btn btn-sm btn-outline-danger">
+                                        <i class="bi bi-trash"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="text-center text-muted py-5">
+                    <i class="bi bi-files" style="font-size: 3rem;"></i>
+                    <p class="mt-3">No hay documentos cargados para este proveedor</p>
+                    <a href="{% url 'proveedores:documento_create' proveedor.id_proveedor %}" class="btn btn-success-custom">
+                        <i class="bi bi-upload"></i> Cargar el primer documento
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- TAB PRODUCTOS/SERVICIOS - NUEVO FASE 5 -->
+        <div class="tab-pane fade" id="productos" role="tabpanel">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5><i class="bi bi-box-seam"></i> Catálogo de Productos/Servicios</h5>
+                <a href="{% url 'proveedores:producto_create' proveedor.id_proveedor %}" class="btn btn-success-custom">
+                    <i class="bi bi-plus-circle"></i> Agregar Producto/Servicio
+                </a>
+            </div>
+
+            {% if proveedor.productos_servicios.all %}
+                <div class="row">
+                    {% for producto in proveedor.productos_servicios.all %}
+                    <div class="col-md-6 col-lg-4 mb-3">
+                        <div class="card h-100 {% if not producto.disponible or not producto.activo %}opacity-75{% endif %}">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <span class="badge bg-info">{{ producto.get_tipo_display }}</span>
+                                    <span class="badge {{ producto.get_badge_disponibilidad }}">
+                                        {{ producto.get_texto_disponibilidad }}
+                                    </span>
+                                </div>
+                                
+                                <h6 class="card-title">{{ producto.nombre }}</h6>
+                                
+                                {% if producto.descripcion %}
+                                    <p class="card-text small text-muted">{{ producto.descripcion|truncatewords:15 }}</p>
+                                {% endif %}
+                                
+                                <div class="small mb-2">
+                                    {% if producto.sku_codigo %}
+                                        <p class="mb-1"><strong>SKU:</strong> {{ producto.sku_codigo }}</p>
+                                    {% endif %}
+                                    {% if producto.marca %}
+                                        <p class="mb-1"><strong>Marca:</strong> {{ producto.marca }}</p>
+                                    {% endif %}
+                                    <p class="mb-1"><strong>Unidad:</strong> {{ producto.get_unidad_medida_display }}</p>
+                                </div>
+
+                                <!-- Precio destacado -->
+                                <div class="bg-light p-2 rounded mb-2">
+                                    {% if producto.tiene_descuento %}
+                                        <div class="text-decoration-line-through text-muted small">
+                                            {{ producto.moneda }} {{ producto.precio_unitario }}
+                                        </div>
+                                        <div class="text-success fw-bold fs-5">
+                                            {{ producto.get_precio_formateado }}
+                                        </div>
+                                        <div class="text-success small">
+                                            ¡Ahorra {{ producto.moneda }} {{ producto.get_ahorro }}!
+                                        </div>
+                                    {% else %}
+                                        <div class="fw-bold fs-5">
+                                            {{ producto.get_precio_formateado }}
+                                        </div>
+                                    {% endif %}
+                                    <div class="small text-muted">
+                                        Por {{ producto.get_unidad_medida_display|lower }}
+                                    </div>
+                                </div>
+
+                                <div class="small mb-2">
+                                    <p class="mb-1">
+                                        <i class="bi bi-cart text-primary"></i>
+                                        <strong>Cant. mín:</strong> {{ producto.cantidad_minima }}
+                                    </p>
+                                    <p class="mb-1">
+                                        <i class="bi bi-truck text-success"></i>
+                                        <strong>Entrega:</strong> {{ producto.tiempo_entrega_dias }} días
+                                    </p>
+                                    {% if producto.stock_disponible is not None %}
+                                        <p class="mb-1">
+                                            <i class="bi bi-box text-warning"></i>
+                                            <strong>Stock:</strong> {{ producto.stock_disponible }}
+                                        </p>
+                                    {% endif %}
+                                </div>
+
+                                <div class="mt-3 d-flex gap-2">
+                                    <a href="{% url 'proveedores:producto_update' producto.id_producto_servicio %}" 
+                                       class="btn btn-sm btn-outline-primary flex-fill">
+                                        <i class="bi bi-pencil"></i> Editar
+                                    </a>
+                                    <a href="{% url 'proveedores:producto_delete' producto.id_producto_servicio %}" 
+                                       class="btn btn-sm btn-outline-danger">
+                                        <i class="bi bi-trash"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="text-center text-muted py-5">
+                    <i class="bi bi-box-seam" style="font-size: 3rem;"></i>
+                    <p class="mt-3">No hay productos/servicios registrados para este proveedor</p>
+                    <a href="{% url 'proveedores:producto_create' proveedor.id_proveedor %}" class="btn btn-success-custom">
+                        <i class="bi bi-plus-circle"></i> Agregar el primero
                     </a>
                 </div>
             {% endif %}

@@ -7,7 +7,7 @@ urlpatterns = [
     # ====================================
     # PÁGINA DE INICIO
     # ====================================
-    path('', views.home, name='home'),
+    path('', views.home_proveedores, name='home'),
     
     # ====================================
     # GESTIÓN DE CATÁLOGOS
@@ -46,4 +46,19 @@ urlpatterns = [
     path('<int:id_proveedor>/contacto/nuevo/', views.contacto_create, name='contacto_create'),
     path('contacto/<int:id_contacto>/editar/', views.contacto_update, name='contacto_update'),
     path('contacto/<int:id_contacto>/eliminar/', views.contacto_delete, name='contacto_delete'),
+    
+    # ====================================
+    # GESTIÓN DE DOCUMENTOS - FASE 4
+    # ====================================
+    path('<int:id_proveedor>/documento/nuevo/', views.documento_create, name='documento_create'),
+    path('documento/<int:id_documento>/editar/', views.documento_update, name='documento_update'),
+    path('documento/<int:id_documento>/eliminar/', views.documento_delete, name='documento_delete'),
+    path('documento/<int:id_documento>/descargar/', views.documento_download, name='documento_download'),
+    
+    # ====================================
+    # GESTIÓN DE PRODUCTOS/SERVICIOS - FASE 5
+    # ====================================
+    path('<int:id_proveedor>/producto/nuevo/', views.producto_create, name='producto_create'),
+    path('producto/<int:id_producto_servicio>/editar/', views.producto_update, name='producto_update'),
+    path('producto/<int:id_producto_servicio>/eliminar/', views.producto_delete, name='producto_delete'),
 ]

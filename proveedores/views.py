@@ -10,14 +10,16 @@ from .forms import TipoProveedorForm, CategoriaProveedorForm, TipoDocumentoProve
 # PÁGINA DE INICIO DEL MÓDULO
 # =====================================================
 
-def home(request):
+def home_proveedores(request):
     """Página principal del módulo de proveedores con menú de iconos"""
     context = {
         'total_tipos': TipoProveedor.objects.filter(activo=True).count(),
         'total_categorias': CategoriaProveedor.objects.filter(activo=True).count(),
         'total_tipos_documentos': TipoDocumentoProveedor.objects.filter(activo=True).count(),
+        'show_module_nav': True,
+        'active_module': 'proveedores'
     }
-    return render(request, 'proveedores/home.html', context)
+    return render(request, 'proveedores/home_proveedores.html', context)
 
 
 # =====================================================
@@ -32,7 +34,7 @@ def tipo_proveedor_list(request):
     if query:
         tipos = tipos.filter(nombre_tipo__icontains=query)
     
-    tipos = tipos.order_by('orden_visualizacion', 'nombre_tipo')
+    tipos = tipos.order_by('nombre_tipo')
     
     # Paginación
     paginator = Paginator(tipos, 15)
@@ -42,6 +44,8 @@ def tipo_proveedor_list(request):
     context = {
         'page_obj': page_obj,
         'query': query,
+        'show_module_nav': True,
+        'active_module': 'proveedores',
     }
     return render(request, 'proveedores/catalogos/tipo_proveedor_list.html', context)
 
@@ -60,7 +64,9 @@ def tipo_proveedor_create(request):
     context = {
         'form': form,
         'titulo': 'Crear Tipo de Proveedor',
-        'action': 'Crear'
+        'action': 'Crear',
+        'show_module_nav': True,
+        'active_module': 'proveedores',
     }
     return render(request, 'proveedores/catalogos/tipo_proveedor_form.html', context)
 
@@ -82,7 +88,9 @@ def tipo_proveedor_update(request, id_tipo_proveedor):
         'form': form,
         'tipo': tipo,
         'titulo': 'Editar Tipo de Proveedor',
-        'action': 'Actualizar'
+        'action': 'Actualizar',
+        'show_module_nav': True,
+        'active_module': 'proveedores',
     }
     return render(request, 'proveedores/catalogos/tipo_proveedor_form.html', context)
 
@@ -99,6 +107,8 @@ def tipo_proveedor_delete(request, id_tipo_proveedor):
     
     context = {
         'tipo': tipo,
+        'show_module_nav': True,
+        'active_module': 'proveedores'
     }
     return render(request, 'proveedores/catalogos/tipo_proveedor_confirm_delete.html', context)
 
@@ -115,7 +125,7 @@ def categoria_proveedor_list(request):
     if query:
         categorias = categorias.filter(nombre_categoria__icontains=query)
     
-    categorias = categorias.order_by('orden_visualizacion', 'nombre_categoria')
+    categorias = categorias.order_by('nombre_categoria')
     
     # Paginación
     paginator = Paginator(categorias, 15)
@@ -125,6 +135,8 @@ def categoria_proveedor_list(request):
     context = {
         'page_obj': page_obj,
         'query': query,
+        'show_module_nav': True,
+        'active_module': 'proveedores'
     }
     return render(request, 'proveedores/catalogos/categoria_proveedor_list.html', context)
 
@@ -143,7 +155,9 @@ def categoria_proveedor_create(request):
     context = {
         'form': form,
         'titulo': 'Crear Categoría de Proveedor',
-        'action': 'Crear'
+        'action': 'Crear',
+        'show_module_nav': True,
+        'active_module': 'proveedores',
     }
     return render(request, 'proveedores/catalogos/categoria_proveedor_form.html', context)
 
@@ -165,7 +179,9 @@ def categoria_proveedor_update(request, id_categoria):
         'form': form,
         'categoria': categoria,
         'titulo': 'Editar Categoría de Proveedor',
-        'action': 'Actualizar'
+        'action': 'Actualizar',
+        'show_module_nav': True,
+        'active_module': 'proveedores',
     }
     return render(request, 'proveedores/catalogos/categoria_proveedor_form.html', context)
 
@@ -182,6 +198,8 @@ def categoria_proveedor_delete(request, id_categoria):
     
     context = {
         'categoria': categoria,
+        'show_module_nav': True,
+        'active_module': 'proveedores'
     }
     return render(request, 'proveedores/catalogos/categoria_proveedor_confirm_delete.html', context)
 
@@ -198,7 +216,7 @@ def tipo_documento_list(request):
     if query:
         tipos = tipos.filter(nombre_tipo_documento__icontains=query)
     
-    tipos = tipos.order_by('orden_visualizacion', 'nombre_tipo_documento')
+    tipos = tipos.order_by('nombre_tipo_documento')
     
     # Paginación
     paginator = Paginator(tipos, 15)
@@ -208,6 +226,8 @@ def tipo_documento_list(request):
     context = {
         'page_obj': page_obj,
         'query': query,
+        'show_module_nav': True,
+        'active_module': 'proveedores'
     }
     return render(request, 'proveedores/catalogos/tipo_documento_list.html', context)
 
@@ -226,7 +246,9 @@ def tipo_documento_create(request):
     context = {
         'form': form,
         'titulo': 'Crear Tipo de Documento',
-        'action': 'Crear'
+        'action': 'Crear',
+        'show_module_nav': True,
+        'active_module': 'proveedores',
     }
     return render(request, 'proveedores/catalogos/tipo_documento_form.html', context)
 
@@ -248,7 +270,9 @@ def tipo_documento_update(request, id_tipo_documento):
         'form': form,
         'tipo': tipo,
         'titulo': 'Editar Tipo de Documento',
-        'action': 'Actualizar'
+        'action': 'Actualizar',
+        'show_module_nav': True,
+        'active_module': 'proveedores',
     }
     return render(request, 'proveedores/catalogos/tipo_documento_form.html', context)
 
@@ -265,6 +289,8 @@ def tipo_documento_delete(request, id_tipo_documento):
     
     context = {
         'tipo': tipo,
+        'show_module_nav': True,
+        'active_module': 'proveedores',
     }
     return render(request, 'proveedores/catalogos/tipo_documento_confirm_delete.html', context)
 
@@ -309,7 +335,7 @@ def proveedor_list(request):
     page_obj = paginator.get_page(page_number)
     
     # Para los filtros
-    from .models import TipoProveedor, ESTADO_PROVEEDOR_CHOICES
+    from .models import TipoProveedor, ESTADO_CHOICES
     tipos_proveedor = TipoProveedor.objects.filter(activo=True)
     
     context = {
@@ -318,7 +344,9 @@ def proveedor_list(request):
         'estado_filtro': estado_filtro,
         'tipo_filtro': tipo_filtro,
         'tipos_proveedor': tipos_proveedor,
-        'estados': ESTADO_PROVEEDOR_CHOICES,
+        'estados': ESTADO_CHOICES,
+        'show_module_nav': True,
+        'active_module': 'proveedores'
     }
     return render(request, 'proveedores/proveedor_list.html', context)
 
@@ -328,12 +356,19 @@ def proveedor_detail(request, id_proveedor):
     proveedor = get_object_or_404(
         Proveedor.objects.select_related(
             'tipo_proveedor', 'categoria_principal'
-        ).prefetch_related('contactos'),
+        ).prefetch_related('contactos', 'documentos', 'productos_servicios'),
         id_proveedor=id_proveedor
     )
     
+    # Actualizar estado de todos los documentos
+    for doc in proveedor.documentos.all():
+        doc.actualizar_estado()
+        doc.save()
+    
     context = {
         'proveedor': proveedor,
+        'show_module_nav': True,
+        'active_module': 'proveedores'
     }
     return render(request, 'proveedores/proveedor_detail.html', context)
 
@@ -358,7 +393,9 @@ def proveedor_create(request):
     context = {
         'form': form,
         'titulo': 'Registrar Nuevo Proveedor',
-        'action': 'Crear'
+        'action': 'Crear',
+        'show_module_nav': True,
+        'active_module': 'proveedores',
     }
     return render(request, 'proveedores/proveedor_form.html', context)
 
@@ -383,7 +420,9 @@ def proveedor_update(request, id_proveedor):
         'form': form,
         'proveedor': proveedor,
         'titulo': 'Editar Proveedor',
-        'action': 'Actualizar'
+        'action': 'Actualizar',
+        'show_module_nav': True,
+        'active_module': 'proveedores',
     }
     return render(request, 'proveedores/proveedor_form.html', context)
 
@@ -400,6 +439,8 @@ def proveedor_delete(request, id_proveedor):
     
     context = {
         'proveedor': proveedor,
+        'show_module_nav': True,
+        'active_module': 'proveedores',
     }
     return render(request, 'proveedores/proveedor_confirm_delete.html', context)
 
@@ -434,7 +475,9 @@ def contacto_create(request, id_proveedor):
         'form': form,
         'proveedor': proveedor,
         'titulo': 'Agregar Contacto',
-        'action': 'Guardar'
+        'action': 'Guardar',
+        'show_module_nav': True,
+        'active_module': 'proveedores',
     }
     return render(request, 'proveedores/contacto_form.html', context)
 
@@ -461,7 +504,9 @@ def contacto_update(request, id_contacto):
         'contacto': contacto,
         'proveedor': proveedor,
         'titulo': 'Editar Contacto',
-        'action': 'Actualizar'
+        'action': 'Actualizar',
+        'show_module_nav': True,
+        'active_module': 'proveedores',
     }
     return render(request, 'proveedores/contacto_form.html', context)
 
@@ -480,5 +525,213 @@ def contacto_delete(request, id_contacto):
     context = {
         'contacto': contacto,
         'proveedor': proveedor,
+        'show_module_nav': True,
+        'active_module': 'proveedores',
     }
     return render(request, 'proveedores/contacto_confirm_delete.html', context)
+
+
+# =====================================================
+# GESTIÓN DE DOCUMENTOS - FASE 4
+# =====================================================
+
+from .models import DocumentoProveedor
+from .forms import DocumentoProveedorForm
+from django.http import FileResponse, Http404
+
+
+def documento_create(request, id_proveedor):
+    """Cargar nuevo documento para un proveedor"""
+    proveedor = get_object_or_404(Proveedor, id_proveedor=id_proveedor)
+    
+    if request.method == 'POST':
+        form = DocumentoProveedorForm(request.POST, request.FILES, proveedor=proveedor)
+        if form.is_valid():
+            documento = form.save(commit=False)
+            documento.id_proveedor = proveedor
+            documento.cargado_por = 'Admin'  # O request.user.username si tienes auth
+            documento.save()
+            messages.success(
+                request,
+                f'✅ Documento "{documento.id_tipo_documento.nombre_tipo_documento}" cargado exitosamente.'
+            )
+            return redirect('proveedores:proveedor_detail', id_proveedor=proveedor.id_proveedor)
+    else:
+        form = DocumentoProveedorForm(proveedor=proveedor)
+    
+    context = {
+        'form': form,
+        'proveedor': proveedor,
+        'titulo': 'Cargar Documento',
+        'action': 'Guardar',
+        'show_module_nav': True,
+        'active_module': 'proveedores',
+    }
+    return render(request, 'proveedores/documento_form.html', context)
+
+
+def documento_update(request, id_documento):
+    """Editar información de un documento"""
+    documento = get_object_or_404(DocumentoProveedor, id_documento=id_documento)
+    proveedor = documento.id_proveedor
+    
+    if request.method == 'POST':
+        form = DocumentoProveedorForm(
+            request.POST, 
+            request.FILES, 
+            instance=documento,
+            proveedor=proveedor
+        )
+        if form.is_valid():
+            documento = form.save()
+            messages.success(
+                request,
+                f'✅ Documento "{documento.id_tipo_documento.nombre_tipo_documento}" actualizado exitosamente.'
+            )
+            return redirect('proveedores:proveedor_detail', id_proveedor=proveedor.id_proveedor)
+    else:
+        form = DocumentoProveedorForm(instance=documento, proveedor=proveedor)
+    
+    context = {
+        'form': form,
+        'documento': documento,
+        'proveedor': proveedor,
+        'titulo': 'Editar Documento',
+        'action': 'Actualizar',
+        'show_module_nav': True,
+        'active_module': 'proveedores',
+    }
+    return render(request, 'proveedores/documento_form.html', context)
+
+
+def documento_delete(request, id_documento):
+    """Eliminar documento"""
+    documento = get_object_or_404(DocumentoProveedor, id_documento=id_documento)
+    proveedor = documento.id_proveedor
+    
+    if request.method == 'POST':
+        tipo = documento.id_tipo_documento.nombre_tipo_documento
+        # Eliminar el archivo físico
+        if documento.archivo:
+            documento.archivo.delete()
+        documento.delete()
+        messages.success(request, f'🗑️ Documento "{tipo}" eliminado exitosamente.')
+        return redirect('proveedores:proveedor_detail', id_proveedor=proveedor.id_proveedor)
+    
+    context = {
+        'documento': documento,
+        'proveedor': proveedor,
+        'show_module_nav': True,
+        'active_module': 'proveedores'
+    }
+    return render(request, 'proveedores/documento_confirm_delete.html', context)
+
+
+def documento_download(request, id_documento):
+    """Descargar documento"""
+    documento = get_object_or_404(DocumentoProveedor, id_documento=id_documento)
+    
+    try:
+        return FileResponse(
+            documento.archivo.open('rb'),
+            as_attachment=True,
+            filename=documento.nombre_archivo_original
+        )
+    except FileNotFoundError:
+        raise Http404("El archivo no existe")
+
+
+# =====================================================
+# GESTIÓN DE PRODUCTOS/SERVICIOS - FASE 5
+# =====================================================
+
+from .models import ProductoServicioProveedor
+from .forms import ProductoServicioProveedorForm
+
+
+def producto_create(request, id_proveedor):
+    """Agregar producto/servicio a un proveedor"""
+    proveedor = get_object_or_404(Proveedor, id_proveedor=id_proveedor)
+    
+    if request.method == 'POST':
+        form = ProductoServicioProveedorForm(request.POST, proveedor=proveedor)
+        if form.is_valid():
+            producto = form.save(commit=False)
+            producto.id_proveedor = proveedor
+            producto.save()
+            messages.success(
+                request,
+                f'✅ Producto/Servicio "{producto.nombre}" agregado exitosamente.'
+            )
+            return redirect('proveedores:proveedor_detail', id_proveedor=proveedor.id_proveedor)
+    else:
+        form = ProductoServicioProveedorForm(proveedor=proveedor)
+    
+    context = {
+        'form': form,
+        'proveedor': proveedor,
+        'titulo': 'Agregar Producto/Servicio',
+        'action': 'Guardar',
+        'show_module_nav': True,
+        'active_module': 'proveedores',
+    }
+    return render(request, 'proveedores/producto_form.html', context)
+
+
+def producto_update(request, id_producto_servicio):
+    """Editar producto/servicio"""
+    producto = get_object_or_404(
+        ProductoServicioProveedor, 
+        id_producto_servicio=id_producto_servicio
+    )
+    proveedor = producto.id_proveedor
+    
+    if request.method == 'POST':
+        form = ProductoServicioProveedorForm(
+            request.POST,
+            instance=producto,
+            proveedor=proveedor
+        )
+        if form.is_valid():
+            producto = form.save()
+            messages.success(
+                request,
+                f'✅ Producto/Servicio "{producto.nombre}" actualizado exitosamente.'
+            )
+            return redirect('proveedores:proveedor_detail', id_proveedor=proveedor.id_proveedor)
+    else:
+        form = ProductoServicioProveedorForm(instance=producto, proveedor=proveedor)
+    
+    context = {
+        'form': form,
+        'producto': producto,
+        'proveedor': proveedor,
+        'titulo': 'Editar Producto/Servicio',
+        'action': 'Actualizar',
+        'show_module_nav': True,
+        'active_module': 'proveedores',
+    }
+    return render(request, 'proveedores/producto_form.html', context)
+
+
+def producto_delete(request, id_producto_servicio):
+    """Eliminar producto/servicio"""
+    producto = get_object_or_404(
+        ProductoServicioProveedor,
+        id_producto_servicio=id_producto_servicio
+    )
+    proveedor = producto.id_proveedor
+    
+    if request.method == 'POST':
+        nombre = producto.nombre
+        producto.delete()
+        messages.success(request, f'🗑️ Producto/Servicio "{nombre}" eliminado exitosamente.')
+        return redirect('proveedores:proveedor_detail', id_proveedor=proveedor.id_proveedor)
+    
+    context = {
+        'producto': producto,
+        'proveedor': proveedor,
+        'show_module_nav': True,
+        'active_module': 'proveedores',
+    }
+    return render(request, 'proveedores/producto_confirm_delete.html', context)

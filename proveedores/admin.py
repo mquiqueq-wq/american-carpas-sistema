@@ -1,105 +1,97 @@
+"""
+Configuración del Admin para el módulo de gestión de proveedores
+American Carpas 1 SAS
+"""
+
 from django.contrib import admin
-from .models import TipoProveedor, CategoriaProveedor, TipoDocumentoProveedor
+from .models import (
+    TipoProveedor,
+    CategoriaProveedor,
+    TipoDocumentoProveedor,
+    Proveedor,
+    ContactoProveedor,
+    DocumentoProveedor,
+    ProductoServicioProveedor
+)
 
 
 # =====================================================
-# ADMIN PARA TIPOS DE PROVEEDORES
+# ADMIN PARA CATÁLOGOS - FASE 1
 # =====================================================
 
 @admin.register(TipoProveedor)
 class TipoProveedorAdmin(admin.ModelAdmin):
-    list_display = [
-        'nombre_tipo',
-        'requiere_certificaciones',
-        'activo',
-        'orden_visualizacion',
-        'fecha_creacion'
-    ]
-    list_filter = ['activo', 'requiere_certificaciones']
+    list_display = ['nombre_tipo', 'activo', 'fecha_creacion']
+    list_filter = ['activo']
     search_fields = ['nombre_tipo', 'descripcion']
-    ordering = ['orden_visualizacion', 'nombre_tipo']
+    ordering = ['nombre_tipo']
     
     fieldsets = (
-        ('Información Básica', {
-            'fields': ('nombre_tipo', 'descripcion', 'icono_bootstrap')
-        }),
-        ('Configuración', {
-            'fields': ('requiere_certificaciones', 'activo', 'orden_visualizacion')
-        }),
-    )
-
-
-# =====================================================
-# ADMIN PARA CATEGORÍAS DE PROVEEDORES
-# =====================================================
-
-@admin.register(CategoriaProveedor)
-class CategoriaProveedorAdmin(admin.ModelAdmin):
-    list_display = [
-        'nombre_categoria',
-        'categoria_padre',
-        'color_badge',
-        'activo',
-        'orden_visualizacion',
-        'fecha_creacion'
-    ]
-    list_filter = ['activo', 'color_badge', 'categoria_padre']
-    search_fields = ['nombre_categoria', 'descripcion']
-    ordering = ['orden_visualizacion', 'nombre_categoria']
-    
-    fieldsets = (
-        ('Información Básica', {
-            'fields': ('nombre_categoria', 'descripcion', 'categoria_padre')
-        }),
-        ('Visualización', {
-            'fields': ('color_badge', 'icono_bootstrap', 'orden_visualizacion')
+        ('Información General', {
+            'fields': ('nombre_tipo', 'descripcion')
         }),
         ('Estado', {
             'fields': ('activo',)
         }),
     )
+    
+    readonly_fields = ['fecha_creacion']
 
 
-# =====================================================
-# ADMIN PARA TIPOS DE DOCUMENTOS
-# =====================================================
+@admin.register(CategoriaProveedor)
+class CategoriaProveedorAdmin(admin.ModelAdmin):
+    list_display = ['nombre_categoria', 'categoria_padre', 'activo', 'fecha_creacion']
+    list_filter = ['activo', 'categoria_padre']
+    search_fields = ['nombre_categoria', 'descripcion']
+    ordering = ['nombre_categoria']
+    
+    fieldsets = (
+        ('Información General', {
+            'fields': ('nombre_categoria', 'descripcion', 'categoria_padre')
+        }),
+        ('Visualización', {
+            'fields': ('icono', 'color')
+        }),
+        ('Estado', {
+            'fields': ('activo',)
+        }),
+    )
+    
+    readonly_fields = ['fecha_creacion']
+
 
 @admin.register(TipoDocumentoProveedor)
 class TipoDocumentoProveedorAdmin(admin.ModelAdmin):
     list_display = [
         'nombre_tipo_documento',
-        'es_obligatorio',
+        'obligatorio',
         'requiere_vigencia',
         'dias_alerta_vencimiento',
         'activo',
-        'orden_visualizacion'
+        'fecha_creacion'
     ]
-    list_filter = ['activo', 'es_obligatorio', 'requiere_vigencia']
+    list_filter = ['obligatorio', 'requiere_vigencia', 'activo']
     search_fields = ['nombre_tipo_documento', 'descripcion']
-    ordering = ['orden_visualizacion', 'nombre_tipo_documento']
+    ordering = ['nombre_tipo_documento']
     
     fieldsets = (
-        ('Información Básica', {
-            'fields': ('nombre_tipo_documento', 'descripcion', 'icono_bootstrap')
+        ('Información General', {
+            'fields': ('nombre_tipo_documento', 'descripcion')
         }),
         ('Configuración', {
-            'fields': (
-                'es_obligatorio',
-                'requiere_vigencia',
-                'dias_alerta_vencimiento',
-            )
+            'fields': ('obligatorio', 'requiere_vigencia', 'dias_alerta_vencimiento')
         }),
-        ('Visualización', {
-            'fields': ('activo', 'orden_visualizacion')
+        ('Estado', {
+            'fields': ('activo',)
         }),
     )
+    
+    readonly_fields = ['fecha_creacion']
 
 
 # =====================================================
-# ADMIN PARA PROVEEDORES - FASE 2
+# ADMIN PARA PROVEEDOR - FASE 2
 # =====================================================
-
-from .models import Proveedor
 
 @admin.register(Proveedor)
 class ProveedorAdmin(admin.ModelAdmin):
@@ -109,143 +101,273 @@ class ProveedorAdmin(admin.ModelAdmin):
         'tipo_proveedor',
         'categoria_principal',
         'ciudad',
-        'telefono_principal',
         'estado',
         'fecha_registro'
     ]
-    list_filter = ['estado', 'tipo_proveedor', 'categoria_principal', 'regimen_tributario']
-    search_fields = [
-        'razon_social',
-        'nombre_comercial',
-        'numero_documento',
-        'ciudad',
-        'email_principal'
-    ]
+    list_filter = ['estado', 'tipo_proveedor', 'categoria_principal', 'tipo_persona']
+    search_fields = ['razon_social', 'nombre_comercial', 'numero_documento', 'email_principal']
     ordering = ['razon_social']
     date_hierarchy = 'fecha_registro'
     
     fieldsets = (
         ('Identificación Básica', {
             'fields': (
+                'tipo_persona',
                 'razon_social',
                 'nombre_comercial',
                 'tipo_documento',
-                ('numero_documento', 'digito_verificacion'),
-                'tipo_proveedor',
-                'categoria_principal',
-                'estado'
+                'numero_documento',
+                'digito_verificacion'
             )
+        }),
+        ('Clasificación', {
+            'fields': ('tipo_proveedor', 'categoria_principal')
         }),
         ('Información Legal y Tributaria', {
             'fields': (
                 'regimen_tributario',
-                'responsabilidad_fiscal',
-                'actividad_economica',
-                'codigo_ciiu',
-                'pais_origen'
-            ),
-            'classes': ('collapse',)
+                'responsable_iva',
+                'gran_contribuyente',
+                'autorretenedor'
+            )
         }),
         ('Información de Contacto', {
             'fields': (
-                'direccion_principal',
-                ('ciudad', 'departamento'),
-                ('pais', 'codigo_postal'),
-                ('telefono_principal', 'telefono_secundario'),
-                ('email_principal', 'email_facturacion'),
-                'sitio_web',
-                'horario_atencion'
+                'pais',
+                'departamento',
+                'ciudad',
+                'direccion',
+                'codigo_postal',
+                'telefono_principal',
+                'telefono_secundario',
+                'email_principal',
+                'email_secundario',
+                'sitio_web'
             )
         }),
         ('Información Bancaria', {
-            'fields': (
-                'banco',
-                'tipo_cuenta',
-                'numero_cuenta',
-                'titular_cuenta'
-            ),
+            'fields': ('banco', 'tipo_cuenta', 'numero_cuenta'),
             'classes': ('collapse',)
         }),
-        ('Condiciones Comerciales', {
+        ('Información Comercial', {
             'fields': (
-                'plazo_entrega_dias',
-                'tiempo_credito_dias',
-                'descuento_pronto_pago',
+                'tiempo_entrega_promedio',
+                'condiciones_pago',
                 'monto_minimo_pedido',
-                'acepta_credito',
-                'metodos_pago_aceptados'
+                'descuento_pronto_pago',
+                'calificacion'
             ),
             'classes': ('collapse',)
         }),
-        ('Control y Seguimiento', {
-            'fields': (
-                'fecha_ultima_compra',
-                'total_compras_historico',
-                'calificacion_promedio',
-                'numero_evaluaciones',
-                'registrado_por',
-                'observaciones_generales'
-            ),
+        ('Observaciones', {
+            'fields': ('notas_internas', 'observaciones'),
             'classes': ('collapse',)
+        }),
+        ('Control', {
+            'fields': ('estado', 'fecha_registro', 'fecha_modificacion')
         }),
     )
     
-    readonly_fields = ['fecha_registro', 'fecha_ultima_modificacion']
+    readonly_fields = ['fecha_registro', 'fecha_modificacion']
 
 
 # =====================================================
 # ADMIN PARA CONTACTOS - FASE 3
 # =====================================================
 
-from .models import ContactoProveedor
-
 @admin.register(ContactoProveedor)
 class ContactoProveedorAdmin(admin.ModelAdmin):
     list_display = [
-        'nombre_completo',
+        'get_nombre_completo',
         'cargo',
         'id_proveedor',
         'area_responsabilidad',
-        'telefono_celular',
+        'telefono_movil',
         'email',
         'es_contacto_principal',
         'activo'
     ]
-    list_filter = ['area_responsabilidad', 'es_contacto_principal', 'activo']
+    list_filter = ['es_contacto_principal', 'activo', 'area_responsabilidad']
     search_fields = [
-        'nombre_completo',
+        'nombres',
+        'apellidos',
         'cargo',
         'email',
         'id_proveedor__razon_social'
     ]
-    ordering = ['id_proveedor', '-es_contacto_principal', 'nombre_completo']
+    ordering = ['-es_contacto_principal', 'nombres']
     
     fieldsets = (
         ('Proveedor', {
             'fields': ('id_proveedor',)
         }),
-        ('Información del Contacto', {
-            'fields': (
-                'nombre_completo',
-                'cargo',
-                'departamento',
-                'area_responsabilidad'
-            )
+        ('Información Personal', {
+            'fields': ('nombres', 'apellidos', 'cargo', 'area_responsabilidad')
         }),
         ('Datos de Contacto', {
-            'fields': (
-                'telefono_celular',
-                'telefono_directo',
-                'email'
-            )
+            'fields': ('telefono_fijo', 'telefono_movil', 'email')
         }),
         ('Configuración', {
-            'fields': (
-                'es_contacto_principal',
-                'activo',
-                'observaciones'
-            )
+            'fields': ('es_contacto_principal', 'activo')
+        }),
+        ('Observaciones', {
+            'fields': ('observaciones',),
+            'classes': ('collapse',)
         }),
     )
     
-    readonly_fields = ['fecha_registro', 'fecha_modificacion']
+    readonly_fields = ['fecha_creacion', 'fecha_modificacion']
+    
+    def get_nombre_completo(self, obj):
+        """Mostrar nombre completo"""
+        return obj.get_nombre_completo()
+    get_nombre_completo.short_description = 'Nombre Completo'
+
+
+# =====================================================
+# ADMIN PARA DOCUMENTOS - FASE 4
+# =====================================================
+
+@admin.register(DocumentoProveedor)
+class DocumentoProveedorAdmin(admin.ModelAdmin):
+    list_display = [
+        'id_proveedor',
+        'id_tipo_documento',
+        'numero_documento',
+        'fecha_emision',
+        'fecha_vencimiento',
+        'estado',
+        'dias_restantes',
+        'fecha_carga'
+    ]
+    list_filter = ['estado', 'id_tipo_documento', 'fecha_emision']
+    search_fields = [
+        'id_proveedor__razon_social',
+        'id_tipo_documento__nombre_tipo_documento',
+        'numero_documento'
+    ]
+    ordering = ['-fecha_carga']
+    date_hierarchy = 'fecha_carga'
+    
+    fieldsets = (
+        ('Proveedor y Tipo', {
+            'fields': ('id_proveedor', 'id_tipo_documento')
+        }),
+        ('Archivo', {
+            'fields': ('archivo', 'nombre_archivo_original')
+        }),
+        ('Información del Documento', {
+            'fields': (
+                'numero_documento',
+                'fecha_emision',
+                'fecha_vencimiento',
+                'entidad_emisora',
+                'estado'
+            )
+        }),
+        ('Observaciones', {
+            'fields': ('observaciones',),
+            'classes': ('collapse',)
+        }),
+        ('Control', {
+            'fields': ('cargado_por', 'fecha_carga', 'fecha_modificacion'),
+            'classes': ('collapse',)
+        }),
+    )
+    
+    readonly_fields = ['nombre_archivo_original', 'fecha_carga', 'fecha_modificacion']
+    
+    def dias_restantes(self, obj):
+        """Mostrar días restantes para vencimiento"""
+        dias = obj.dias_para_vencimiento()
+        if dias is None:
+            return 'N/A'
+        elif dias < 0:
+            return f'Vencido hace {abs(dias)} días'
+        else:
+            return f'{dias} días'
+    dias_restantes.short_description = 'Días para vencimiento'
+
+
+# =====================================================
+# ADMIN PARA PRODUCTOS/SERVICIOS - FASE 5
+# =====================================================
+
+@admin.register(ProductoServicioProveedor)
+class ProductoServicioProveedorAdmin(admin.ModelAdmin):
+    list_display = [
+        'nombre',
+        'id_proveedor',
+        'tipo',
+        'sku_codigo',
+        'precio_formateado',
+        'unidad_medida',
+        'disponibilidad',
+        'activo',
+        'fecha_registro'
+    ]
+    list_filter = ['tipo', 'disponible', 'activo', 'moneda', 'unidad_medida']
+    search_fields = [
+        'nombre',
+        'descripcion',
+        'sku_codigo',
+        'marca',
+        'id_proveedor__razon_social'
+    ]
+    ordering = ['nombre']
+    date_hierarchy = 'fecha_registro'
+    
+    fieldsets = (
+        ('Proveedor y Clasificación', {
+            'fields': ('id_proveedor', 'tipo', 'nombre')
+        }),
+        ('Información Básica', {
+            'fields': (
+                'descripcion',
+                'sku_codigo',
+                'marca',
+                'unidad_medida'
+            )
+        }),
+        ('Precios', {
+            'fields': (
+                'precio_unitario',
+                'moneda',
+                'precio_especial',
+                'descuento_porcentaje',
+                'fecha_ultima_actualizacion_precio'
+            )
+        }),
+        ('Condiciones Comerciales', {
+            'fields': (
+                'cantidad_minima',
+                'tiempo_entrega_dias',
+                'disponible',
+                'stock_disponible'
+            )
+        }),
+        ('Especificaciones', {
+            'fields': ('especificaciones_tecnicas',),
+            'classes': ('collapse',)
+        }),
+        ('Observaciones y Estado', {
+            'fields': ('observaciones', 'activo'),
+            'classes': ('collapse',)
+        }),
+        ('Control', {
+            'fields': ('fecha_registro', 'fecha_modificacion'),
+            'classes': ('collapse',)
+        }),
+    )
+    
+    readonly_fields = ['fecha_registro', 'fecha_modificacion', 'fecha_ultima_actualizacion_precio']
+    
+    def precio_formateado(self, obj):
+        """Mostrar precio formateado"""
+        return obj.get_precio_formateado()
+    precio_formateado.short_description = 'Precio'
+    
+    def disponibilidad(self, obj):
+        """Mostrar disponibilidad"""
+        return obj.get_texto_disponibilidad()
+    disponibilidad.short_description = 'Disponibilidad'

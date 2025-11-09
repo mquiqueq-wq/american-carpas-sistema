@@ -1,4 +1,5 @@
 from django.urls import path
+from django.views.generic import TemplateView
 from . import views
 
 app_name = "trabajadores"
@@ -7,7 +8,10 @@ urlpatterns = [
     # ====================================
     # PÁGINA DE INICIO (home con iconos)
     # ====================================
-    path('', views.home, name='home'),
+    path('', TemplateView.as_view(
+        template_name='trabajadores/home_trabajadores.html',
+        extra_context={'show_module_nav': True, 'active_module': 'trabajadores'}
+    ), name='home'),
     
     # ====================================
     # LISTADO Y CRUD BÁSICO

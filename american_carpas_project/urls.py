@@ -3,13 +3,14 @@ URL configuration for american_carpas_project project.
 """
 from django.contrib import admin
 from django.urls import path, include
+from django.views.generic import TemplateView
 from django.conf import settings
 from django.conf.urls.static import static
 from django.shortcuts import redirect
 
 urlpatterns = [
-    # Ruta raíz - redirige a trabajadores
-    path('', lambda request: redirect('trabajadores/')),
+    # Home general
+    path('', TemplateView.as_view(template_name='home_general.html'), name='home_general'),
     
     # Admin
     path('admin/', admin.site.urls),
@@ -19,6 +20,10 @@ urlpatterns = [
 
     # App proveedores
     path('proveedores/', include('proveedores.urls')),
+
+    # Página de próximamente
+    path('proximamente/', TemplateView.as_view(template_name='proximamente.html'), name='proximamente'),
+    
 ]
 
 # Servir archivos estáticos y media en desarrollo

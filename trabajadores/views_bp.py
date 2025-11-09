@@ -44,8 +44,6 @@ def dashboard_alertas_cursos(request):
     context = {
         'cursos': cursos,
         'estado_filtro': estado_filtro,
-        'show_module_nav': True,
-        'active_module': 'trabajadores'
     }
     return render(request, 'dashboard_alertas_cursos.html', context)
 
@@ -461,8 +459,6 @@ def trabajador_list(request):
         'tipos_documento': TrabajadorPersonal._meta.get_field('tipo_documento').choices,
         'estados_civiles': TrabajadorPersonal._meta.get_field('estado_civil').choices,
         'generos': TrabajadorPersonal._meta.get_field('genero').choices,
-        'show_module_nav': True,
-        'active_module': 'trabajadores'
     }
     
     return render(request, 'trabajadores/trabajador_list.html', context)
@@ -482,8 +478,6 @@ def trabajador_detail(request, id_trabajador):
         'dotaciones': dotaciones,
         'cursos': cursos,
         'roles': roles,
-        'show_module_nav': True,
-        'active_module': 'trabajadores'
     }
     return render(request, 'trabajadores/trabajador_detail.html', context)
 
@@ -724,8 +718,6 @@ def dotacion_create(request, id_trabajador):
         'form': form,
         'trabajador': trabajador,
         'tipos_dotacion': tipos_dotacion,
-        'show_module_nav': True,
-        'active_module': 'trabajadores'
     }
     
     return render(request, 'trabajadores/dotacion_form.html', context)
@@ -764,8 +756,6 @@ def dotacion_update(request, id_dotacion):
         'trabajador': trabajador,
         'tipos_dotacion': tipos_dotacion,
         'dotacion': dotacion,
-        'show_module_nav': True,
-        'active_module': 'trabajadores'
     }
     return render(request, 'trabajadores/dotacion_form.html', context)
 
@@ -787,9 +777,7 @@ def dotacion_delete(request, id_dotacion):
         'tipo': 'Dotación',
         'detalle': f'{dotacion.tipo_dotacion} - Talla {dotacion.talla}',
         'url_cancelar': 'trabajadores:trabajador_detail',
-        'id_trabajador': trabajador.id_trabajador,
-        'show_module_nav': True,
-        'active_module': 'trabajadores'
+        'id_trabajador': trabajador.id_trabajador
     }
     return render(request, 'trabajadores/confirm_delete.html', context)
 
@@ -964,8 +952,6 @@ def dashboard_alertas_cursos(request):
         'vigentes': vigentes,
         'proximos_vencer': proximos_vencer,
         'vencidos': vencidos,
-        'show_module_nav': True,
-        'active_module': 'trabajadores'
     }
     
     return render(request, 'trabajadores/dashboard_alertas_cursos.html', context)
@@ -1012,8 +998,6 @@ def dashboard_alertas_dotaciones(request):
         'vigentes': vigentes,
         'proximos_vencer': proximos_vencer,
         'vencidos': vencidos,
-        'show_module_nav': True,
-        'active_module': 'trabajadores'
     }
     
     return render(request, 'trabajadores/dashboard_alertas_dotaciones.html', context)
@@ -1055,8 +1039,6 @@ def dashboard_general(request):
         'trabajadores_con_alertas': trabajadores_con_alertas,
         'total_trabajadores_con_alertas': len(trabajadores_con_alertas),
         'total_alertas': sum(t['total_alertas'] for t in trabajadores_con_alertas),
-        'show_module_nav': True,
-        'active_module': 'trabajadores'
     }
     
     return render(request, 'trabajadores/dashboard_general.html', context)
@@ -1092,8 +1074,6 @@ def reporte_trabajadores_sin_documentacion(request):
     context = {
         'trabajadores_incompletos': trabajadores_incompletos,
         'total': len(trabajadores_incompletos),
-        'show_module_nav': True,
-        'active_module': 'trabajadores'
     }
     
     return render(request, 'trabajadores/reporte_documentacion_incompleta.html', context)
@@ -1109,8 +1089,6 @@ def tipo_curso_list(request):
         'tipos': tipos,
         'total_activos': tipos.filter(activo=True).count(),
         'total_inactivos': tipos.filter(activo=False).count(),
-        'show_module_nav': True,
-        'active_module': 'trabajadores'
     }
     return render(request, 'trabajadores/tipo_curso_list.html', context)
 
@@ -1186,8 +1164,6 @@ def tipo_dotacion_list(request):
         'tipos': tipos,
         'total_activos': tipos.filter(activo=True).count(),
         'total_inactivos': tipos.filter(activo=False).count(),
-        'show_module_nav': True,
-        'active_module': 'trabajadores'
     }
     return render(request, 'trabajadores/tipo_dotacion_list.html', context)
 
@@ -1266,9 +1242,7 @@ def tipo_documento_list(request):
     
     context = {
         'tipos': tipos,
-        'title': 'Tipos de Documentos',
-        'show_module_nav': True,
-        'active_module': 'trabajadores',
+        'title': 'Tipos de Documentos'
     }
     return render(request, 'trabajadores/tipo_documento_list.html', context)
 
@@ -1288,9 +1262,7 @@ def tipo_documento_create(request):
     
     context = {
         'form': form,
-        'title': 'Nuevo Tipo de Documento',
-        'show_module_nav': True,
-        'active_module': 'trabajadores',
+        'title': 'Nuevo Tipo de Documento'
     }
     return render(request, 'trabajadores/tipo_documento_form.html', context)
 
@@ -1313,9 +1285,7 @@ def tipo_documento_update(request, id_tipo_documento):
     context = {
         'form': form,
         'title': 'Editar Tipo de Documento',
-        'tipo': tipo,
-        'show_module_nav': True,
-        'active_module': 'trabajadores',
+        'tipo': tipo
     }
     return render(request, 'trabajadores/tipo_documento_form.html', context)
 
@@ -1347,9 +1317,7 @@ def tipo_documento_delete(request, id_tipo_documento):
         'obj': tipo,
         'cancel_url': reverse('trabajadores:tipo_documento_list'),
         'documentos_count': documentos_count,
-        'obj_type': 'tipo de documento',
-        'show_module_nav': True,
-        'active_module': 'trabajadores',
+        'obj_type': 'tipo de documento'
     }
     return render(request, 'trabajadores/confirm_delete.html', context)
 
@@ -1384,9 +1352,7 @@ def documento_create(request, id_trabajador):
     context = {
         'form': form,
         'trabajador': trabajador,
-        'title': 'Agregar Documento',
-        'show_module_nav': True,
-        'active_module': 'trabajadores',
+        'title': 'Agregar Documento'
     }
     return render(request, 'trabajadores/documento_form.html', context)
 
@@ -1413,9 +1379,7 @@ def documento_update(request, id_documento):
         'form': form,
         'trabajador': trabajador,
         'documento': documento,
-        'title': 'Editar Documento',
-        'show_module_nav': True,
-        'active_module': 'trabajadores',
+        'title': 'Editar Documento'
     }
     return render(request, 'trabajadores/documento_form.html', context)
 
@@ -1449,9 +1413,7 @@ def documento_delete(request, id_documento):
     context = {
         'obj': documento,
         'cancel_url': reverse('trabajadores:trabajador_detail', kwargs={'id_trabajador': trabajador_id}),
-        'obj_type': 'documento',
-        'show_module_nav': True,
-        'active_module': 'trabajadores',
+        'obj_type': 'documento'
     }
     return render(request, 'trabajadores/confirm_delete.html', context)
 
@@ -1545,9 +1507,7 @@ def documentos_list(request):
         'tipo_seleccionado': tipo_id,
         'estado_seleccionado': estado,
         'trabajador_query': trabajador_query,
-        'title': 'Todos los Documentos',
-        'show_module_nav': True,
-        'active_module': 'trabajadores',
+        'title': 'Todos los Documentos'
     }
     return render(request, 'trabajadores/documentos_list.html', context)
 
@@ -1588,9 +1548,7 @@ def documentos_vencidos(request):
         'total_vencidos': len(vencidos),
         'total_proximos': len(proximos_vencer),
         'total_vigentes': len(vigentes),
-        'title': 'Alertas de Documentación',
-        'show_module_nav': True,
-        'active_module': 'trabajadores',
+        'title': 'Alertas de Documentación'
     }
     return render(request, 'trabajadores/documentos_vencidos.html', context)
 
@@ -1646,9 +1604,7 @@ def documentos_faltantes(request):
         'trabajadores_incompletos': trabajadores_incompletos,
         'tipos_obligatorios': tipos_obligatorios,
         'total_incompletos': len(trabajadores_incompletos),
-        'title': 'Documentación Obligatoria Faltante',
-        'show_module_nav': True,
-        'active_module': 'trabajadores',
+        'title': 'Documentación Obligatoria Faltante'
     }
     return render(request, 'trabajadores/documentos_faltantes.html', context)
 

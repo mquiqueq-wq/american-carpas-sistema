@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+
+{% block title %}Próximamente{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="placeholder-module">
+                <i class="bi bi-hourglass-split"></i>
+                <h3 class="mt-3">Módulo en Desarrollo</h3>
+                <p class="lead">
+                    {% if request.GET.modulo == 'inventarios' %}
+                        El módulo de <strong>Inventarios</strong> estará disponible próximamente.
+                    {% elif request.GET.modulo == 'proyectos' %}
+                        El módulo de <strong>Proyectos</strong> estará disponible próximamente.
+                    {% else %}
+                        Este módulo estará disponible próximamente.
+                    {% endif %}
+                </p>
+                <p class="text-muted">
+                    Estamos trabajando para ofrecerte las mejores funcionalidades.
+                </p>
+                <a href="{% url 'home_general' %}" class="btn btn-primary-custom mt-3">
+                    <i class="bi bi-arrow-left me-2"></i>Volver al Inicio
+                </a>
+            </div>
+            
+            <!-- Info de módulos disponibles -->
+            <div class="card mt-4">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="bi bi-check-circle text-success me-2"></i>
+                        Módulos Disponibles
+                    </h5>
+                    <ul class="list-unstyled mt-3">
+                        <li class="mb-2">
+                            <i class="bi bi-person-badge text-primary me-2"></i>
+                            <a href="{% url 'trabajadores:home' %}">Trabajadores</a>
+                            <span class="badge bg-success ms-2">Activo</span>
+                        </li>
+                        <li class="mb-2">
+                            <i class="bi bi-box-seam text-success me-2"></i>
+                            <a href="{% url 'proveedores:home' %}">Proveedores</a>
+                            <span class="badge bg-success ms-2">Activo</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

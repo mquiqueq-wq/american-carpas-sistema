@@ -1,0 +1,143 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ titulo }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Encabezado -->
+            <div class="mb-4">
+                <h2><i class="bi bi-file-earmark-arrow-up text-success"></i> {{ titulo }}</h2>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="{% url 'proveedores:home' %}">Proveedores</a></li>
+                        <li class="breadcrumb-item"><a href="{% url 'proveedores:proveedor_list' %}">Listado</a></li>
+                        <li class="breadcrumb-item"><a href="{% url 'proveedores:proveedor_detail' proveedor.id_proveedor %}">{{ proveedor.razon_social }}</a></li>
+                        <li class="breadcrumb-item active">{{ action }} Documento</li>
+                    </ol>
+                </nav>
+            </div>
+
+            <!-- Info del Proveedor -->
+            <div class="alert alert-info mb-4">
+                <strong><i class="bi bi-building"></i> Proveedor:</strong> {{ proveedor.razon_social }}
+            </div>
+
+            <!-- Formulario -->
+            <div class="card">
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data" novalidate>
+                        {% csrf_token %}
+                        
+                        <!-- Tipo de Documento -->
+                        <div class="section-header mb-3">
+                            <h5 class="border-bottom pb-2"><i class="bi bi-card-checklist"></i> Tipo de Documento</h5>
+                        </div>
+                        <div class="mb-4">
+                            {{ form.id_tipo_documento.label_tag }}
+                            {{ form.id_tipo_documento }}
+                            {% if form.id_tipo_documento.help_text %}
+                                <small class="text-muted d-block">{{ form.id_tipo_documento.help_text }}</small>
+                            {% endif %}
+                            {% if form.id_tipo_documento.errors %}
+                                <div class="text-danger small">{{ form.id_tipo_documento.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Archivo -->
+                        <div class="section-header mb-3">
+                            <h5 class="border-bottom pb-2"><i class="bi bi-file-arrow-up"></i> Archivo</h5>
+                        </div>
+                        <div class="mb-4">
+                            {{ form.archivo.label_tag }}
+                            {{ form.archivo }}
+                            {% if form.archivo.help_text %}
+                                <small class="text-muted d-block">{{ form.archivo.help_text }}</small>
+                            {% endif %}
+                            {% if documento and documento.archivo %}
+                                <div class="alert alert-warning mt-2">
+                                    <i class="bi bi-info-circle"></i> 
+                                    <strong>Archivo actual:</strong> {{ documento.nombre_archivo_original }}
+                                    <small class="d-block">Suba un nuevo archivo solo si desea reemplazarlo</small>
+                                </div>
+                            {% endif %}
+                            {% if form.archivo.errors %}
+                                <div class="text-danger small">{{ form.archivo.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Información del Documento -->
+                        <div class="section-header mb-3">
+                            <h5 class="border-bottom pb-2"><i class="bi bi-info-circle"></i> Información del Documento</h5>
+                        </div>
+                        <div class="row mb-4">
+                            <div class="col-md-6 mb-3">
+                                {{ form.numero_documento.label_tag }}
+                                {{ form.numero_documento }}
+                                {% if form.numero_documento.errors %}
+                                    <div class="text-danger small">{{ form.numero_documento.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                {{ form.entidad_emisora.label_tag }}
+                                {{ form.entidad_emisora }}
+                                {% if form.entidad_emisora.errors %}
+                                    <div class="text-danger small">{{ form.entidad_emisora.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                {{ form.fecha_emision.label_tag }}
+                                {{ form.fecha_emision }}
+                                {% if form.fecha_emision.errors %}
+                                    <div class="text-danger small">{{ form.fecha_emision.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                {{ form.fecha_vencimiento.label_tag }}
+                                {{ form.fecha_vencimiento }}
+                                {% if form.fecha_vencimiento.help_text %}
+                                    <small class="text-muted d-block">{{ form.fecha_vencimiento.help_text }}</small>
+                                {% endif %}
+                                {% if form.fecha_vencimiento.errors %}
+                                    <div class="text-danger small">{{ form.fecha_vencimiento.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Observaciones -->
+                        <div class="section-header mb-3">
+                            <h5 class="border-bottom pb-2"><i class="bi bi-chat-text"></i> Observaciones</h5>
+                        </div>
+                        <div class="mb-4">
+                            {{ form.observaciones.label_tag }}
+                            {{ form.observaciones }}
+                            {% if form.observaciones.errors %}
+                                <div class="text-danger small">{{ form.observaciones.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Errores no de campo -->
+                        {% if form.non_field_errors %}
+                            <div class="alert alert-danger">
+                                {{ form.non_field_errors }}
+                            </div>
+                        {% endif %}
+
+                        <!-- Botones -->
+                        <div class="d-flex justify-content-between mt-4">
+                            <a href="{% url 'proveedores:proveedor_detail' proveedor.id_proveedor %}" 
+                               class="btn btn-secondary">
+                                <i class="bi bi-arrow-left"></i> Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-success-custom">
+                                <i class="bi bi-upload"></i> {{ action }} Documento
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

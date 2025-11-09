@@ -4,16 +4,91 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}American Carpas 1 SAS{% endblock %}</title>
+    <title>{% block title %}Sistema de Gestión{% endblock %} - American Carpas 1 SAS</title>
     
-    <!-- Bootstrap 5 CSS desde CDN -->
+    <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     
     <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
     
-    <!-- Estilos personalizados ⭐ CORREGIDO -->
+    <!-- Estilos personalizados -->
     <link href="{% static 'css/styles.css' %}" rel="stylesheet">
+    
+    <!-- Estilos adicionales para navegación por módulos -->
+    <style>
+        /* Navegación por tabs (módulos) */
+        .nav-modules {
+            background: white;
+            border-bottom: 2px solid #e5e7eb;
+            padding: 0;
+            margin-bottom: 2rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .nav-modules .nav-link {
+            color: var(--color-gris-oscuro);
+            padding: 1rem 1.5rem;
+            border: none;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 500;
+        }
+        
+        .nav-modules .nav-link:hover {
+            background-color: #f3f4f6;
+            border-bottom-color: var(--color-verde-primary);
+        }
+        
+        .nav-modules .nav-link.active {
+            color: var(--color-azul-primary);
+            background-color: #eff6ff;
+            border-bottom-color: var(--color-azul-primary);
+        }
+        
+        .nav-modules .nav-link i {
+            font-size: 1.2rem;
+        }
+        
+        /* Tarjetas completamente clickeables */
+        .card-link-wrapper {
+            text-decoration: none;
+            color: inherit;
+            display: block;
+            height: 100%;
+        }
+        
+        .card-link-wrapper:hover {
+            text-decoration: none;
+            color: inherit;
+        }
+        
+        .card-clickable {
+            cursor: pointer;
+            transition: all 0.3s ease;
+            height: 100%;
+        }
+        
+        .card-clickable:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15) !important;
+        }
+        
+        /* Responsive para módulos */
+        @media (max-width: 768px) {
+            .nav-modules .nav-link {
+                padding: 0.8rem 1rem;
+                font-size: 0.9rem;
+            }
+            
+            .nav-modules .nav-link i {
+                font-size: 1rem;
+            }
+        }
+    </style>
     
     {% block extra_css %}{% endblock %}
 </head>
@@ -24,7 +99,7 @@
     <nav class="navbar navbar-expand-lg navbar-dark navbar-custom">
         <div class="container-fluid">
             <!-- Logos y nombre -->
-            <a class="navbar-brand d-flex align-items-center" href="{% url 'trabajadores:home' %}">
+            <a class="navbar-brand d-flex align-items-center" href="{% url 'home_general' %}">
                 <!-- Logo Universidad -->
                 <img src="{% static 'img/logo_universidad.png' %}" alt="Universidad La Gran Colombia" class="logo-universidad">
                 
@@ -48,10 +123,16 @@
             <!-- Menú de navegación -->
             <div class="collapse navbar-collapse" id="navbarMain">
                 <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+                    <!-- Inicio -->
+                    <li class="nav-item">
+                        <a class="nav-link text-white" href="{% url 'home_general' %}">
+                            <i class="bi bi-house"></i> Inicio
+                        </a>
+                    </li>
                     
                     <!-- Usuario -->
                     <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="navbarUser" 
+                        <a class="nav-link dropdown-toggle text-white" href="#" id="navbarUser" 
                            role="button" data-bs-toggle="dropdown" aria-expanded="false">
                             <i class="bi bi-person-circle"></i>
                             {% if user.is_authenticated %}
@@ -82,16 +163,57 @@
                             {% endif %}
                         </ul>
                     </li>
-                    
                 </ul>
             </div>
         </div>
     </nav>
 
     <!-- ================================================
+         NAVEGACIÓN POR MÓDULOS (TABS)
+         ================================================ -->
+    {% block navigation_tabs %}
+    {% if show_module_nav %}
+    <nav class="nav-modules">
+        <div class="container-fluid">
+            <ul class="nav nav-tabs border-0">
+                <li class="nav-item">
+                    <a class="nav-link {% if active_module == 'trabajadores' %}active{% endif %}" 
+                       href="{% url 'trabajadores:home' %}">
+                        <i class="bi bi-person-badge"></i>
+                        Trabajadores
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if active_module == 'proveedores' %}active{% endif %}" 
+                       href="{% url 'proveedores:home' %}">
+                        <i class="bi bi-box-seam"></i>
+                        Proveedores
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if active_module == 'inventarios' %}active{% endif %}" 
+                       href="{% url 'proximamente' %}?modulo=inventarios">
+                        <i class="bi bi-boxes"></i>
+                        Inventarios
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if active_module == 'proyectos' %}active{% endif %}" 
+                       href="{% url 'proximamente' %}?modulo=proyectos">
+                        <i class="bi bi-kanban"></i>
+                        Proyectos
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+    {% endif %}
+    {% endblock %}
+
+    <!-- ================================================
          CONTENIDO PRINCIPAL
          ================================================ -->
-    <main class="container-fluid py-4" style="min-height: calc(100vh - 180px);">
+    <main class="container-fluid py-4" style="min-height: calc(100vh - 240px);">
         <!-- Mensajes de Django -->
         {% if messages %}
             <div class="container mb-4">

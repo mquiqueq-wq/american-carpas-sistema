@@ -1,0 +1,174 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ titulo }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <!-- Encabezado -->
+            <div class="mb-4">
+                <h2><i class="bi bi-box-seam text-success"></i> {{ titulo }}</h2>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="{% url 'proveedores:home' %}">Proveedores</a></li>
+                        <li class="breadcrumb-item"><a href="{% url 'proveedores:proveedor_list' %}">Listado</a></li>
+                        <li class="breadcrumb-item"><a href="{% url 'proveedores:proveedor_detail' proveedor.id_proveedor %}">{{ proveedor.razon_social }}</a></li>
+                        <li class="breadcrumb-item active">{{ action }} Producto/Servicio</li>
+                    </ol>
+                </nav>
+            </div>
+
+            <!-- Info del Proveedor -->
+            <div class="alert alert-info mb-4">
+                <strong><i class="bi bi-building"></i> Proveedor:</strong> {{ proveedor.razon_social }}
+            </div>
+
+            <!-- Formulario -->
+            <div class="card">
+                <div class="card-body">
+                    <form method="post" novalidate>
+                        {% csrf_token %}
+                        
+                        <!-- Información Básica -->
+                        <div class="section-header mb-3">
+                            <h5 class="border-bottom pb-2"><i class="bi bi-card-text"></i> Información Básica</h5>
+                        </div>
+                        <div class="row mb-4">
+                            <div class="col-md-6 mb-3">
+                                {{ form.tipo.label_tag }}
+                                {{ form.tipo }}
+                                {% if form.tipo.errors %}<div class="text-danger small">{{ form.tipo.errors }}</div>{% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                {{ form.unidad_medida.label_tag }}
+                                {{ form.unidad_medida }}
+                                {% if form.unidad_medida.errors %}<div class="text-danger small">{{ form.unidad_medida.errors }}</div>{% endif %}
+                            </div>
+                            <div class="col-md-12 mb-3">
+                                {{ form.nombre.label_tag }}
+                                {{ form.nombre }}
+                                {% if form.nombre.errors %}<div class="text-danger small">{{ form.nombre.errors }}</div>{% endif %}
+                            </div>
+                            <div class="col-md-12 mb-3">
+                                {{ form.descripcion.label_tag }}
+                                {{ form.descripcion }}
+                                {% if form.descripcion.errors %}<div class="text-danger small">{{ form.descripcion.errors }}</div>{% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                {{ form.sku_codigo.label_tag }}
+                                {{ form.sku_codigo }}
+                                {% if form.sku_codigo.errors %}<div class="text-danger small">{{ form.sku_codigo.errors }}</div>{% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                {{ form.marca.label_tag }}
+                                {{ form.marca }}
+                                {% if form.marca.errors %}<div class="text-danger small">{{ form.marca.errors }}</div>{% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Precios -->
+                        <div class="section-header mb-3">
+                            <h5 class="border-bottom pb-2"><i class="bi bi-cash-coin"></i> Precios</h5>
+                        </div>
+                        <div class="row mb-4">
+                            <div class="col-md-4 mb-3">
+                                {{ form.precio_unitario.label_tag }}
+                                {{ form.precio_unitario }}
+                                {% if form.precio_unitario.errors %}<div class="text-danger small">{{ form.precio_unitario.errors }}</div>{% endif %}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                {{ form.moneda.label_tag }}
+                                {{ form.moneda }}
+                                {% if form.moneda.errors %}<div class="text-danger small">{{ form.moneda.errors }}</div>{% endif %}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                {{ form.descuento_porcentaje.label_tag }}
+                                {{ form.descuento_porcentaje }}
+                                {% if form.descuento_porcentaje.errors %}<div class="text-danger small">{{ form.descuento_porcentaje.errors }}</div>{% endif %}
+                            </div>
+                            <div class="col-md-12 mb-3">
+                                {{ form.precio_especial.label_tag }}
+                                {{ form.precio_especial }}
+                                {% if form.precio_especial.help_text %}<small class="text-muted d-block">{{ form.precio_especial.help_text }}</small>{% endif %}
+                                {% if form.precio_especial.errors %}<div class="text-danger small">{{ form.precio_especial.errors }}</div>{% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Condiciones Comerciales -->
+                        <div class="section-header mb-3">
+                            <h5 class="border-bottom pb-2"><i class="bi bi-truck"></i> Condiciones Comerciales</h5>
+                        </div>
+                        <div class="row mb-4">
+                            <div class="col-md-4 mb-3">
+                                {{ form.cantidad_minima.label_tag }}
+                                {{ form.cantidad_minima }}
+                                {% if form.cantidad_minima.errors %}<div class="text-danger small">{{ form.cantidad_minima.errors }}</div>{% endif %}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                {{ form.tiempo_entrega_dias.label_tag }}
+                                {{ form.tiempo_entrega_dias }}
+                                {% if form.tiempo_entrega_dias.errors %}<div class="text-danger small">{{ form.tiempo_entrega_dias.errors }}</div>{% endif %}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                {{ form.stock_disponible.label_tag }}
+                                {{ form.stock_disponible }}
+                                {% if form.stock_disponible.help_text %}<small class="text-muted d-block">{{ form.stock_disponible.help_text }}</small>{% endif %}
+                                {% if form.stock_disponible.errors %}<div class="text-danger small">{{ form.stock_disponible.errors }}</div>{% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Especificaciones Técnicas -->
+                        <div class="section-header mb-3">
+                            <h5 class="border-bottom pb-2"><i class="bi bi-list-check"></i> Especificaciones Técnicas</h5>
+                        </div>
+                        <div class="mb-4">
+                            {{ form.especificaciones_tecnicas.label_tag }}
+                            {{ form.especificaciones_tecnicas }}
+                            {% if form.especificaciones_tecnicas.errors %}<div class="text-danger small">{{ form.especificaciones_tecnicas.errors }}</div>{% endif %}
+                        </div>
+
+                        <!-- Observaciones y Estado -->
+                        <div class="section-header mb-3">
+                            <h5 class="border-bottom pb-2"><i class="bi bi-gear"></i> Configuración</h5>
+                        </div>
+                        <div class="mb-4">
+                            <div class="form-check mb-3">
+                                {{ form.disponible }}
+                                {{ form.disponible.label_tag }}
+                            </div>
+                            <div class="form-check mb-3">
+                                {{ form.activo }}
+                                {{ form.activo.label_tag }}
+                            </div>
+                            <div class="mb-3">
+                                {{ form.observaciones.label_tag }}
+                                {{ form.observaciones }}
+                                {% if form.observaciones.errors %}<div class="text-danger small">{{ form.observaciones.errors }}</div>{% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Errores no de campo -->
+                        {% if form.non_field_errors %}
+                            <div class="alert alert-danger">
+                                {{ form.non_field_errors }}
+                            </div>
+                        {% endif %}
+
+                        <!-- Botones -->
+                        <div class="d-flex justify-content-between mt-4">
+                            <a href="{% url 'proveedores:proveedor_detail' proveedor.id_proveedor %}" 
+                               class="btn btn-secondary">
+                                <i class="bi bi-arrow-left"></i> Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-success-custom">
+                                <i class="bi bi-save"></i> {{ action }} Producto/Servicio
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

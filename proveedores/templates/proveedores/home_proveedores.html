@@ -1,0 +1,220 @@
+{% extends 'base.html' %}
+
+{% block title %}Módulo: Proveedores{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Encabezado del módulo -->
+    <div class="mb-4">
+        <h2><i class="bi bi-box-seam text-success"></i> Módulo: Proveedores</h2>
+        <p class="text-muted">Gestión completa de proveedores y catálogos</p>
+    </div>
+    
+    <!-- Grid de funcionalidades -->
+    <div class="row g-4 mb-5">
+        <!-- 1. Listado de Proveedores -->
+        <div class="col-6 col-md-4 col-lg-3">
+            <a href="{% url 'proveedores:proveedor_list' %}" class="text-decoration-none">
+                <div class="card menu-card card-azul">
+                    <div class="card-body">
+                        <i class="bi bi-list-ul menu-icon-large"></i>
+                        <h6 class="fw-bold">Listado</h6>
+                        <small class="text-muted">Ver todos</small>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <!-- 2. Registrar Proveedor -->
+        <div class="col-6 col-md-4 col-lg-3">
+            <a href="{% url 'proveedores:proveedor_create' %}" class="text-decoration-none">
+                <div class="card menu-card card-verde">
+                    <div class="card-body">
+                        <i class="bi bi-plus-circle menu-icon-large"></i>
+                        <h6 class="fw-bold">Registrar</h6>
+                        <small class="text-muted">Nuevo proveedor</small>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <!-- 3. Tipos Proveedores -->
+        <div class="col-6 col-md-4 col-lg-3">
+            <a href="{% url 'proveedores:tipo_proveedor_list' %}" class="text-decoration-none">
+                <div class="card menu-card card-azul">
+                    <div class="card-body">
+                        <i class="bi bi-card-list menu-icon-large"></i>
+                        <h6 class="fw-bold">Tipos Proveedores</h6>
+                        <small class="text-muted">Catálogo</small>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <!-- 4. Categorías -->
+        <div class="col-6 col-md-4 col-lg-3">
+            <a href="{% url 'proveedores:categoria_proveedor_list' %}" class="text-decoration-none">
+                <div class="card menu-card card-verde">
+                    <div class="card-body">
+                        <i class="bi bi-tags menu-icon-large"></i>
+                        <h6 class="fw-bold">Categorías</h6>
+                        <small class="text-muted">Catálogo</small>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <!-- 5. Tipos Documentos -->
+        <div class="col-6 col-md-4 col-lg-3">
+            <a href="{% url 'proveedores:tipo_documento_list' %}" class="text-decoration-none">
+                <div class="card menu-card card-azul">
+                    <div class="card-body">
+                        <i class="bi bi-file-earmark-text menu-icon-large"></i>
+                        <h6 class="fw-bold">Tipos Documentos</h6>
+                        <small class="text-muted">Catálogo</small>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <!-- 6. Contactos -->
+        <div class="col-6 col-md-4 col-lg-3">
+            <a href="{% url 'proveedores:proveedor_list' %}" class="text-decoration-none">
+                <div class="card menu-card card-verde">
+                    <div class="card-body">
+                        <i class="bi bi-person-lines-fill menu-icon-large"></i>
+                        <h6 class="fw-bold">Contactos</h6>
+                        <small class="text-muted">Ver todos</small>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <!-- 7. Documentos -->
+        <div class="col-6 col-md-4 col-lg-3">
+            <a href="{% url 'proveedores:proveedor_list' %}" class="text-decoration-none">
+                <div class="card menu-card card-azul">
+                    <div class="card-body">
+                        <i class="bi bi-files menu-icon-large"></i>
+                        <h6 class="fw-bold">Documentos</h6>
+                        <small class="text-muted">Gestión documental</small>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <!-- 8. Alertas Documentos -->
+        <div class="col-6 col-md-4 col-lg-3">
+            <a href="{% url 'proveedores:proveedor_list' %}" class="text-decoration-none">
+                <div class="card menu-card border-warning">
+                    <div class="card-body">
+                        <i class="bi bi-exclamation-triangle-fill menu-icon-large text-warning"></i>
+                        <h6 class="fw-bold">Alertas Docs</h6>
+                        <small class="text-muted">Vencimientos</small>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <!-- 9. Productos/Servicios -->
+        <div class="col-6 col-md-4 col-lg-3">
+            <a href="{% url 'proveedores:proveedor_list' %}" class="text-decoration-none">
+                <div class="card menu-card card-verde">
+                    <div class="card-body">
+                        <i class="bi bi-cart menu-icon-large"></i>
+                        <h6 class="fw-bold">Productos/Servicios</h6>
+                        <small class="text-muted">Catálogo</small>
+                        <span class="badge bg-success mt-2">Fase 5</span>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <!-- 10. Evaluación Proveedores -->
+        <div class="col-6 col-md-4 col-lg-3">
+            <a href="{% url 'proximamente' %}" class="text-decoration-none">
+                <div class="card menu-card card-azul">
+                    <div class="card-body">
+                        <i class="bi bi-star menu-icon-large"></i>
+                        <h6 class="fw-bold">Evaluación</h6>
+                        <small class="text-muted">Calificaciones</small>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <!-- 11. Reportes -->
+        <div class="col-6 col-md-4 col-lg-3">
+            <a href="{% url 'proximamente' %}" class="text-decoration-none">
+                <div class="card menu-card card-verde">
+                    <div class="card-body">
+                        <i class="bi bi-graph-up menu-icon-large"></i>
+                        <h6 class="fw-bold">Reportes</h6>
+                        <small class="text-muted">Estadísticas</small>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <!-- 12. Historial de Compras -->
+        <div class="col-6 col-md-4 col-lg-3">
+            <a href="{% url 'proximamente' %}" class="text-decoration-none">
+                <div class="card menu-card card-azul">
+                    <div class="card-body">
+                        <i class="bi bi-clock-history menu-icon-large"></i>
+                        <h6 class="fw-bold">Historial</h6>
+                        <small class="text-muted">Compras realizadas</small>
+                    </div>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    <!-- Información de estado del módulo -->
+    <div class="alert alert-success" role="alert">
+        <div class="d-flex align-items-center">
+            <i class="bi bi-check-circle-fill me-2" style="font-size: 1.5rem;"></i>
+            <div>
+                <h6 class="alert-heading mb-1">Módulo Activo - Fase 5 Completada</h6>
+                <p class="mb-0">
+                    <strong>Funcionalidades:</strong> Catálogos, Proveedores, Contactos, Documentos y Productos/Servicios
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Animación de entrada para las tarjetas */
+    .menu-card {
+        animation: fadeInUp 0.5s ease forwards;
+        opacity: 0;
+    }
+    
+    .menu-card:nth-child(1) { animation-delay: 0.1s; }
+    .menu-card:nth-child(2) { animation-delay: 0.2s; }
+    .menu-card:nth-child(3) { animation-delay: 0.3s; }
+    .menu-card:nth-child(4) { animation-delay: 0.4s; }
+    .menu-card:nth-child(5) { animation-delay: 0.5s; }
+    .menu-card:nth-child(6) { animation-delay: 0.6s; }
+    .menu-card:nth-child(7) { animation-delay: 0.7s; }
+    .menu-card:nth-child(8) { animation-delay: 0.8s; }
+    .menu-card:nth-child(9) { animation-delay: 0.9s; }
+    .menu-card:nth-child(10) { animation-delay: 1.0s; }
+    .menu-card:nth-child(11) { animation-delay: 1.1s; }
+    .menu-card:nth-child(12) { animation-delay: 1.2s; }
+    
+    @keyframes fadeInUp {
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+    }
+</style>
+{% endblock %}
