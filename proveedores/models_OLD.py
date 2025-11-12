@@ -29,15 +29,6 @@ TIPO_PERSONA_CHOICES = [
     ('NATURAL', 'Persona Natural'),
 ]
 
-# NUEVO: Responsabilidades Fiscales
-RESPONSABILIDAD_FISCAL_CHOICES = [
-    ('NO_RESPONSABLE', 'No Responsable de IVA'),
-    ('RESPONSABLE_IVA', 'Responsable de IVA'),
-    ('GRAN_CONTRIBUYENTE', 'Gran Contribuyente'),
-    ('AUTORRETENEDOR', 'Autorretenedor'),
-    ('REGIMEN_SIMPLE', 'Régimen Simple de Tributación'),
-]
-
 AREA_RESPONSABILIDAD_CHOICES = [
     ('COMERCIAL', 'Comercial'),
     ('TECNICA', 'Técnica'),
@@ -93,7 +84,6 @@ class TipoProveedor(models.Model):
     id_tipo_proveedor = models.AutoField(primary_key=True)
     nombre_tipo = models.CharField(max_length=100, unique=True, verbose_name="Nombre del Tipo")
     descripcion = models.TextField(blank=True, null=True, verbose_name="Descripción")
-    icono = models.CharField(max_length=50, blank=True, null=True, verbose_name="Icono")
     activo = models.BooleanField(default=True, verbose_name="Activo")
     fecha_creacion = models.DateTimeField(auto_now_add=True, verbose_name="Fecha de Creación")
     
@@ -157,7 +147,6 @@ class TipoDocumentoProveedor(models.Model):
     id_tipo_documento = models.AutoField(primary_key=True)
     nombre_tipo_documento = models.CharField(max_length=100, unique=True, verbose_name="Nombre del Tipo de Documento")
     descripcion = models.TextField(blank=True, null=True, verbose_name="Descripción")
-    icono = models.CharField(max_length=50, blank=True, null=True, verbose_name="Icono")
     obligatorio = models.BooleanField(default=False, verbose_name="Obligatorio")
     requiere_vigencia = models.BooleanField(default=True, verbose_name="Requiere Control de Vigencia")
     dias_alerta_vencimiento = models.IntegerField(
@@ -257,42 +246,9 @@ class Proveedor(models.Model):
         help_text="Ej: Régimen Común, Régimen Simplificado"
     )
     
-    # NUEVO: Campo unificado para responsabilidades fiscales
-    responsabilidad_fiscal = models.CharField(
-        max_length=50,
-        choices=RESPONSABILIDAD_FISCAL_CHOICES,
-        default='RESPONSABLE_IVA',
-        verbose_name="Responsabilidad Fiscal"
-    )
-    
-    # Mantener campos antiguos por compatibilidad (deprecated)
     responsable_iva = models.BooleanField(default=True, verbose_name="Responsable de IVA")
     gran_contribuyente = models.BooleanField(default=False, verbose_name="Gran Contribuyente")
     autorretenedor = models.BooleanField(default=False, verbose_name="Autorretenedor")
-    
-    # NUEVO: Campos adicionales legales
-    pais_origen = models.CharField(
-        max_length=100,
-        default='Colombia',
-        verbose_name="País de Origen",
-        help_text="País donde está constituida la empresa"
-    )
-    
-    actividad_economica = models.CharField(
-        max_length=255,
-        blank=True,
-        null=True,
-        verbose_name="Actividad Económica",
-        help_text="Descripción de la actividad económica principal"
-    )
-    
-    codigo_ciiu = models.CharField(
-        max_length=10,
-        blank=True,
-        null=True,
-        verbose_name="Código CIIU",
-        help_text="Clasificación Industrial Internacional Uniforme"
-    )
     
     # ===== INFORMACIÓN DE CONTACTO =====
     pais = models.CharField(max_length=100, default='Colombia', verbose_name="País")
@@ -305,25 +261,7 @@ class Proveedor(models.Model):
     telefono_secundario = models.CharField(max_length=50, blank=True, null=True, verbose_name="Teléfono Secundario")
     email_principal = models.EmailField(verbose_name="Email Principal")
     email_secundario = models.EmailField(blank=True, null=True, verbose_name="Email Secundario")
-    
-    # NUEVO: Email específico para facturación
-    email_facturacion = models.EmailField(
-        blank=True,
-        null=True,
-        verbose_name="Email de Facturación",
-        help_text="Email específico para envío de facturas"
-    )
-    
     sitio_web = models.URLField(blank=True, null=True, verbose_name="Sitio Web")
-    
-    # NUEVO: Horario de atención
-    horario_atencion = models.CharField(
-        max_length=200,
-        blank=True,
-        null=True,
-        verbose_name="Horario de Atención",
-        help_text="Ej: Lunes a Viernes 8:00 AM - 5:00 PM"
-    )
     
     # ===== INFORMACIÓN BANCARIA =====
     banco = models.CharField(max_length=100, blank=True, null=True, verbose_name="Banco")
@@ -335,15 +273,6 @@ class Proveedor(models.Model):
         help_text="Ahorros, Corriente"
     )
     numero_cuenta = models.CharField(max_length=50, blank=True, null=True, verbose_name="Número de Cuenta")
-    
-    # NUEVO: Titular de la cuenta
-    titular_cuenta = models.CharField(
-        max_length=200,
-        blank=True,
-        null=True,
-        verbose_name="Titular de la Cuenta",
-        help_text="Nombre del titular de la cuenta bancaria"
-    )
     
     # ===== INFORMACIÓN COMERCIAL =====
     tiempo_entrega_promedio = models.IntegerField(
@@ -371,22 +300,6 @@ class Proveedor(models.Model):
         decimal_places=2,
         default=0,
         verbose_name="Descuento por Pronto Pago (%)"
-    )
-    
-    # NUEVO: Acepta crédito
-    acepta_credito = models.BooleanField(
-        default=True,
-        verbose_name="Acepta Crédito",
-        help_text="¿El proveedor acepta ventas a crédito?"
-    )
-    
-    # NUEVO: Métodos de pago
-    metodos_pago_aceptados = models.CharField(
-        max_length=500,
-        blank=True,
-        null=True,
-        verbose_name="Métodos de Pago Aceptados",
-        help_text="Ej: Efectivo, Transferencia, Cheque, Tarjeta"
     )
     
     calificacion = models.DecimalField(
@@ -465,52 +378,33 @@ class ContactoProveedor(models.Model):
     cargo = models.CharField(max_length=100, verbose_name="Cargo")
     
     area_responsabilidad = models.CharField(
-        max_length=100,
-        blank=True,
-        null=True,
-        verbose_name="Área de Responsabilidad",
-        help_text="Área o departamento del que es responsable"
-    )
-    
-    telefono_fijo = models.CharField(
         max_length=50,
-        blank=True,
-        null=True,
-        verbose_name="Teléfono Fijo"
+        choices=AREA_RESPONSABILIDAD_CHOICES,
+        default='COMERCIAL',
+        verbose_name="Área de Responsabilidad"
     )
     
-    telefono_movil = models.CharField(
-        max_length=50,
-        verbose_name="Teléfono Móvil"
-    )
-    
+    telefono_fijo = models.CharField(max_length=50, blank=True, null=True, verbose_name="Teléfono Fijo")
+    telefono_movil = models.CharField(max_length=50, verbose_name="Teléfono Móvil")
     email = models.EmailField(verbose_name="Email")
     
-    es_contacto_principal = models.BooleanField(
-        default=False,
-        verbose_name="Contacto Principal",
-        help_text="Solo puede haber un contacto principal por proveedor"
-    )
+    es_contacto_principal = models.BooleanField(default=False, verbose_name="Contacto Principal")
     
     activo = models.BooleanField(default=True, verbose_name="Activo")
     
-    observaciones = models.TextField(
-        blank=True,
-        null=True,
-        verbose_name="Observaciones"
-    )
+    observaciones = models.TextField(blank=True, null=True, verbose_name="Observaciones")
     
-    fecha_registro = models.DateTimeField(auto_now_add=True, verbose_name="Fecha de Registro")
+    fecha_creacion = models.DateTimeField(auto_now_add=True, verbose_name="Fecha de Creación")
     fecha_modificacion = models.DateTimeField(auto_now=True, verbose_name="Última Modificación")
     
     class Meta:
         db_table = 'contactos_proveedores'
         verbose_name = 'Contacto de Proveedor'
         verbose_name_plural = 'Contactos de Proveedores'
-        ordering = ['-es_contacto_principal', 'apellidos', 'nombres']
+        ordering = ['-es_contacto_principal', 'nombres']
     
     def __str__(self):
-        return f"{self.nombres} {self.apellidos} - {self.id_proveedor.razon_social}"
+        return f"{self.nombres} {self.apellidos} ({self.cargo})"
     
     def get_nombre_completo(self):
         """Retorna el nombre completo del contacto"""
@@ -518,15 +412,14 @@ class ContactoProveedor(models.Model):
     
     def save(self, *args, **kwargs):
         """
-        Override save para asegurar que solo haya un contacto principal por proveedor
+        Si este contacto es marcado como principal, 
+        desmarcar cualquier otro contacto principal del mismo proveedor
         """
         if self.es_contacto_principal:
-            # Desactivar otros contactos principales del mismo proveedor
             ContactoProveedor.objects.filter(
                 id_proveedor=self.id_proveedor,
                 es_contacto_principal=True
-            ).exclude(id_contacto=self.id_contacto).update(es_contacto_principal=False)
-        
+            ).update(es_contacto_principal=False)
         super().save(*args, **kwargs)
 
 
@@ -536,7 +429,8 @@ class ContactoProveedor(models.Model):
 
 class DocumentoProveedor(models.Model):
     """
-    Modelo para gestionar documentos digitales de proveedores
+    Modelo para gestionar documentos de proveedores
+    Con control de vigencia y alertas de vencimiento
     """
     id_documento = models.AutoField(primary_key=True)
     
@@ -550,19 +444,20 @@ class DocumentoProveedor(models.Model):
     id_tipo_documento = models.ForeignKey(
         TipoDocumentoProveedor,
         on_delete=models.PROTECT,
-        related_name='documentos',
+        related_name='documentos_proveedores',
         verbose_name="Tipo de Documento"
     )
     
     archivo = models.FileField(
-        upload_to='proveedores/documentos/%Y/%m/',
+        upload_to='documentos_proveedores/%Y/%m/',
         verbose_name="Archivo",
-        help_text="Archivo del documento (PDF, Word, Excel, Imagen)"
+        help_text="Archivo PDF, imagen o documento escaneado"
     )
     
     nombre_archivo_original = models.CharField(
         max_length=255,
-        verbose_name="Nombre Original del Archivo"
+        verbose_name="Nombre del Archivo",
+        help_text="Nombre original del archivo subido"
     )
     
     numero_documento = models.CharField(
@@ -573,9 +468,7 @@ class DocumentoProveedor(models.Model):
         help_text="Número de folio, certificado, etc."
     )
     
-    fecha_emision = models.DateField(
-        verbose_name="Fecha de Emisión"
-    )
+    fecha_emision = models.DateField(verbose_name="Fecha de Emisión")
     
     fecha_vencimiento = models.DateField(
         blank=True,
@@ -584,68 +477,85 @@ class DocumentoProveedor(models.Model):
         help_text="Dejar vacío si el documento no vence"
     )
     
+    estado = models.CharField(
+        max_length=20,
+        choices=ESTADO_DOCUMENTO_CHOICES,
+        default='VIGENTE',
+        verbose_name="Estado"
+    )
+    
     entidad_emisora = models.CharField(
         max_length=200,
         blank=True,
         null=True,
         verbose_name="Entidad Emisora",
-        help_text="Organismo o entidad que emitió el documento"
+        help_text="Ej: Cámara de Comercio, DIAN, etc."
     )
     
-    estado_documento = models.CharField(
-        max_length=20,
-        choices=ESTADO_DOCUMENTO_CHOICES,
-        default='VIGENTE',
-        verbose_name="Estado del Documento"
-    )
+    observaciones = models.TextField(blank=True, null=True, verbose_name="Observaciones")
     
-    observaciones = models.TextField(
+    fecha_carga = models.DateTimeField(auto_now_add=True, verbose_name="Fecha de Carga")
+    
+    cargado_por = models.CharField(
+        max_length=100,
         blank=True,
         null=True,
-        verbose_name="Observaciones"
+        verbose_name="Cargado Por",
+        help_text="Usuario que cargó el documento"
     )
     
-    fecha_carga = models.DateTimeField(
-        auto_now_add=True,
-        verbose_name="Fecha de Carga"
-    )
-    
-    fecha_modificacion = models.DateTimeField(
-        auto_now=True,
-        verbose_name="Última Modificación"
-    )
+    fecha_modificacion = models.DateTimeField(auto_now=True, verbose_name="Última Modificación")
     
     class Meta:
         db_table = 'documentos_proveedores'
         verbose_name = 'Documento de Proveedor'
         verbose_name_plural = 'Documentos de Proveedores'
         ordering = ['-fecha_carga']
+        unique_together = [['id_proveedor', 'id_tipo_documento']]
     
     def __str__(self):
         return f"{self.id_tipo_documento.nombre_tipo_documento} - {self.id_proveedor.razon_social}"
     
+    def save(self, *args, **kwargs):
+        """Guardar nombre del archivo y actualizar estado automáticamente"""
+        if self.archivo and not self.nombre_archivo_original:
+            self.nombre_archivo_original = self.archivo.name
+        
+        self.actualizar_estado()
+        
+        super().save(*args, **kwargs)
+    
     def actualizar_estado(self):
-        """
-        Actualiza el estado del documento según las fechas
-        """
-        from datetime import date, timedelta
+        """Actualizar el estado del documento según su vigencia"""
+        from datetime import date
         
         if not self.fecha_vencimiento:
-            self.estado_documento = 'NO_APLICA'
+            self.estado = 'NO_APLICA'
             return
         
         hoy = date.today()
         dias_diferencia = (self.fecha_vencimiento - hoy).days
+        
         dias_alerta = self.id_tipo_documento.dias_alerta_vencimiento
         
-        if dias_diferencia < 0:
-            self.estado_documento = 'VENCIDO'
+        if self.fecha_vencimiento < hoy:
+            self.estado = 'VENCIDO'
         elif dias_diferencia <= dias_alerta:
-            self.estado_documento = 'POR_VENCER'
+            self.estado = 'POR_VENCER'
         else:
-            self.estado_documento = 'VIGENTE'
+            self.estado = 'VIGENTE'
     
-    def get_dias_para_vencer(self):
+    def get_estado_badge_class(self):
+        """Retorna la clase CSS para el badge de estado"""
+        estados = {
+            'VIGENTE': 'bg-success',
+            'POR_VENCER': 'bg-warning',
+            'VENCIDO': 'bg-danger',
+            'NO_APLICA': 'bg-secondary'
+        }
+        return estados.get(self.estado, 'bg-secondary')
+    
+    def dias_para_vencimiento(self):
         """Retorna los días que faltan para el vencimiento"""
         from datetime import date
         
@@ -655,15 +565,22 @@ class DocumentoProveedor(models.Model):
         hoy = date.today()
         return (self.fecha_vencimiento - hoy).days
     
-    def get_badge_estado(self):
-        """Retorna la clase CSS para el badge según el estado"""
-        badges = {
-            'VIGENTE': 'bg-success',
-            'POR_VENCER': 'bg-warning',
-            'VENCIDO': 'bg-danger',
-            'NO_APLICA': 'bg-secondary'
-        }
-        return badges.get(self.estado_documento, 'bg-secondary')
+    def esta_vigente(self):
+        """Verifica si el documento está vigente"""
+        return self.estado in ['VIGENTE', 'NO_APLICA']
+    
+    def get_tamano_archivo(self):
+        """Retorna el tamaño del archivo en formato legible"""
+        try:
+            size = self.archivo.size
+            if size < 1024:
+                return f"{size} bytes"
+            elif size < 1024 * 1024:
+                return f"{size / 1024:.1f} KB"
+            else:
+                return f"{size / (1024 * 1024):.1f} MB"
+        except:
+            return "N/A"
     
     def get_extension_archivo(self):
         """Retorna la extensión del archivo"""

@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
 
 {% block title %}{{ titulo }}{% endblock %}
+
 {% block content %}
 <div class="container py-4">
     <div class="row justify-content-center">
@@ -21,83 +22,337 @@
                     <form method="post" novalidate>
                         {% csrf_token %}
                         
-                        <!-- IDENTIFICACIÓN -->
+                        <!-- Errores generales del formulario -->
+                        {% if form.non_field_errors %}
+                            <div class="alert alert-danger">
+                                {{ form.non_field_errors }}
+                            </div>
+                        {% endif %}
+                        
+                        <!-- IDENTIFICACIÓN BÁSICA -->
                         <div class="section-header mb-3">
                             <h5 class="border-bottom pb-2"><i class="bi bi-card-text"></i> Identificación Básica</h5>
                         </div>
                         <div class="row mb-4">
-                            <div class="col-md-6 mb-3">{{ form.razon_social.label_tag }}{{ form.razon_social }}{% if form.razon_social.errors %}<div class="text-danger small">{{ form.razon_social.errors }}</div>{% endif %}</div>
-                            <div class="col-md-6 mb-3">{{ form.nombre_comercial.label_tag }}{{ form.nombre_comercial }}{% if form.nombre_comercial.errors %}<div class="text-danger small">{{ form.nombre_comercial.errors }}</div>{% endif %}</div>
-                            <div class="col-md-4 mb-3">{{ form.tipo_documento.label_tag }}{{ form.tipo_documento }}{% if form.tipo_documento.errors %}<div class="text-danger small">{{ form.tipo_documento.errors }}</div>{% endif %}</div>
-                            <div class="col-md-4 mb-3">{{ form.numero_documento.label_tag }}{{ form.numero_documento }}{% if form.numero_documento.errors %}<div class="text-danger small">{{ form.numero_documento.errors }}</div>{% endif %}</div>
-                            <div class="col-md-4 mb-3">{{ form.digito_verificacion.label_tag }}{{ form.digito_verificacion }}{% if form.digito_verificacion.errors %}<div class="text-danger small">{{ form.digito_verificacion.errors }}</div>{% endif %}</div>
-                            <div class="col-md-4 mb-3">{{ form.tipo_proveedor.label_tag }}{{ form.tipo_proveedor }}{% if form.tipo_proveedor.errors %}<div class="text-danger small">{{ form.tipo_proveedor.errors }}</div>{% endif %}</div>
-                            <div class="col-md-4 mb-3">{{ form.categoria_principal.label_tag }}{{ form.categoria_principal }}{% if form.categoria_principal.errors %}<div class="text-danger small">{{ form.categoria_principal.errors }}</div>{% endif %}</div>
-                            <div class="col-md-4 mb-3">{{ form.estado.label_tag }}{{ form.estado }}{% if form.estado.errors %}<div class="text-danger small">{{ form.estado.errors }}</div>{% endif %}</div>
+                            <div class="col-md-4 mb-3">
+                                {{ form.tipo_persona.label_tag }}
+                                {{ form.tipo_persona }}
+                                {% if form.tipo_persona.errors %}
+                                    <div class="text-danger small">{{ form.tipo_persona.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-8 mb-3">
+                                {{ form.razon_social.label_tag }}
+                                {{ form.razon_social }}
+                                {% if form.razon_social.errors %}
+                                    <div class="text-danger small">{{ form.razon_social.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-12 mb-3">
+                                {{ form.nombre_comercial.label_tag }}
+                                {{ form.nombre_comercial }}
+                                {% if form.nombre_comercial.errors %}
+                                    <div class="text-danger small">{{ form.nombre_comercial.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                {{ form.tipo_documento.label_tag }}
+                                {{ form.tipo_documento }}
+                                {% if form.tipo_documento.errors %}
+                                    <div class="text-danger small">{{ form.tipo_documento.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                {{ form.numero_documento.label_tag }}
+                                {{ form.numero_documento }}
+                                {% if form.numero_documento.errors %}
+                                    <div class="text-danger small">{{ form.numero_documento.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                {{ form.digito_verificacion.label_tag }}
+                                {{ form.digito_verificacion }}
+                                {% if form.digito_verificacion.errors %}
+                                    <div class="text-danger small">{{ form.digito_verificacion.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                {{ form.tipo_proveedor.label_tag }}
+                                {{ form.tipo_proveedor }}
+                                {% if form.tipo_proveedor.errors %}
+                                    <div class="text-danger small">{{ form.tipo_proveedor.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                {{ form.categoria_principal.label_tag }}
+                                {{ form.categoria_principal }}
+                                {% if form.categoria_principal.errors %}
+                                    <div class="text-danger small">{{ form.categoria_principal.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                {{ form.estado.label_tag }}
+                                {{ form.estado }}
+                                {% if form.estado.errors %}
+                                    <div class="text-danger small">{{ form.estado.errors }}</div>
+                                {% endif %}
+                            </div>
                         </div>
 
-                        <!-- LEGAL Y TRIBUTARIA -->
+                        <!-- INFORMACIÓN LEGAL Y TRIBUTARIA -->
                         <div class="section-header mb-3">
                             <h5 class="border-bottom pb-2"><i class="bi bi-file-earmark-ruled"></i> Información Legal y Tributaria</h5>
                         </div>
                         <div class="row mb-4">
-                            <div class="col-md-4 mb-3">{{ form.regimen_tributario.label_tag }}{{ form.regimen_tributario }}</div>
-                            <div class="col-md-4 mb-3">{{ form.responsabilidad_fiscal.label_tag }}{{ form.responsabilidad_fiscal }}</div>
-                            <div class="col-md-4 mb-3">{{ form.pais_origen.label_tag }}{{ form.pais_origen }}</div>
-                            <div class="col-md-8 mb-3">{{ form.actividad_economica.label_tag }}{{ form.actividad_economica }}</div>
-                            <div class="col-md-4 mb-3">{{ form.codigo_ciiu.label_tag }}{{ form.codigo_ciiu }}</div>
+                            <div class="col-md-4 mb-3">
+                                {{ form.regimen_tributario.label_tag }}
+                                {{ form.regimen_tributario }}
+                                {% if form.regimen_tributario.errors %}
+                                    <div class="text-danger small">{{ form.regimen_tributario.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                {{ form.responsabilidad_fiscal.label_tag }}
+                                {{ form.responsabilidad_fiscal }}
+                                <small class="text-muted d-block">Seleccione responsabilidad fiscal</small>
+                                {% if form.responsabilidad_fiscal.errors %}
+                                    <div class="text-danger small">{{ form.responsabilidad_fiscal.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                {{ form.pais_origen.label_tag }}
+                                {{ form.pais_origen }}
+                                {% if form.pais_origen.errors %}
+                                    <div class="text-danger small">{{ form.pais_origen.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-8 mb-3">
+                                {{ form.actividad_economica.label_tag }}
+                                {{ form.actividad_economica }}
+                                {% if form.actividad_economica.errors %}
+                                    <div class="text-danger small">{{ form.actividad_economica.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                {{ form.codigo_ciiu.label_tag }}
+                                {{ form.codigo_ciiu }}
+                                {% if form.codigo_ciiu.errors %}
+                                    <div class="text-danger small">{{ form.codigo_ciiu.errors }}</div>
+                                {% endif %}
+                            </div>
                         </div>
 
-                        <!-- CONTACTO -->
+                        <!-- INFORMACIÓN DE CONTACTO -->
                         <div class="section-header mb-3">
-                            <h5 class="border-bottom pb-2"><i class="bi bi-telephone"></i> Información de Contacto</h5>
+                            <h5 class="border-bottom pb-2"><i class="bi bi-geo-alt"></i> Información de Contacto</h5>
                         </div>
                         <div class="row mb-4">
-                            <div class="col-md-12 mb-3">{{ form.direccion_principal.label_tag }}{{ form.direccion_principal }}</div>
-                            <div class="col-md-4 mb-3">{{ form.ciudad.label_tag }}{{ form.ciudad }}</div>
-                            <div class="col-md-4 mb-3">{{ form.departamento.label_tag }}{{ form.departamento }}</div>
-                            <div class="col-md-4 mb-3">{{ form.pais.label_tag }}{{ form.pais }}</div>
-                            <div class="col-md-6 mb-3">{{ form.telefono_principal.label_tag }}{{ form.telefono_principal }}</div>
-                            <div class="col-md-6 mb-3">{{ form.telefono_secundario.label_tag }}{{ form.telefono_secundario }}</div>
-                            <div class="col-md-6 mb-3">{{ form.email_principal.label_tag }}{{ form.email_principal }}</div>
-                            <div class="col-md-6 mb-3">{{ form.email_facturacion.label_tag }}{{ form.email_facturacion }}</div>
-                            <div class="col-md-12 mb-3">{{ form.sitio_web.label_tag }}{{ form.sitio_web }}</div>
-                            <div class="col-md-12 mb-3">{{ form.horario_atencion.label_tag }}{{ form.horario_atencion }}</div>
+                            <div class="col-md-12 mb-3">
+                                {{ form.direccion.label_tag }}
+                                {{ form.direccion }}
+                                {% if form.direccion.errors %}
+                                    <div class="text-danger small">{{ form.direccion.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                {{ form.ciudad.label_tag }}
+                                {{ form.ciudad }}
+                                {% if form.ciudad.errors %}
+                                    <div class="text-danger small">{{ form.ciudad.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                {{ form.departamento.label_tag }}
+                                {{ form.departamento }}
+                                {% if form.departamento.errors %}
+                                    <div class="text-danger small">{{ form.departamento.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                {{ form.pais.label_tag }}
+                                {{ form.pais }}
+                                {% if form.pais.errors %}
+                                    <div class="text-danger small">{{ form.pais.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                {{ form.codigo_postal.label_tag }}
+                                {{ form.codigo_postal }}
+                                {% if form.codigo_postal.errors %}
+                                    <div class="text-danger small">{{ form.codigo_postal.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                {{ form.sitio_web.label_tag }}
+                                {{ form.sitio_web }}
+                                {% if form.sitio_web.errors %}
+                                    <div class="text-danger small">{{ form.sitio_web.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                {{ form.telefono_principal.label_tag }}
+                                {{ form.telefono_principal }}
+                                {% if form.telefono_principal.errors %}
+                                    <div class="text-danger small">{{ form.telefono_principal.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                {{ form.telefono_secundario.label_tag }}
+                                {{ form.telefono_secundario }}
+                                {% if form.telefono_secundario.errors %}
+                                    <div class="text-danger small">{{ form.telefono_secundario.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                {{ form.email_principal.label_tag }}
+                                {{ form.email_principal }}
+                                {% if form.email_principal.errors %}
+                                    <div class="text-danger small">{{ form.email_principal.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                {{ form.email_secundario.label_tag }}
+                                {{ form.email_secundario }}
+                                {% if form.email_secundario.errors %}
+                                    <div class="text-danger small">{{ form.email_secundario.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                {{ form.email_facturacion.label_tag }}
+                                {{ form.email_facturacion }}
+                                <small class="text-muted d-block">Para facturación electrónica</small>
+                                {% if form.email_facturacion.errors %}
+                                    <div class="text-danger small">{{ form.email_facturacion.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-12 mb-3">
+                                {{ form.horario_atencion.label_tag }}
+                                {{ form.horario_atencion }}
+                                {% if form.horario_atencion.errors %}
+                                    <div class="text-danger small">{{ form.horario_atencion.errors }}</div>
+                                {% endif %}
+                            </div>
                         </div>
 
-                        <!-- BANCARIA -->
+                        <!-- INFORMACIÓN BANCARIA -->
                         <div class="section-header mb-3">
                             <h5 class="border-bottom pb-2"><i class="bi bi-bank"></i> Información Bancaria (Opcional)</h5>
                         </div>
                         <div class="row mb-4">
-                            <div class="col-md-6 mb-3">{{ form.banco.label_tag }}{{ form.banco }}</div>
-                            <div class="col-md-6 mb-3">{{ form.tipo_cuenta.label_tag }}{{ form.tipo_cuenta }}</div>
-                            <div class="col-md-6 mb-3">{{ form.numero_cuenta.label_tag }}{{ form.numero_cuenta }}</div>
-                            <div class="col-md-6 mb-3">{{ form.titular_cuenta.label_tag }}{{ form.titular_cuenta }}</div>
+                            <div class="col-md-6 mb-3">
+                                {{ form.banco.label_tag }}
+                                {{ form.banco }}
+                                {% if form.banco.errors %}
+                                    <div class="text-danger small">{{ form.banco.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                {{ form.tipo_cuenta.label_tag }}
+                                {{ form.tipo_cuenta }}
+                                {% if form.tipo_cuenta.errors %}
+                                    <div class="text-danger small">{{ form.tipo_cuenta.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                {{ form.numero_cuenta.label_tag }}
+                                {{ form.numero_cuenta }}
+                                {% if form.numero_cuenta.errors %}
+                                    <div class="text-danger small">{{ form.numero_cuenta.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                {{ form.titular_cuenta.label_tag }}
+                                {{ form.titular_cuenta }}
+                                {% if form.titular_cuenta.errors %}
+                                    <div class="text-danger small">{{ form.titular_cuenta.errors }}</div>
+                                {% endif %}
+                            </div>
                         </div>
 
-                        <!-- COMERCIAL -->
+                        <!-- INFORMACIÓN COMERCIAL -->
                         <div class="section-header mb-3">
                             <h5 class="border-bottom pb-2"><i class="bi bi-cash-stack"></i> Condiciones Comerciales</h5>
                         </div>
                         <div class="row mb-4">
-                            <div class="col-md-4 mb-3">{{ form.plazo_entrega_dias.label_tag }}{{ form.plazo_entrega_dias }}</div>
-                            <div class="col-md-4 mb-3">{{ form.tiempo_credito_dias.label_tag }}{{ form.tiempo_credito_dias }}</div>
-                            <div class="col-md-4 mb-3">{{ form.descuento_pronto_pago.label_tag }}{{ form.descuento_pronto_pago }}</div>
-                            <div class="col-md-6 mb-3">{{ form.monto_minimo_pedido.label_tag }}{{ form.monto_minimo_pedido }}</div>
-                            <div class="col-md-6 mb-3 form-check mt-4"><div class="form-check">{{ form.acepta_credito }}{{ form.acepta_credito.label_tag }}</div></div>
-                            <div class="col-md-12 mb-3">{{ form.metodos_pago_aceptados.label_tag }}{{ form.metodos_pago_aceptados }}</div>
+                            <div class="col-md-4 mb-3">
+                                {{ form.tiempo_entrega_promedio.label_tag }}
+                                {{ form.tiempo_entrega_promedio }}
+                                {% if form.tiempo_entrega_promedio.errors %}
+                                    <div class="text-danger small">{{ form.tiempo_entrega_promedio.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-8 mb-3">
+                                {{ form.condiciones_pago.label_tag }}
+                                {{ form.condiciones_pago }}
+                                {% if form.condiciones_pago.errors %}
+                                    <div class="text-danger small">{{ form.condiciones_pago.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                {{ form.monto_minimo_pedido.label_tag }}
+                                {{ form.monto_minimo_pedido }}
+                                {% if form.monto_minimo_pedido.errors %}
+                                    <div class="text-danger small">{{ form.monto_minimo_pedido.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                {{ form.descuento_pronto_pago.label_tag }}
+                                {{ form.descuento_pronto_pago }}
+                                {% if form.descuento_pronto_pago.errors %}
+                                    <div class="text-danger small">{{ form.descuento_pronto_pago.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                {{ form.calificacion.label_tag }}
+                                {{ form.calificacion }}
+                                {% if form.calificacion.errors %}
+                                    <div class="text-danger small">{{ form.calificacion.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <div class="form-check mt-4">
+                                    {{ form.acepta_credito }}
+                                    {{ form.acepta_credito.label_tag }}
+                                    {% if form.acepta_credito.errors %}
+                                        <div class="text-danger small">{{ form.acepta_credito.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-12 mb-3">
+                                {{ form.metodos_pago_aceptados.label_tag }}
+                                {{ form.metodos_pago_aceptados }}
+                                {% if form.metodos_pago_aceptados.errors %}
+                                    <div class="text-danger small">{{ form.metodos_pago_aceptados.errors }}</div>
+                                {% endif %}
+                            </div>
                         </div>
 
                         <!-- OBSERVACIONES -->
                         <div class="section-header mb-3">
                             <h5 class="border-bottom pb-2"><i class="bi bi-chat-text"></i> Observaciones</h5>
                         </div>
-                        <div class="mb-4">{{ form.observaciones_generales.label_tag }}{{ form.observaciones_generales }}</div>
+                        <div class="row mb-4">
+                            <div class="col-md-12 mb-3">
+                                {{ form.notas_internas.label_tag }}
+                                {{ form.notas_internas }}
+                                <small class="text-muted d-block">Información privada, no visible para el proveedor</small>
+                                {% if form.notas_internas.errors %}
+                                    <div class="text-danger small">{{ form.notas_internas.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-12 mb-3">
+                                {{ form.observaciones.label_tag }}
+                                {{ form.observaciones }}
+                                {% if form.observaciones.errors %}
+                                    <div class="text-danger small">{{ form.observaciones.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
 
                         <!-- BOTONES -->
                         <div class="d-flex justify-content-between mt-4">
-                            <a href="{% if proveedor %}{% url 'proveedores:proveedor_detail' proveedor.id_proveedor %}{% else %}{% url 'proveedores:proveedor_list' %}{% endif %}" class="btn btn-secondary">
+                            <a href="{% if proveedor %}{% url 'proveedores:proveedor_detail' proveedor.id_proveedor %}{% else %}{% url 'proveedores:proveedor_list' %}{% endif %}" 
+                               class="btn btn-secondary">
                                 <i class="bi bi-arrow-left"></i> Cancelar
                             </a>
                             <button type="submit" class="btn btn-success-custom btn-lg">

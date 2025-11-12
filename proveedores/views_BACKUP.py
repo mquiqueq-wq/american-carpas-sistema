@@ -34,7 +34,7 @@ def tipo_proveedor_list(request):
     if query:
         tipos = tipos.filter(nombre_tipo__icontains=query)
     
-    tipos = tipos.order_by('nombre_tipo')
+    tipos = tipos.order_by('orden_visualizacion', 'nombre_tipo')
     
     # Paginación
     paginator = Paginator(tipos, 15)
@@ -125,7 +125,7 @@ def categoria_proveedor_list(request):
     if query:
         categorias = categorias.filter(nombre_categoria__icontains=query)
     
-    categorias = categorias.order_by('nombre_categoria')
+    categorias = categorias.order_by('orden_visualizacion', 'nombre_categoria')
     
     # Paginación
     paginator = Paginator(categorias, 15)
@@ -216,7 +216,7 @@ def tipo_documento_list(request):
     if query:
         tipos = tipos.filter(nombre_tipo_documento__icontains=query)
     
-    tipos = tipos.order_by('nombre_tipo_documento')
+    tipos = tipos.order_by('orden_visualizacion', 'nombre_tipo_documento')
     
     # Paginación
     paginator = Paginator(tipos, 15)
@@ -335,11 +335,8 @@ def proveedor_list(request):
     page_obj = paginator.get_page(page_number)
     
     # Para los filtros
-    from .models import TipoProveedor
+    from .models import TipoProveedor, ESTADO_PROVEEDOR_CHOICES
     tipos_proveedor = TipoProveedor.objects.filter(activo=True)
-    
-    # Obtener las opciones de estado del modelo Proveedor
-    estado_choices = Proveedor._meta.get_field('estado').choices
     
     context = {
         'page_obj': page_obj,
@@ -347,7 +344,7 @@ def proveedor_list(request):
         'estado_filtro': estado_filtro,
         'tipo_filtro': tipo_filtro,
         'tipos_proveedor': tipos_proveedor,
-        'estados': estado_choices,
+        'estados': ESTADO_PROVEEDOR_CHOICES,
         'show_module_nav': True,
         'active_module': 'proveedores'
     }
@@ -455,6 +452,7 @@ def proveedor_delete(request, id_proveedor):
 from .models import ContactoProveedor
 from .forms import ContactoProveedorForm
 
+
 def contacto_create(request, id_proveedor):
     """Crear nuevo contacto para un proveedor"""
     proveedor = get_object_or_404(Proveedor, id_proveedor=id_proveedor)
@@ -467,13 +465,9 @@ def contacto_create(request, id_proveedor):
             contacto.save()
             messages.success(
                 request,
-                f'✅ Contacto "{contacto.get_nombre_completo()}" agregado exitosamente.'
+                f'✅ Contacto "{contacto.nombre_completo}" agregado exitosamente.'
             )
             return redirect('proveedores:proveedor_detail', id_proveedor=proveedor.id_proveedor)
-        else:
-            # Agregar mensajes de error para debugging
-            messages.error(request, '❌ Error al guardar el contacto. Por favor revisa los campos.')
-            print("Errores del formulario:", form.errors)  # Para debugging en consola
     else:
         form = ContactoProveedorForm(initial={'id_proveedor': proveedor})
     
@@ -499,13 +493,9 @@ def contacto_update(request, id_contacto):
             contacto = form.save()
             messages.success(
                 request,
-                f'✅ Contacto "{contacto.get_nombre_completo()}" actualizado exitosamente.'
+                f'✅ Contacto "{contacto.nombre_completo}" actualizado exitosamente.'
             )
             return redirect('proveedores:proveedor_detail', id_proveedor=proveedor.id_proveedor)
-        else:
-            # Agregar mensajes de error para debugging
-            messages.error(request, '❌ Error al actualizar el contacto. Por favor revisa los campos.')
-            print("Errores del formulario:", form.errors)  # Para debugging en consola
     else:
         form = ContactoProveedorForm(instance=contacto)
     
@@ -527,7 +517,7 @@ def contacto_delete(request, id_contacto):
     proveedor = contacto.id_proveedor
     
     if request.method == 'POST':
-        nombre = contacto.get_nombre_completo()
+        nombre = contacto.nombre_completo
         contacto.delete()
         messages.success(request, f'🗑️ Contacto "{nombre}" eliminado exitosamente.')
         return redirect('proveedores:proveedor_detail', id_proveedor=proveedor.id_proveedor)
@@ -539,6 +529,7 @@ def contacto_delete(request, id_contacto):
         'active_module': 'proveedores',
     }
     return render(request, 'proveedores/contacto_confirm_delete.html', context)
+
 
 # =====================================================
 # GESTIÓN DE DOCUMENTOS - FASE 4

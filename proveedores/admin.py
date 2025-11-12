@@ -28,7 +28,7 @@ class TipoProveedorAdmin(admin.ModelAdmin):
     
     fieldsets = (
         ('Información General', {
-            'fields': ('nombre_tipo', 'descripcion')
+            'fields': ('nombre_tipo', 'descripcion', 'icono')
         }),
         ('Estado', {
             'fields': ('activo',)
@@ -76,7 +76,7 @@ class TipoDocumentoProveedorAdmin(admin.ModelAdmin):
     
     fieldsets = (
         ('Información General', {
-            'fields': ('nombre_tipo_documento', 'descripcion')
+            'fields': ('nombre_tipo_documento', 'descripcion', 'icono')
         }),
         ('Configuración', {
             'fields': ('obligatorio', 'requiere_vigencia', 'dias_alerta_vencimiento')
@@ -126,6 +126,10 @@ class ProveedorAdmin(admin.ModelAdmin):
         ('Información Legal y Tributaria', {
             'fields': (
                 'regimen_tributario',
+                'responsabilidad_fiscal',
+                'pais_origen',
+                'actividad_economica',
+                'codigo_ciiu',
                 'responsable_iva',
                 'gran_contribuyente',
                 'autorretenedor'
@@ -142,11 +146,13 @@ class ProveedorAdmin(admin.ModelAdmin):
                 'telefono_secundario',
                 'email_principal',
                 'email_secundario',
-                'sitio_web'
+                'email_facturacion',
+                'sitio_web',
+                'horario_atencion'
             )
         }),
         ('Información Bancaria', {
-            'fields': ('banco', 'tipo_cuenta', 'numero_cuenta'),
+            'fields': ('banco', 'tipo_cuenta', 'numero_cuenta', 'titular_cuenta'),
             'classes': ('collapse',)
         }),
         ('Información Comercial', {
@@ -155,6 +161,8 @@ class ProveedorAdmin(admin.ModelAdmin):
                 'condiciones_pago',
                 'monto_minimo_pedido',
                 'descuento_pronto_pago',
+                'acepta_credito',
+                'metodos_pago_aceptados',
                 'calificacion'
             ),
             'classes': ('collapse',)
@@ -216,7 +224,7 @@ class ContactoProveedorAdmin(admin.ModelAdmin):
         }),
     )
     
-    readonly_fields = ['fecha_creacion', 'fecha_modificacion']
+    readonly_fields = ['fecha_registro', 'fecha_modificacion']
     
     def get_nombre_completo(self, obj):
         """Mostrar nombre completo"""
@@ -236,11 +244,11 @@ class DocumentoProveedorAdmin(admin.ModelAdmin):
         'numero_documento',
         'fecha_emision',
         'fecha_vencimiento',
-        'estado',
+        'estado_documento',
         'dias_restantes',
         'fecha_carga'
     ]
-    list_filter = ['estado', 'id_tipo_documento', 'fecha_emision']
+    list_filter = ['estado_documento', 'id_tipo_documento', 'fecha_emision']
     search_fields = [
         'id_proveedor__razon_social',
         'id_tipo_documento__nombre_tipo_documento',
@@ -262,7 +270,7 @@ class DocumentoProveedorAdmin(admin.ModelAdmin):
                 'fecha_emision',
                 'fecha_vencimiento',
                 'entidad_emisora',
-                'estado'
+                'estado_documento'
             )
         }),
         ('Observaciones', {
@@ -270,7 +278,7 @@ class DocumentoProveedorAdmin(admin.ModelAdmin):
             'classes': ('collapse',)
         }),
         ('Control', {
-            'fields': ('cargado_por', 'fecha_carga', 'fecha_modificacion'),
+            'fields': ('fecha_carga', 'fecha_modificacion'),
             'classes': ('collapse',)
         }),
     )
@@ -279,7 +287,7 @@ class DocumentoProveedorAdmin(admin.ModelAdmin):
     
     def dias_restantes(self, obj):
         """Mostrar días restantes para vencimiento"""
-        dias = obj.dias_para_vencimiento()
+        dias = obj.get_dias_para_vencer()
         if dias is None:
             return 'N/A'
         elif dias < 0:

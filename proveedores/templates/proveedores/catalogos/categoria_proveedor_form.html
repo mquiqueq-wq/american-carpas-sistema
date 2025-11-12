@@ -27,10 +27,31 @@
                         </div>
                         <div class="mb-4">
                             <h5 class="border-bottom pb-2">Visualización</h5>
-                            <div class="mb-3">{{ form.color_badge.label_tag }}{{ form.color_badge }}{% if form.color_badge.errors %}<div class="text-danger small">{{ form.color_badge.errors }}</div>{% endif %}</div>
-                            <div class="mb-3">{{ form.icono_bootstrap.label_tag }}{{ form.icono_bootstrap }}<small class="form-text text-muted d-block">Ver iconos en: <a href="https://icons.getbootstrap.com/" target="_blank">Bootstrap Icons</a></small>{% if form.icono_bootstrap.errors %}<div class="text-danger small">{{ form.icono_bootstrap.errors }}</div>{% endif %}</div>
-                            <div class="mb-3">{{ form.orden_visualizacion.label_tag }}{{ form.orden_visualizacion }}{% if form.orden_visualizacion.errors %}<div class="text-danger small">{{ form.orden_visualizacion.errors }}</div>{% endif %}</div>
-                            <div class="mb-3 form-check">{{ form.activo }}{{ form.activo.label_tag }}{% if form.activo.errors %}<div class="text-danger small">{{ form.activo.errors }}</div>{% endif %}</div>
+                            <div class="mb-3">
+                                {{ form.icono.label_tag }}
+                                {{ form.icono }}
+                                <small class="form-text text-muted d-block">
+                                    Ver iconos en: <a href="https://icons.getbootstrap.com/" target="_blank">Bootstrap Icons</a>
+                                    Ejemplo: bi-box, bi-tools, bi-folder
+                                </small>
+                                {% if form.icono.errors %}
+                                    <div class="text-danger small">{{ form.icono.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="mb-3">
+                                {{ form.color.label_tag }}
+                                {{ form.color }}
+                                {% if form.color.errors %}
+                                    <div class="text-danger small">{{ form.color.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="mb-3 form-check">
+                                {{ form.activo }}
+                                {{ form.activo.label_tag }}
+                                {% if form.activo.errors %}
+                                    <div class="text-danger small">{{ form.activo.errors }}</div>
+                                {% endif %}
+                            </div>
                         </div>
                         <div class="d-flex justify-content-between">
                             <a href="{% url 'proveedores:categoria_proveedor_list' %}" class="btn btn-secondary"><i class="bi bi-arrow-left"></i> Cancelar</a>

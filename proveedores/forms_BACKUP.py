@@ -647,7 +647,14 @@ class ProveedorForm(forms.ModelForm):
 
 class ContactoProveedorForm(forms.ModelForm):
     """Formulario para contactos de proveedores"""
-
+    
+    id_proveedor = forms.ModelChoiceField(
+        label='Proveedor',
+        queryset=Proveedor.objects.all(),
+        widget=forms.Select(attrs={'class': 'form-select'}),
+        disabled=True
+    )
+    
     nombres = forms.CharField(
         label='Nombres',
         max_length=100,
@@ -677,7 +684,6 @@ class ContactoProveedorForm(forms.ModelForm):
     
     area_responsabilidad = forms.ChoiceField(
         label='Área de Responsabilidad',
-        required=False,
         choices=[
             ('COMERCIAL', 'Comercial'),
             ('TECNICA', 'Técnica'),
@@ -744,7 +750,7 @@ class ContactoProveedorForm(forms.ModelForm):
     class Meta:
         model = ContactoProveedor
         fields = [
-            'nombres', 'apellidos', 'cargo', 'area_responsabilidad',
+            'id_proveedor', 'nombres', 'apellidos', 'cargo', 'area_responsabilidad',
             'telefono_fijo', 'telefono_movil', 'email',
             'es_contacto_principal', 'activo', 'observaciones'
         ]

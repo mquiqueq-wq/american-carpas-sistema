@@ -35,7 +35,6 @@
                             <h5 class="border-bottom pb-2"><i class="bi bi-person"></i> Información del Contacto</h5>
                         </div>
                         <div class="row mb-4">
-                            <!-- CORREGIDO: Separar nombres y apellidos -->
                             <div class="col-md-6 mb-3">
                                 {{ form.nombres.label_tag }}
                                 {{ form.nombres }}
@@ -57,7 +56,6 @@
                                     <div class="text-danger small">{{ form.cargo.errors }}</div>
                                 {% endif %}
                             </div>
-                            <!-- ELIMINADO: departamento (no existe en el modelo) -->
                             <div class="col-md-6 mb-3">
                                 {{ form.area_responsabilidad.label_tag }}
                                 {{ form.area_responsabilidad }}
@@ -72,7 +70,6 @@
                             <h5 class="border-bottom pb-2"><i class="bi bi-telephone"></i> Datos de Contacto</h5>
                         </div>
                         <div class="row mb-4">
-                            <!-- CORREGIDO: telefono_movil en vez de telefono_celular -->
                             <div class="col-md-6 mb-3">
                                 {{ form.telefono_movil.label_tag }}
                                 {{ form.telefono_movil }}
@@ -80,7 +77,6 @@
                                     <div class="text-danger small">{{ form.telefono_movil.errors }}</div>
                                 {% endif %}
                             </div>
-                            <!-- CORREGIDO: telefono_fijo en vez de telefono_directo -->
                             <div class="col-md-6 mb-3">
                                 {{ form.telefono_fijo.label_tag }}
                                 {{ form.telefono_fijo }}

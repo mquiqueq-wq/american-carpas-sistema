@@ -35,19 +35,11 @@
                             <h5 class="border-bottom pb-2"><i class="bi bi-person"></i> Información del Contacto</h5>
                         </div>
                         <div class="row mb-4">
-                            <!-- CORREGIDO: Separar nombres y apellidos -->
-                            <div class="col-md-6 mb-3">
-                                {{ form.nombres.label_tag }}
-                                {{ form.nombres }}
-                                {% if form.nombres.errors %}
-                                    <div class="text-danger small">{{ form.nombres.errors }}</div>
-                                {% endif %}
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                {{ form.apellidos.label_tag }}
-                                {{ form.apellidos }}
-                                {% if form.apellidos.errors %}
-                                    <div class="text-danger small">{{ form.apellidos.errors }}</div>
+                            <div class="col-md-12 mb-3">
+                                {{ form.nombre_completo.label_tag }}
+                                {{ form.nombre_completo }}
+                                {% if form.nombre_completo.errors %}
+                                    <div class="text-danger small">{{ form.nombre_completo.errors }}</div>
                                 {% endif %}
                             </div>
                             <div class="col-md-6 mb-3">
@@ -57,8 +49,14 @@
                                     <div class="text-danger small">{{ form.cargo.errors }}</div>
                                 {% endif %}
                             </div>
-                            <!-- ELIMINADO: departamento (no existe en el modelo) -->
                             <div class="col-md-6 mb-3">
+                                {{ form.departamento.label_tag }}
+                                {{ form.departamento }}
+                                {% if form.departamento.errors %}
+                                    <div class="text-danger small">{{ form.departamento.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-12 mb-3">
                                 {{ form.area_responsabilidad.label_tag }}
                                 {{ form.area_responsabilidad }}
                                 {% if form.area_responsabilidad.errors %}
@@ -72,20 +70,18 @@
                             <h5 class="border-bottom pb-2"><i class="bi bi-telephone"></i> Datos de Contacto</h5>
                         </div>
                         <div class="row mb-4">
-                            <!-- CORREGIDO: telefono_movil en vez de telefono_celular -->
                             <div class="col-md-6 mb-3">
-                                {{ form.telefono_movil.label_tag }}
-                                {{ form.telefono_movil }}
-                                {% if form.telefono_movil.errors %}
-                                    <div class="text-danger small">{{ form.telefono_movil.errors }}</div>
+                                {{ form.telefono_celular.label_tag }}
+                                {{ form.telefono_celular }}
+                                {% if form.telefono_celular.errors %}
+                                    <div class="text-danger small">{{ form.telefono_celular.errors }}</div>
                                 {% endif %}
                             </div>
-                            <!-- CORREGIDO: telefono_fijo en vez de telefono_directo -->
                             <div class="col-md-6 mb-3">
-                                {{ form.telefono_fijo.label_tag }}
-                                {{ form.telefono_fijo }}
-                                {% if form.telefono_fijo.errors %}
-                                    <div class="text-danger small">{{ form.telefono_fijo.errors }}</div>
+                                {{ form.telefono_directo.label_tag }}
+                                {{ form.telefono_directo }}
+                                {% if form.telefono_directo.errors %}
+                                    <div class="text-danger small">{{ form.telefono_directo.errors }}</div>
                                 {% endif %}
                             </div>
                             <div class="col-md-12 mb-3">
