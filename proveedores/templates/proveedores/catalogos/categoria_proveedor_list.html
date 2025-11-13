@@ -41,33 +41,57 @@
                     <table class="table table-hover">
                         <thead>
                             <tr>
+                                <th>Icono</th>
                                 <th>Nombre</th>
                                 <th>Categoría Padre</th>
                                 <th class="text-center">Color</th>
                                 <th class="text-center">Estado</th>
-                                <th class="text-center">Orden</th>
                                 <th class="text-center">Acciones</th>
                             </tr>
                         </thead>
                         <tbody>
                             {% for categoria in page_obj %}
                             <tr>
-                                <td>
-                                    {% if categoria.icono_bootstrap %}
-                                        <i class="bi {{ categoria.icono_bootstrap }} text-{{ categoria.color_badge }}"></i>
+                                <!-- COLUMNA ICONO - CORREGIDO -->
+                                <td class="text-center">
+                                    {% if categoria.icono %}
+                                        <i class="{{ categoria.icono_bootstrap }} text-{{ categoria.color_badge }}" style="font-size: 1.5rem;"></i>
+                                    {% else %}
+                                        <i class="bi bi-tag text-muted" style="font-size: 1.5rem;"></i>
                                     {% endif %}
-                                    <strong>{{ categoria.nombre_categoria }}</strong>
                                 </td>
+                                
+                                <!-- COLUMNA NOMBRE -->
+                                <td>
+                                    <strong>{{ categoria.nombre_categoria }}</strong>
+                                    {% if categoria.descripcion %}
+                                        <br>
+                                        <small class="text-muted">{{ categoria.descripcion|truncatewords:10 }}</small>
+                                    {% endif %}
+                                </td>
+                                
+                                <!-- COLUMNA CATEGORÍA PADRE -->
                                 <td>
                                     {% if categoria.categoria_padre %}
-                                        <span class="badge bg-secondary">{{ categoria.categoria_padre.nombre_categoria }}</span>
+                                        <span class="badge bg-secondary">
+                                            <i class="bi bi-arrow-return-right"></i>
+                                            {{ categoria.categoria_padre.nombre_categoria }}
+                                        </span>
+                                    {% else %}
+                                        <span class="badge bg-primary">Principal</span>
+                                    {% endif %}
+                                </td>
+                                
+                                <!-- COLUMNA COLOR -->
+                                <td class="text-center">
+                                    {% if categoria.color %}
+                                    <div style="width: 30px; height: 30px; background-color: {{ categoria.color_hex_o_default }}; border: 1px solid #dee2e6; border-radius: 4px; margin: 0 auto;"></div>
                                     {% else %}
                                         <span class="text-muted">-</span>
                                     {% endif %}
                                 </td>
-                                <td class="text-center">
-                                    <span class="badge bg-{{ categoria.color_badge }}">{{ categoria.color_badge }}</span>
-                                </td>
+                                
+                                <!-- COLUMNA ESTADO -->
                                 <td class="text-center">
                                     {% if categoria.activo %}
                                         <span class="badge bg-success">Activo</span>
@@ -75,7 +99,8 @@
                                         <span class="badge bg-danger">Inactivo</span>
                                     {% endif %}
                                 </td>
-                                <td class="text-center">{{ categoria.orden_visualizacion }}</td>
+                                
+                                <!-- COLUMNA ACCIONES -->
                                 <td class="text-center">
                                     <a href="{% url 'proveedores:categoria_proveedor_update' categoria.id_categoria %}" 
                                        class="btn btn-sm btn-outline-primary" title="Editar">

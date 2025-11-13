@@ -6,46 +6,145 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h2><i class="bi bi-file-earmark-text text-primary"></i> Tipos de Documentos de Proveedores</h2>
-            <nav aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="{% url 'proveedores:home' %}">Proveedores</a></li><li class="breadcrumb-item active">Tipos de Documentos</li></ol></nav>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'proveedores:home' %}">Proveedores</a></li>
+                    <li class="breadcrumb-item active">Tipos de Documentos</li>
+                </ol>
+            </nav>
         </div>
-        <a href="{% url 'proveedores:tipo_documento_create' %}" class="btn btn-success-custom"><i class="bi bi-plus-circle"></i> Nuevo Tipo</a>
+        <a href="{% url 'proveedores:tipo_documento_create' %}" class="btn btn-success-custom">
+            <i class="bi bi-plus-circle"></i> Nuevo Tipo
+        </a>
     </div>
+
     <div class="card mb-4">
         <div class="card-body">
             <form method="get" class="row g-3">
-                <div class="col-md-10"><input type="text" name="q" class="form-control" placeholder="Buscar por nombre..." value="{{ query }}"></div>
-                <div class="col-md-2"><button type="submit" class="btn btn-primary w-100"><i class="bi bi-search"></i> Buscar</button></div>
+                <div class="col-md-10">
+                    <input type="text" name="q" class="form-control" placeholder="Buscar por nombre..." value="{{ query }}">
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-search"></i> Buscar
+                    </button>
+                </div>
             </form>
         </div>
     </div>
+
     <div class="card">
         <div class="card-body">
             {% if page_obj %}
                 <div class="table-responsive">
                     <table class="table table-hover">
-                        <thead><tr><th>Nombre</th><th class="text-center">Obligatorio</th><th class="text-center">Vigencia</th><th class="text-center">Días Alerta</th><th class="text-center">Estado</th><th class="text-center">Acciones</th></tr></thead>
+                        <thead>
+                            <tr>
+                                <th>Nombre</th>
+                                <th class="text-center">Obligatorio</th>
+                                <th class="text-center">Vigencia</th>
+                                <th class="text-center">Días Alerta</th>
+                                <th class="text-center">Estado</th>
+                                <th class="text-center">Acciones</th>
+                            </tr>
+                        </thead>
                         <tbody>
                             {% for tipo in page_obj %}
                             <tr>
-                                <td>{% if tipo.icono_bootstrap %}<i class="bi {{ tipo.icono_bootstrap }} text-primary"></i>{% endif %}<strong>{{ tipo.nombre_tipo_documento }}</strong></td>
-                                <td class="text-center">{% if tipo.es_obligatorio %}<span class="badge bg-danger">Sí</span>{% else %}<span class="badge bg-secondary">No</span>{% endif %}</td>
-                                <td class="text-center">{% if tipo.requiere_vigencia %}<span class="badge bg-warning">Sí</span>{% else %}<span class="badge bg-secondary">No</span>{% endif %}</td>
-                                <td class="text-center">{{ tipo.dias_alerta_vencimiento }} días</td>
-                                <td class="text-center">{% if tipo.activo %}<span class="badge bg-success">Activo</span>{% else %}<span class="badge bg-danger">Inactivo</span>{% endif %}</td>
+                                <!-- CORREGIDO: icono en vez de icono_bootstrap -->
+                                <td>
+                                    {% if tipo.icono %}
+                                        <i class="bi {{ tipo.icono }} text-primary"></i>
+                                    {% endif %}
+                                    <strong>{{ tipo.nombre_tipo_documento }}</strong>
+                                </td>
+                                
+                                <!-- CORREGIDO: obligatorio en vez de es_obligatorio -->
                                 <td class="text-center">
-                                    <a href="{% url 'proveedores:tipo_documento_update' tipo.id_tipo_documento %}" class="btn btn-sm btn-outline-primary" title="Editar"><i class="bi bi-pencil"></i></a>
-                                    <a href="{% url 'proveedores:tipo_documento_delete' tipo.id_tipo_documento %}" class="btn btn-sm btn-outline-danger" title="Eliminar"><i class="bi bi-trash"></i></a>
+                                    {% if tipo.obligatorio %}
+                                        <span class="badge bg-danger">Sí</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">No</span>
+                                    {% endif %}
+                                </td>
+                                
+                                <td class="text-center">
+                                    {% if tipo.requiere_vigencia %}
+                                        <span class="badge bg-warning">Sí</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">No</span>
+                                    {% endif %}
+                                </td>
+                                
+                                <td class="text-center">
+                                    {% if tipo.requiere_vigencia %}
+                                        {{ tipo.dias_alerta_vencimiento }} días
+                                    {% else %}
+                                        <span class="text-muted">N/A</span>
+                                    {% endif %}
+                                </td>
+                                
+                                <td class="text-center">
+                                    {% if tipo.activo %}
+                                        <span class="badge bg-success">Activo</span>
+                                    {% else %}
+                                        <span class="badge bg-danger">Inactivo</span>
+                                    {% endif %}
+                                </td>
+                                
+                                <td class="text-center">
+                                    <a href="{% url 'proveedores:tipo_documento_update' tipo.id_tipo_documento %}" 
+                                       class="btn btn-sm btn-outline-primary" 
+                                       title="Editar">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    <a href="{% url 'proveedores:tipo_documento_delete' tipo.id_tipo_documento %}" 
+                                       class="btn btn-sm btn-outline-danger" 
+                                       title="Eliminar">
+                                        <i class="bi bi-trash"></i>
+                                    </a>
                                 </td>
                             </tr>
                             {% endfor %}
                         </tbody>
                     </table>
                 </div>
+
                 {% if page_obj.has_other_pages %}
-                <nav aria-label="Page navigation"><ul class="pagination justify-content-center">{% if page_obj.has_previous %}<li class="page-item"><a class="page-link" href="?page=1{% if query %}&q={{ query }}{% endif %}">Primera</a></li><li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if query %}&q={{ query }}{% endif %}">Anterior</a></li>{% endif %}<li class="page-item active"><span class="page-link">Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span></li>{% if page_obj.has_next %}<li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}{% if query %}&q={{ query }}{% endif %}">Siguiente</a></li><li class="page-item"><a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if query %}&q={{ query }}{% endif %}">Última</a></li>{% endif %}</ul></nav>
+                <nav aria-label="Page navigation">
+                    <ul class="pagination justify-content-center">
+                        {% if page_obj.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page=1{% if query %}&q={{ query }}{% endif %}">Primera</a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if query %}&q={{ query }}{% endif %}">Anterior</a>
+                            </li>
+                        {% endif %}
+
+                        <li class="page-item active">
+                            <span class="page-link">Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+                        </li>
+
+                        {% if page_obj.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if query %}&q={{ query }}{% endif %}">Siguiente</a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if query %}&q={{ query }}{% endif %}">Última</a>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </nav>
                 {% endif %}
             {% else %}
-                <div class="text-center text-muted py-5"><i class="bi bi-inbox" style="font-size: 3rem;"></i><p class="mt-3">No hay tipos de documentos registrados</p><a href="{% url 'proveedores:tipo_documento_create' %}" class="btn btn-success-custom"><i class="bi bi-plus-circle"></i> Crear el primero</a></div>
+                <div class="text-center text-muted py-5">
+                    <i class="bi bi-inbox" style="font-size: 3rem;"></i>
+                    <p class="mt-3">No hay tipos de documentos registrados</p>
+                    <a href="{% url 'proveedores:tipo_documento_create' %}" class="btn btn-success-custom">
+                        <i class="bi bi-plus-circle"></i> Crear el primero
+                    </a>
+                </div>
             {% endif %}
         </div>
     </div>

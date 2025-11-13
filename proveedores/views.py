@@ -648,6 +648,49 @@ def documento_download(request, id_documento):
         )
     except FileNotFoundError:
         raise Http404("El archivo no existe")
+    
+def documento_view(request, id_documento):
+    """
+    Visualizar documento directamente en el navegador
+    Permite ver PDFs, imágenes y otros archivos sin descargar
+    """
+    documento = get_object_or_404(DocumentoProveedor, id_documento=id_documento)
+    
+    try:
+        # Abrir archivo
+        file = documento.archivo.open('rb')
+        
+        # Determinar tipo MIME según extensión
+        extension = documento.get_extension_archivo().lower()
+        
+        # Mapeo de extensiones a tipos MIME
+        mime_types = {
+            'pdf': 'application/pdf',
+            'png': 'image/png',
+            'jpg': 'image/jpeg',
+            'jpeg': 'image/jpeg',
+            'gif': 'image/gif',
+            'webp': 'image/webp',
+            'svg': 'image/svg+xml',
+            'doc': 'application/msword',
+            'docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            'xls': 'application/vnd.ms-excel',
+            'xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'txt': 'text/plain',
+            'csv': 'text/csv',
+        }
+        
+        # Obtener tipo MIME o usar genérico
+        content_type = mime_types.get(extension, 'application/octet-stream')
+        
+        # Crear respuesta con Content-Disposition: inline
+        response = FileResponse(file, content_type=content_type)
+        response['Content-Disposition'] = f'inline; filename="{documento.nombre_archivo_original}"'
+        
+        return response
+        
+    except FileNotFoundError:
+        raise Http404("El archivo no existe")
 
 
 # =====================================================

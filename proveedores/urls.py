@@ -54,7 +54,7 @@ urlpatterns = [
     path('documento/<int:id_documento>/editar/', views.documento_update, name='documento_update'),
     path('documento/<int:id_documento>/eliminar/', views.documento_delete, name='documento_delete'),
     path('documento/<int:id_documento>/descargar/', views.documento_download, name='documento_download'),
-    
+    path('documento/<int:id_documento>/ver/', views.documento_view, name='documento_view'),
     # ====================================
     # GESTIÓN DE PRODUCTOS/SERVICIOS - FASE 5
     # ====================================

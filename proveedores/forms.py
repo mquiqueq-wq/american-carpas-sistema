@@ -188,13 +188,14 @@ class TipoDocumentoProveedorForm(forms.ModelForm):
     dias_alerta_vencimiento = forms.IntegerField(
         label='Días de Alerta antes del Vencimiento',
         initial=30,
-        min_value=1,
+        min_value=0,           # ✅ PERMITE 0
+        required=False,        # ✅ NO REQUERIDO
         widget=forms.NumberInput(attrs={
             'class': 'form-control',
-            'min': '1'
+            'min': '0'         # ✅ PERMITE 0 EN HTML
         }),
-        help_text='Días antes del vencimiento para enviar alertas'
-    )
+        help_text='Días antes del vencimiento para enviar alertas (solo si requiere vigencia)'
+    )   
     
     activo = forms.BooleanField(
         label='Activo',
@@ -353,7 +354,7 @@ class ProveedorForm(forms.ModelForm):
         required=False,
         widget=forms.TextInput(attrs={
             'class': 'form-control',
-            'placeholder': 'Ej: Antioquia'
+            'placeholder': 'Ej: Cundinamarca'
         })
     )
     
@@ -362,7 +363,7 @@ class ProveedorForm(forms.ModelForm):
         max_length=100,
         widget=forms.TextInput(attrs={
             'class': 'form-control',
-            'placeholder': 'Ej: Medellín'
+            'placeholder': 'Ej: Bogotá'
         })
     )
     

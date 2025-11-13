@@ -1,6 +1,3 @@
-Tipo documento form · HTML
-Copiar
-
 {% extends 'base.html' %}
 
 {% block title %}{{ titulo }}{% endblock %}
@@ -80,9 +77,13 @@ Copiar
                                 {% endif %}
                             </div>
 
-                            <div class="mb-3">
+                            <!-- MEJORADO: Campo de días con control condicional -->
+                            <div class="mb-3" id="diasAlertaContainer">
                                 {{ form.dias_alerta_vencimiento.label_tag }}
                                 {{ form.dias_alerta_vencimiento }}
+                                <small class="form-text text-muted d-block">
+                                    Solo aplica si el documento requiere control de vigencia
+                                </small>
                                 {% if form.dias_alerta_vencimiento.errors %}
                                     <div class="text-danger small">{{ form.dias_alerta_vencimiento.errors }}</div>
                                 {% endif %}
@@ -112,4 +113,55 @@ Copiar
         </div>
     </div>
 </div>
+
+<!-- JavaScript MEJORADO para manejo condicional del campo días de alerta -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Obtener elementos
+    const requiereVigenciaCheckbox = document.getElementById('id_requiere_vigencia');
+    const diasAlertaInput = document.getElementById('id_dias_alerta_vencimiento');
+    const diasAlertaContainer = document.getElementById('diasAlertaContainer');
+    
+    // Función para actualizar estado del campo
+    function actualizarEstadoDiasAlerta() {
+        if (requiereVigenciaCheckbox.checked) {
+            // Si requiere vigencia, habilitar campo
+            diasAlertaInput.readOnly = false;
+            diasAlertaInput.required = true;
+            diasAlertaContainer.style.opacity = '1';
+            diasAlertaContainer.classList.remove('text-muted');
+            
+            // Si el valor es 0, poner el valor por defecto
+            if (diasAlertaInput.value === '0' || diasAlertaInput.value === '') {
+                diasAlertaInput.value = '30';
+            }
+        } else {
+            // Si no requiere vigencia, hacer readonly y poner valor 0
+            diasAlertaInput.readOnly = true;
+            diasAlertaInput.required = false;
+            diasAlertaInput.value = '0';  // Valor cuando no aplica
+            diasAlertaContainer.style.opacity = '0.5';
+            diasAlertaContainer.classList.add('text-muted');
+        }
+    }
+    
+    // Aplicar estado inicial
+    actualizarEstadoDiasAlerta();
+    
+    // Escuchar cambios en el checkbox
+    requiereVigenciaCheckbox.addEventListener('change', actualizarEstadoDiasAlerta);
+});
+</script>
+
+<style>
+#diasAlertaContainer {
+    transition: opacity 0.3s ease;
+}
+
+/* Estilo para campo readonly */
+#id_dias_alerta_vencimiento:read-only {
+    background-color: #e9ecef;
+    cursor: not-allowed;
+}
+</style>
 {% endblock %}

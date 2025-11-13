@@ -12,7 +12,13 @@
         </nav>
         <div class="d-flex justify-content-between align-items-start">
             <div>
-                <h2><i class="bi bi-building text-success"></i> {{ proveedor.razon_social }}</h2>
+                <h2>
+                    <i class="bi bi-building text-success"></i> {{ proveedor.razon_social }}
+                    <!-- CALIFICACIÓN CON ESTRELLAS -->
+                    {% if proveedor.calificacion > 0 %}
+                        <span class="ms-2">{{ proveedor.get_calificacion_html|safe }}</span>
+                    {% endif %}
+                </h2>
                 {% if proveedor.nombre_comercial %}
                     <p class="text-muted mb-0">Nombre comercial: {{ proveedor.nombre_comercial }}</p>
                 {% endif %}
@@ -85,7 +91,7 @@
                     <div class="card mb-4">
                         <div class="card-header"><strong>Legal y Tributaria</strong></div>
                         <div class="card-body">
-                            <p><strong>Régimen:</strong> {{ proveedor.get_regimen_tributario_display }}</p>
+                            <p><strong>Régimen:</strong> {{ proveedor.regimen_tributario|default:"No especificado" }}</p>
                             <p><strong>Responsabilidad:</strong> {{ proveedor.get_responsabilidad_fiscal_display }}</p>
                             <p><strong>Actividad:</strong> {{ proveedor.actividad_economica|default:"No especificada" }}</p>
                             <p class="mb-0"><strong>CIIU:</strong> {{ proveedor.codigo_ciiu|default:"-" }}</p>
@@ -93,6 +99,14 @@
                     </div>
                 </div>
             </div>
+            
+            <!-- OBSERVACIONES MOVIDAS AQUÍ - SOLO EN GENERAL -->
+            {% if proveedor.observaciones %}
+            <div class="card">
+                <div class="card-header"><strong>Observaciones</strong></div>
+                <div class="card-body">{{ proveedor.observaciones }}</div>
+            </div>
+            {% endif %}
         </div>
 
         <!-- TAB CONTACTO -->
@@ -102,9 +116,9 @@
                     <div class="card mb-4">
                         <div class="card-header"><strong>Ubicación</strong></div>
                         <div class="card-body">
-                            <p><strong>Dirección:</strong> {{ proveedor.direccion_principal }}</p>
+                            <p><strong>Dirección:</strong> {{ proveedor.direccion }}</p>
                             <p><strong>Ciudad:</strong> {{ proveedor.ciudad }}</p>
-                            <p><strong>Departamento:</strong> {{ proveedor.departamento }}</p>
+                            <p><strong>Departamento:</strong> {{ proveedor.departamento|default:"-" }}</p>
                             <p class="mb-0"><strong>País:</strong> {{ proveedor.pais }}</p>
                         </div>
                     </div>
@@ -134,7 +148,15 @@
                             <p><strong>Plazo entrega:</strong> {{ proveedor.plazo_entrega_dias }} días</p>
                             <p><strong>Crédito:</strong> {{ proveedor.tiempo_credito_dias }} días {% if proveedor.acepta_credito %}<span class="badge bg-success">Acepta</span>{% else %}<span class="badge bg-secondary">No acepta</span>{% endif %}</p>
                             <p><strong>Desc. pronto pago:</strong> {{ proveedor.descuento_pronto_pago }}%</p>
-                            <p class="mb-0"><strong>Pedido mínimo:</strong> {% if proveedor.monto_minimo_pedido %}${{ proveedor.monto_minimo_pedido }}{% else %}-{% endif %}</p>
+                            <p><strong>Pedido mínimo:</strong> {% if proveedor.monto_minimo_pedido %}${{ proveedor.monto_minimo_pedido }}{% else %}-{% endif %}</p>
+                            <p class="mb-0">
+                                <strong>Calificación:</strong> 
+                                {% if proveedor.calificacion > 0 %}
+                                    {{ proveedor.get_calificacion_html|safe }}
+                                {% else %}
+                                    <span class="text-muted">Sin calificar</span>
+                                {% endif %}
+                            </p>
                         </div>
                     </div>
                 </div>
@@ -142,8 +164,8 @@
                     <div class="card mb-4">
                         <div class="card-header"><strong>Información Bancaria</strong></div>
                         <div class="card-body">
-                            <p><strong>Banco:</strong> {{ proveedor.nombre_banco|default:"-" }}</p>
-                            <p><strong>Tipo cuenta:</strong> {{ proveedor.get_tipo_cuenta_display|default:"-" }}</p>
+                            <p><strong>Banco:</strong> {{ proveedor.banco|default:"-" }}</p>
+                            <p><strong>Tipo cuenta:</strong> {{ proveedor.tipo_cuenta|default:"-" }}</p>
                             <p class="mb-0"><strong>Número:</strong> {{ proveedor.numero_cuenta|default:"-" }}</p>
                         </div>
                     </div>
@@ -151,7 +173,7 @@
             </div>
         </div>
 
-        <!-- TAB CONTACTOS - CORREGIDO -->
+        <!-- TAB CONTACTOS -->
         <div class="tab-pane fade" id="contactos" role="tabpanel">
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <h5><i class="bi bi-people"></i> Contactos del Proveedor</h5>
@@ -170,20 +192,17 @@
                                     <span class="badge bg-success mb-2">Contacto Principal</span>
                                 {% endif %}
                                 
-                                <!-- CORREGIDO: get_nombre_completo en vez de nombre_completo -->
                                 <h6 class="card-title">{{ contacto.get_nombre_completo }}</h6>
                                 <p class="card-subtitle text-muted mb-3">{{ contacto.cargo }}</p>
                                 
                                 <div class="small">
-                                    <!-- CORREGIDO: Mostrar área de responsabilidad si existe -->
                                     {% if contacto.area_responsabilidad %}
                                         <p class="mb-1">
                                             <i class="bi bi-briefcase text-info"></i> 
-                                            {{ contacto.get_area_responsabilidad_display }}
+                                            {{ contacto.area_responsabilidad }}
                                         </p>
                                     {% endif %}
                                     
-                                    <!-- CORREGIDO: Mostrar teléfonos individuales -->
                                     {% if contacto.telefono_movil %}
                                         <p class="mb-1">
                                             <i class="bi bi-phone text-success"></i> 
@@ -198,7 +217,6 @@
                                         </p>
                                     {% endif %}
                                     
-                                    <!-- Email -->
                                     <p class="mb-1">
                                         <i class="bi bi-envelope text-danger"></i> 
                                         {{ contacto.email }}
@@ -266,11 +284,11 @@
                                     {% endif %}
                                     {% if doc.fecha_vencimiento %}
                                         <p class="mb-1"><strong>Vencimiento:</strong> {{ doc.fecha_vencimiento }}</p>
-                                        {% if doc.dias_para_vencimiento is not None %}
+                                        {% if doc.get_dias_para_vencer is not None %}
                                             <p class="mb-1">
                                                 <strong>Días restantes:</strong> 
-                                                <span class="{% if doc.dias_para_vencimiento < 0 %}text-danger{% elif doc.dias_para_vencimiento < 30 %}text-warning{% else %}text-success{% endif %}">
-                                                    {{ doc.dias_para_vencimiento }}
+                                                <span class="{% if doc.get_dias_para_vencer < 0 %}text-danger{% elif doc.get_dias_para_vencer < 30 %}text-warning{% else %}text-success{% endif %}">
+                                                    {{ doc.get_dias_para_vencer }}
                                                 </span>
                                             </p>
                                         {% endif %}
@@ -278,17 +296,33 @@
                                     <p class="mb-1"><strong>Cargado:</strong> {{ doc.fecha_carga|date:"d/m/Y" }}</p>
                                 </div>
 
-                                <div class="mt-3 d-flex gap-2">
+                                <div class="mt-3 d-flex gap-2 flex-wrap">
+                                    <!-- NUEVO: Botón Ver -->
+                                    <a href="{% url 'proveedores:documento_view' doc.id_documento %}" 
+                                       class="btn btn-sm btn-outline-info"
+                                       target="_blank"
+                                       title="Ver documento en el navegador">
+                                        <i class="bi bi-eye"></i> Ver
+                                    </a>
+                                    
+                                    <!-- Botón Descargar -->
                                     <a href="{% url 'proveedores:documento_download' doc.id_documento %}" 
-                                       class="btn btn-sm btn-outline-success flex-fill">
+                                       class="btn btn-sm btn-outline-success"
+                                       title="Descargar documento">
                                         <i class="bi bi-download"></i> Descargar
                                     </a>
+                                    
+                                    <!-- Botón Editar -->
                                     <a href="{% url 'proveedores:documento_update' doc.id_documento %}" 
-                                       class="btn btn-sm btn-outline-primary">
+                                       class="btn btn-sm btn-outline-primary"
+                                       title="Editar documento">
                                         <i class="bi bi-pencil"></i>
                                     </a>
+                                    
+                                    <!-- Botón Eliminar -->
                                     <a href="{% url 'proveedores:documento_delete' doc.id_documento %}" 
-                                       class="btn btn-sm btn-outline-danger">
+                                       class="btn btn-sm btn-outline-danger"
+                                       title="Eliminar documento">
                                         <i class="bi bi-trash"></i>
                                     </a>
                                 </div>
@@ -411,12 +445,6 @@
             {% endif %}
         </div>
     </div>
-
-    {% if proveedor.observaciones_generales %}
-    <div class="card mt-4">
-        <div class="card-header"><strong>Observaciones</strong></div>
-        <div class="card-body">{{ proveedor.observaciones_generales }}</div>
-    </div>
-    {% endif %}
+    <!-- OBSERVACIONES ELIMINADAS DE AQUÍ - AHORA SOLO EN TAB GENERAL -->
 </div>
 {% endblock %}

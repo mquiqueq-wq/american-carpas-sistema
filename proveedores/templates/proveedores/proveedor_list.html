@@ -72,7 +72,13 @@
                                     {{ proveedor.razon_social }}
                                 </h6>
                                 {% if proveedor.nombre_comercial %}
-                                    <small class="text-muted">{{ proveedor.nombre_comercial }}</small>
+                                    <small class="text-muted d-block text-truncate">{{ proveedor.nombre_comercial }}</small>
+                                {% endif %}
+                                <!-- NUEVO: CALIFICACIÓN CON ESTRELLAS -->
+                                {% if proveedor.calificacion > 0 %}
+                                    <div class="mt-1">
+                                        <small>{{ proveedor.get_calificacion_html|safe }}</small>
+                                    </div>
                                 {% endif %}
                             </div>
                             <span class="badge {{ proveedor.get_estado_badge_class }}">

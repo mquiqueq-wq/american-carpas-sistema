@@ -105,6 +105,27 @@ class TipoProveedor(models.Model):
     
     def __str__(self):
         return self.nombre_tipo
+    
+    # ====== PROPIEDADES PARA VISUALIZACIÓN ======
+    
+    @property
+    def icono_bootstrap(self):
+        """
+        Retorna el icono formateado para Bootstrap Icons
+        Si el icono no tiene el prefijo 'bi-', lo añade
+        """
+        if self.icono:
+            if not self.icono.startswith('bi-'):
+                return f"bi-{self.icono}"
+            return self.icono
+        return "bi-building"  # Icono por defecto para tipos de proveedor
+    
+    @property
+    def orden_visualizacion(self):
+        """
+        Retorna un orden de visualización basado en el ID
+        """
+        return self.id_tipo_proveedor
 
 
 class CategoriaProveedor(models.Model):
@@ -147,7 +168,129 @@ class CategoriaProveedor(models.Model):
             nivel += 1
             categoria_actual = categoria_actual.categoria_padre
         return nivel
-
+    
+    # ====== NUEVAS PROPIEDADES AÑADIDAS ======
+    
+    @property
+    def icono_bootstrap(self):
+        """
+        Retorna el icono formateado para Bootstrap Icons
+        Si el icono no tiene el prefijo 'bi-', lo añade
+        """
+        if self.icono:
+            if not self.icono.startswith('bi-'):
+                return f"bi-{self.icono}"
+            return self.icono
+        return "bi-tag"  # Icono por defecto
+    
+    @property
+    def color_badge(self):
+        """
+        Convierte el color hexadecimal a una clase de badge de Bootstrap
+        Si no hay color definido, retorna 'secondary'
+        """
+        if not self.color:
+            return 'secondary'
+        
+        # Mapeo de colores hex aproximados a clases Bootstrap
+        color_mapping = {
+            # Azules
+            '#0d6efd': 'primary',
+            '#0dcaf0': 'info',
+            '#blue': 'primary',
+            
+            # Verdes
+            '#198754': 'success',
+            '#28a745': 'success',
+            '#green': 'success',
+            
+            # Amarillos/Naranjas
+            '#ffc107': 'warning',
+            '#fd7e14': 'warning',
+            '#yellow': 'warning',
+            '#orange': 'warning',
+            
+            # Rojos
+            '#dc3545': 'danger',
+            '#red': 'danger',
+            
+            # Grises
+            '#6c757d': 'secondary',
+            '#gray': 'secondary',
+            '#grey': 'secondary',
+            
+            # Oscuros
+            '#212529': 'dark',
+            '#black': 'dark',
+            
+            # Claros
+            '#f8f9fa': 'light',
+            '#white': 'light',
+        }
+        
+        # Buscar coincidencia exacta (case insensitive)
+        color_lower = self.color.lower()
+        if color_lower in color_mapping:
+            return color_mapping[color_lower]
+        
+        # Si es un color hex, intentar mapeo aproximado por luminosidad
+        if self.color.startswith('#'):
+            return self._get_badge_by_luminosity(self.color)
+        
+        # Por defecto
+        return 'secondary'
+    
+    def _get_badge_by_luminosity(self, hex_color):
+        """
+        Calcula la luminosidad del color hex y retorna la clase Bootstrap más apropiada
+        """
+        try:
+            # Remover el #
+            hex_color = hex_color.lstrip('#')
+            
+            # Convertir a RGB
+            if len(hex_color) == 3:
+                hex_color = ''.join([c*2 for c in hex_color])
+            
+            r = int(hex_color[0:2], 16)
+            g = int(hex_color[2:4], 16)
+            b = int(hex_color[4:6], 16)
+            
+            # Calcular luminosidad (fórmula estándar)
+            luminosity = (0.299 * r + 0.587 * g + 0.114 * b) / 255
+            
+            # Decidir clase según dominancia de color y luminosidad
+            if r > g and r > b:  # Dominante rojo
+                return 'danger'
+            elif g > r and g > b:  # Dominante verde
+                return 'success'
+            elif b > r and b > g:  # Dominante azul
+                return 'primary' if luminosity < 0.5 else 'info'
+            elif luminosity > 0.7:  # Muy claro
+                return 'light'
+            elif luminosity < 0.3:  # Muy oscuro
+                return 'dark'
+            else:  # Gris/neutral
+                return 'secondary'
+                
+        except (ValueError, IndexError):
+            return 'secondary'
+    
+    @property
+    def color_hex_o_default(self):
+        """
+        Retorna el color hexadecimal o un color por defecto
+        Útil para mostrar el color real en la UI
+        """
+        return self.color if self.color else '#6c757d'
+    
+    @property
+    def orden_visualizacion(self):
+        """
+        Retorna un orden de visualización basado en el nombre
+        Por ahora retorna el ID, pero puede personalizarse
+        """
+        return self.id_categoria
 
 class TipoDocumentoProveedor(models.Model):
     """
@@ -162,8 +305,10 @@ class TipoDocumentoProveedor(models.Model):
     requiere_vigencia = models.BooleanField(default=True, verbose_name="Requiere Control de Vigencia")
     dias_alerta_vencimiento = models.IntegerField(
         default=30,
+        blank=True,  # AÑADIDO: Permite campo vacío en formularios
+        null=True,   # AÑADIDO: Permite NULL en base de datos
         verbose_name="Días de Alerta antes del Vencimiento",
-        help_text="Días antes del vencimiento para enviar alertas"
+        help_text="Días antes del vencimiento para enviar alertas (solo si requiere vigencia)"
     )
     activo = models.BooleanField(default=True, verbose_name="Activo")
     fecha_creacion = models.DateTimeField(auto_now_add=True, verbose_name="Fecha de Creación")
@@ -441,6 +586,83 @@ class Proveedor(models.Model):
             partes.append(self.departamento)
         partes.append(self.pais)
         return ", ".join(partes)
+    
+    # ====== MÉTODOS PARA VISUALIZACIÓN ======
+    
+    def get_estado_badge_class(self):
+        """
+        Retorna la clase de badge de Bootstrap según el estado
+        """
+        if self.estado == 'ACTIVO':
+            return 'bg-success'
+        elif self.estado == 'INACTIVO':
+            return 'bg-danger'
+        else:
+            return 'bg-secondary'
+    
+    def get_calificacion_estrellas(self):
+        """
+        Retorna la calificación en formato de estrellas (0-5)
+        Retorna tupla: (estrellas_llenas, estrellas_medias, estrellas_vacias)
+        """
+        calificacion = float(self.calificacion) if self.calificacion else 0
+        
+        estrellas_llenas = int(calificacion)  # Parte entera
+        tiene_media = (calificacion - estrellas_llenas) >= 0.5
+        estrellas_medias = 1 if tiene_media else 0
+        estrellas_vacias = 5 - estrellas_llenas - estrellas_medias
+        
+        return {
+            'llenas': estrellas_llenas,
+            'medias': estrellas_medias,
+            'vacias': estrellas_vacias,
+            'valor': calificacion
+        }
+    
+    def get_calificacion_html(self):
+        """
+        Retorna HTML con estrellas para la calificación
+        """
+        estrellas = self.get_calificacion_estrellas()
+        html = '<span class="text-warning">'
+        
+        # Estrellas llenas
+        for i in range(estrellas['llenas']):
+            html += '<i class="bi bi-star-fill"></i>'
+        
+        # Estrella media
+        if estrellas['medias'] > 0:
+            html += '<i class="bi bi-star-half"></i>'
+        
+        # Estrellas vacías
+        for i in range(estrellas['vacias']):
+            html += '<i class="bi bi-star"></i>'
+        
+        html += f'</span> <span class="text-muted small">({estrellas["valor"]:.1f}/5.0)</span>'
+        return html
+    
+    @property
+    def plazo_entrega_dias(self):
+        """
+        Compatibilidad: retorna tiempo_entrega_promedio
+        """
+        return self.tiempo_entrega_promedio
+    
+    @property
+    def tiempo_credito_dias(self):
+        """
+        Extrae días de las condiciones de pago
+        Si no puede extraer, retorna 0
+        """
+        if not self.condiciones_pago:
+            return 0
+        
+        # Intentar extraer número de días
+        import re
+        match = re.search(r'(\d+)\s*d[ií]as?', self.condiciones_pago, re.IGNORECASE)
+        if match:
+            return int(match.group(1))
+        return 0
 
 
 # =====================================================
