@@ -2,6 +2,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib import messages
 from django.core.paginator import Paginator
 from django.db import models  # Para usar Q
+from django.http import FileResponse, Http404  # ✅ IMPORTS NECESARIOS PARA MANEJO DE ARCHIVOS
 from .models import TipoProveedor, CategoriaProveedor, TipoDocumentoProveedor
 from .forms import TipoProveedorForm, CategoriaProveedorForm, TipoDocumentoProveedorForm
 
@@ -34,7 +35,7 @@ def tipo_proveedor_list(request):
     if query:
         tipos = tipos.filter(nombre_tipo__icontains=query)
     
-    tipos = tipos.order_by('orden_visualizacion', 'nombre_tipo')
+    tipos = tipos.order_by('nombre_tipo')
     
     # Paginación
     paginator = Paginator(tipos, 15)
@@ -125,7 +126,7 @@ def categoria_proveedor_list(request):
     if query:
         categorias = categorias.filter(nombre_categoria__icontains=query)
     
-    categorias = categorias.order_by('orden_visualizacion', 'nombre_categoria')
+    categorias = categorias.order_by('nombre_categoria')
     
     # Paginación
     paginator = Paginator(categorias, 15)
@@ -216,7 +217,7 @@ def tipo_documento_list(request):
     if query:
         tipos = tipos.filter(nombre_tipo_documento__icontains=query)
     
-    tipos = tipos.order_by('orden_visualizacion', 'nombre_tipo_documento')
+    tipos = tipos.order_by('nombre_tipo_documento')
     
     # Paginación
     paginator = Paginator(tipos, 15)
@@ -335,8 +336,11 @@ def proveedor_list(request):
     page_obj = paginator.get_page(page_number)
     
     # Para los filtros
-    from .models import TipoProveedor, ESTADO_PROVEEDOR_CHOICES
+    from .models import TipoProveedor
     tipos_proveedor = TipoProveedor.objects.filter(activo=True)
+    
+    # Obtener las opciones de estado del modelo Proveedor
+    estado_choices = Proveedor._meta.get_field('estado').choices
     
     context = {
         'page_obj': page_obj,
@@ -344,7 +348,7 @@ def proveedor_list(request):
         'estado_filtro': estado_filtro,
         'tipo_filtro': tipo_filtro,
         'tipos_proveedor': tipos_proveedor,
-        'estados': ESTADO_PROVEEDOR_CHOICES,
+        'estados': estado_choices,
         'show_module_nav': True,
         'active_module': 'proveedores'
     }
@@ -452,7 +456,6 @@ def proveedor_delete(request, id_proveedor):
 from .models import ContactoProveedor
 from .forms import ContactoProveedorForm
 
-
 def contacto_create(request, id_proveedor):
     """Crear nuevo contacto para un proveedor"""
     proveedor = get_object_or_404(Proveedor, id_proveedor=id_proveedor)
@@ -465,9 +468,13 @@ def contacto_create(request, id_proveedor):
             contacto.save()
             messages.success(
                 request,
-                f'✅ Contacto "{contacto.nombre_completo}" agregado exitosamente.'
+                f'✅ Contacto "{contacto.get_nombre_completo()}" agregado exitosamente.'
             )
             return redirect('proveedores:proveedor_detail', id_proveedor=proveedor.id_proveedor)
+        else:
+            # Agregar mensajes de error para debugging
+            messages.error(request, '❌ Error al guardar el contacto. Por favor revisa los campos.')
+            print("Errores del formulario:", form.errors)  # Para debugging en consola
     else:
         form = ContactoProveedorForm(initial={'id_proveedor': proveedor})
     
@@ -493,9 +500,13 @@ def contacto_update(request, id_contacto):
             contacto = form.save()
             messages.success(
                 request,
-                f'✅ Contacto "{contacto.nombre_completo}" actualizado exitosamente.'
+                f'✅ Contacto "{contacto.get_nombre_completo()}" actualizado exitosamente.'
             )
             return redirect('proveedores:proveedor_detail', id_proveedor=proveedor.id_proveedor)
+        else:
+            # Agregar mensajes de error para debugging
+            messages.error(request, '❌ Error al actualizar el contacto. Por favor revisa los campos.')
+            print("Errores del formulario:", form.errors)  # Para debugging en consola
     else:
         form = ContactoProveedorForm(instance=contacto)
     
@@ -517,7 +528,7 @@ def contacto_delete(request, id_contacto):
     proveedor = contacto.id_proveedor
     
     if request.method == 'POST':
-        nombre = contacto.nombre_completo
+        nombre = contacto.get_nombre_completo()
         contacto.delete()
         messages.success(request, f'🗑️ Contacto "{nombre}" eliminado exitosamente.')
         return redirect('proveedores:proveedor_detail', id_proveedor=proveedor.id_proveedor)
@@ -529,7 +540,6 @@ def contacto_delete(request, id_contacto):
         'active_module': 'proveedores',
     }
     return render(request, 'proveedores/contacto_confirm_delete.html', context)
-
 
 # =====================================================
 # GESTIÓN DE DOCUMENTOS - FASE 4
@@ -637,6 +647,53 @@ def documento_download(request, id_documento):
             as_attachment=True,
             filename=documento.nombre_archivo_original
         )
+    except FileNotFoundError:
+        raise Http404("El archivo no existe")
+    
+def documento_view(request, id_documento):
+    """
+    Visualizar documento directamente en el navegador
+    Permite ver PDFs, imágenes y otros archivos sin descargar
+    """
+    documento = get_object_or_404(DocumentoProveedor, id_documento=id_documento)
+    
+    try:
+        # Abrir archivo
+        file = documento.archivo.open('rb')
+        
+        # Determinar tipo MIME según extensión
+        extension = documento.get_extension_archivo().lower()
+
+        # ✅ AÑADIR ESTAS 3 LÍNEAS
+        if extension.startswith('.'):
+            extension = extension[1:]
+        
+        # Mapeo de extensiones a tipos MIME
+        mime_types = {
+            'pdf': 'application/pdf',
+            'png': 'image/png',
+            'jpg': 'image/jpeg',
+            'jpeg': 'image/jpeg',
+            'gif': 'image/gif',
+            'webp': 'image/webp',
+            'svg': 'image/svg+xml',
+            'doc': 'application/msword',
+            'docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            'xls': 'application/vnd.ms-excel',
+            'xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'txt': 'text/plain',
+            'csv': 'text/csv',
+        }
+        
+        # Obtener tipo MIME o usar genérico
+        content_type = mime_types.get(extension, 'application/octet-stream')
+        
+        # Crear respuesta con Content-Disposition: inline
+        response = FileResponse(file, content_type=content_type)
+        response['Content-Disposition'] = f'inline; filename="{documento.nombre_archivo_original}"'
+        
+        return response
+        
     except FileNotFoundError:
         raise Http404("El archivo no existe")
 

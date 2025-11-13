@@ -2,8 +2,29 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib import messages
 from django.core.paginator import Paginator
 from django.db import models  # Para usar Q
-from .models import TipoProveedor, CategoriaProveedor, TipoDocumentoProveedor
-from .forms import TipoProveedorForm, CategoriaProveedorForm, TipoDocumentoProveedorForm
+from django.http import FileResponse, Http404, HttpResponse  # ✅ IMPORTS NECESARIOS PARA MANEJO DE ARCHIVOS
+
+# ✅ IMPORTAR TODOS LOS MODELOS AL INICIO
+from .models import (
+    TipoProveedor, 
+    CategoriaProveedor, 
+    TipoDocumentoProveedor,
+    Proveedor,
+    ContactoProveedor,
+    DocumentoProveedor,
+    ProductoServicioProveedor
+)
+
+# ✅ IMPORTAR TODOS LOS FORMULARIOS AL INICIO
+from .forms import (
+    TipoProveedorForm, 
+    CategoriaProveedorForm, 
+    TipoDocumentoProveedorForm,
+    ProveedorForm,
+    ContactoProveedorForm,
+    DocumentoProveedorForm,
+    ProductoServicioProveedorForm
+)
 
 
 # =====================================================
@@ -299,9 +320,6 @@ def tipo_documento_delete(request, id_tipo_documento):
 # CRUD PROVEEDORES - FASE 2
 # =====================================================
 
-from .models import Proveedor
-from .forms import ProveedorForm
-
 
 def proveedor_list(request):
     """Listado de proveedores con búsqueda y filtros"""
@@ -335,7 +353,6 @@ def proveedor_list(request):
     page_obj = paginator.get_page(page_number)
     
     # Para los filtros
-    from .models import TipoProveedor
     tipos_proveedor = TipoProveedor.objects.filter(activo=True)
     
     # Obtener las opciones de estado del modelo Proveedor
@@ -452,9 +469,6 @@ def proveedor_delete(request, id_proveedor):
 # GESTIÓN DE CONTACTOS - FASE 3
 # =====================================================
 
-from .models import ContactoProveedor
-from .forms import ContactoProveedorForm
-
 def contacto_create(request, id_proveedor):
     """Crear nuevo contacto para un proveedor"""
     proveedor = get_object_or_404(Proveedor, id_proveedor=id_proveedor)
@@ -543,10 +557,6 @@ def contacto_delete(request, id_contacto):
 # =====================================================
 # GESTIÓN DE DOCUMENTOS - FASE 4
 # =====================================================
-
-from .models import DocumentoProveedor
-from .forms import DocumentoProveedorForm
-from django.http import FileResponse, Http404
 
 
 def documento_create(request, id_proveedor):
@@ -651,54 +661,74 @@ def documento_download(request, id_documento):
     
 def documento_view(request, id_documento):
     """
-    Visualizar documento directamente en el navegador
-    Permite ver PDFs, imágenes y otros archivos sin descargar
+    Visualizar documento en navegador - VERSIÓN ULTRA-SIMPLIFICADA
+    Elimina toda complejidad y usa el enfoque más directo posible
     """
+    import os
+    import mimetypes
+    import unicodedata
+    
     documento = get_object_or_404(DocumentoProveedor, id_documento=id_documento)
     
-    try:
-        # Abrir archivo
-        file = documento.archivo.open('rb')
-        
-        # Determinar tipo MIME según extensión
-        extension = documento.get_extension_archivo().lower()
-        
-        # Mapeo de extensiones a tipos MIME
-        mime_types = {
-            'pdf': 'application/pdf',
-            'png': 'image/png',
-            'jpg': 'image/jpeg',
-            'jpeg': 'image/jpeg',
-            'gif': 'image/gif',
-            'webp': 'image/webp',
-            'svg': 'image/svg+xml',
-            'doc': 'application/msword',
-            'docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-            'xls': 'application/vnd.ms-excel',
-            'xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-            'txt': 'text/plain',
-            'csv': 'text/csv',
+    # Verificación básica
+    if not documento.archivo:
+        raise Http404("Documento sin archivo")
+    
+    file_path = documento.archivo.path
+    
+    if not os.path.exists(file_path):
+        raise Http404("Archivo no existe")
+    
+    # Usar mimetypes de Python (más confiable que mapeo manual)
+    content_type, encoding = mimetypes.guess_type(file_path)
+    
+    # Si no detecta, usar mapeo manual como fallback
+    if not content_type:
+        ext = os.path.splitext(file_path)[1].lower()
+        mime_map = {
+            '.pdf': 'application/pdf',
+            '.png': 'image/png',
+            '.jpg': 'image/jpeg',
+            '.jpeg': 'image/jpeg',
+            '.gif': 'image/gif',
+            '.webp': 'image/webp',
+            '.svg': 'image/svg+xml',
+            '.bmp': 'image/bmp',
+            '.txt': 'text/plain',
+            '.doc': 'application/msword',
+            '.docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
         }
-        
-        # Obtener tipo MIME o usar genérico
-        content_type = mime_types.get(extension, 'application/octet-stream')
-        
-        # Crear respuesta con Content-Disposition: inline
-        response = FileResponse(file, content_type=content_type)
-        response['Content-Disposition'] = f'inline; filename="{documento.nombre_archivo_original}"'
-        
-        return response
-        
-    except FileNotFoundError:
-        raise Http404("El archivo no existe")
+        content_type = mime_map.get(ext, 'application/octet-stream')
+    
+    # Leer archivo completo
+    with open(file_path, 'rb') as f:
+        file_content = f.read()
+    
+    # Crear respuesta HTTP
+    response = HttpResponse(file_content, content_type=content_type)
+    
+    # Preparar nombre de archivo - SIMPLIFICADO
+    # Tomar el nombre original y convertir a ASCII puro
+    filename = os.path.basename(file_path)
+    
+    # Normalizar a ASCII (eliminar acentos)
+    filename_ascii = unicodedata.normalize('NFKD', filename)
+    filename_ascii = filename_ascii.encode('ASCII', 'ignore').decode('ASCII')
+    
+    # Reemplazar espacios y caracteres problemáticos
+    filename_ascii = filename_ascii.replace(' ', '_')
+    filename_ascii = ''.join(c for c in filename_ascii if c.isalnum() or c in ('_', '-', '.'))
+    
+    # Content-Disposition ULTRA SIMPLE
+    response['Content-Disposition'] = f'inline; filename="{filename_ascii}"'
+    response['Content-Length'] = str(len(file_content))
+    
+    return response
 
 
 # =====================================================
 # GESTIÓN DE PRODUCTOS/SERVICIOS - FASE 5
 # =====================================================
-
-from .models import ProductoServicioProveedor
-from .forms import ProductoServicioProveedorForm
 
 
 def producto_create(request, id_proveedor):
