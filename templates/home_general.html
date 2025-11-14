@@ -85,7 +85,7 @@
         }
 
         .hero-logos img {
-            height: 80px;
+            height: 140px;
             transition: all 0.3s;
             background: white;
             padding: 10px;
@@ -236,7 +236,7 @@
             <div class="carousel-inner">
                 <!-- Imagen 1: Construcción/Carpas -->
                 <div class="carousel-item active">
-                    <img src="https://images.unsplash.com/photo-1541888946425-d81bb19240f5?w=1920&q=80" alt="Construcción y estructuras">
+                    <img src="{% static 'img/carpa1.jpg' %}" alt="Construcción y estructuras">
                 </div>
                 <!-- Imagen 2: Trabajadores -->
                 <div class="carousel-item">
@@ -270,12 +270,12 @@
             <div class="hero-logos">
                 <img src="{% static 'img/logo_universidad.png' %}" alt="Universidad La Gran Colombia">
                 <!-- Si tienes logo de American Carpas, descomenta la siguiente línea -->
-                <!-- <img src="{% static 'img/logo.png' %}" alt="American Carpas 1 SAS"> -->
+                <img src="{% static 'img/logo_american_carpas2.jpg' %}" alt="American Carpas 1 SAS">
             </div>
 
             <!-- Títulos -->
-            <h1 class="hero-title">American Carpas 1 SAS</h1>
-            <h2 class="hero-subtitle">Sistema de Gestión de Datos</h2>
+            <!--<h1 class="hero-title">American Carpas 1 SAS</h1> -->
+            <h1 class="hero-title">Sistema de Gestión de Datos</h1>
             <p class="hero-description">
                 Plataforma integral para la gestión de trabajadores, proveedores, inventarios y proyectos.
                 Desarrollado como proyecto de grado para la Universidad La Gran Colombia.
