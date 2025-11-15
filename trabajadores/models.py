@@ -717,13 +717,53 @@ class TrabajadorDocumento(models.Model):
         return colores.get(estado, 'secondary')
 
     def get_tamano_archivo(self):
-        """Retorna el tamaño del archivo en formato legible"""
+        """
+        Retorna el tamaño del archivo en formato legible.
+        Maneja archivos faltantes sin romper la aplicación.
+        """
         if not self.archivo:
-            return "0 B"
+            return "Sin archivo"
         
-        size = self.archivo.size
-        for unit in ['B', 'KB', 'MB', 'GB']:
-            if size < 1024.0:
-                return f"{size:.1f} {unit}"
-            size /= 1024.0
-        return f"{size:.1f} TB"
+        try:
+            # Verificar si el archivo existe físicamente
+            if not self.archivo.storage.exists(self.archivo.name):
+                return "⚠️ Archivo no encontrado"
+            
+            # Si existe, obtener el tamaño
+            size = self.archivo.size
+            
+            # Formatear el tamaño
+            for unit in ['B', 'KB', 'MB', 'GB']:
+                if size < 1024.0:
+                    return f"{size:.1f} {unit}"
+                size /= 1024.0
+            return f"{size:.1f} TB"
+        
+        except Exception as e:
+            # Si hay cualquier error, retornar mensaje seguro
+            return "⚠️ Error al leer archivo"
+    
+    def archivo_existe(self):
+        """
+        Verifica si el archivo existe físicamente.
+        Útil para templates y vistas.
+        """
+        if not self.archivo:
+            return False
+        
+        try:
+            return self.archivo.storage.exists(self.archivo.name)
+        except Exception:
+            return False
+    
+    def get_url_archivo_segura(self):
+        """
+        Retorna la URL del archivo solo si existe.
+        Retorna None si no existe para evitar links rotos.
+        """
+        if self.archivo_existe():
+            try:
+                return self.archivo.url
+            except Exception:
+                return None
+        return None

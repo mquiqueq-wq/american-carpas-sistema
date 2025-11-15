@@ -908,6 +908,58 @@ class DocumentoProveedor(models.Model):
             '.rar': 'bi-file-zip',
         }
         return iconos.get(extension, 'bi-file-earmark')
+    
+    def get_tamano_archivo(self):
+        """
+        Retorna el tamaño del archivo formateado.
+        Maneja archivos faltantes sin romper la aplicación.
+        """
+        if not self.archivo:
+            return "Sin archivo"
+        
+        try:
+            # Verificar si el archivo existe físicamente
+            if not self.archivo.storage.exists(self.archivo.name):
+                return "⚠️ Archivo no encontrado"
+            
+            # Si existe, obtener el tamaño
+            size = self.archivo.size
+            
+            # Formatear el tamaño
+            for unit in ['bytes', 'KB', 'MB', 'GB']:
+                if size < 1024.0:
+                    return f"{size:.1f} {unit}"
+                size /= 1024.0
+            return f"{size:.1f} TB"
+        
+        except Exception as e:
+            # Si hay cualquier error, retornar mensaje seguro
+            return "⚠️ Error al leer archivo"
+    
+    def archivo_existe(self):
+        """
+        Verifica si el archivo existe físicamente.
+        Útil para templates y vistas.
+        """
+        if not self.archivo:
+            return False
+        
+        try:
+            return self.archivo.storage.exists(self.archivo.name)
+        except Exception:
+            return False
+    
+    def get_url_archivo_segura(self):
+        """
+        Retorna la URL del archivo solo si existe.
+        Retorna None si no existe para evitar links rotos.
+        """
+        if self.archivo_existe():
+            try:
+                return self.archivo.url
+            except Exception:
+                return None
+        return None
 
 
 # =====================================================

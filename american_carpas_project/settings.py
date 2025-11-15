@@ -151,7 +151,26 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 # =====================================================
 
 MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR / 'media'
+
+# CONFIGURACIÓN ROBUSTA PARA RAILWAY
+# Si estamos en Railway (producción), usar volume persistente
+# Si estamos en desarrollo local, usar carpeta media normal
+if os.environ.get('RAILWAY_ENVIRONMENT'):
+    # En Railway: usar volume montado en /data
+    MEDIA_ROOT = '/data/media'
+    
+    # Crear el directorio si no existe
+    os.makedirs(MEDIA_ROOT, exist_ok=True)
+    
+    print(f"🚂 Railway detectado - Usando MEDIA_ROOT: {MEDIA_ROOT}")
+else:
+    # En desarrollo local: usar carpeta media en el proyecto
+    MEDIA_ROOT = BASE_DIR / 'media'
+    
+    # Crear el directorio si no existe
+    os.makedirs(MEDIA_ROOT, exist_ok=True)
+    
+    print(f"💻 Desarrollo local - Usando MEDIA_ROOT: {MEDIA_ROOT}")
 
 
 # Default primary key field type
