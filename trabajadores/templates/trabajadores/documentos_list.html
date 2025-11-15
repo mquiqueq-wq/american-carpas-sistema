@@ -116,11 +116,21 @@
                             </td>
                             <td class="text-center">
                                 <div class="btn-group btn-group-sm">
+                                    <!-- NUEVO: Botón Ver -->
+                                    <a href="{% url 'trabajadores:documento_view' doc.id_documento %}" 
+                                       class="btn btn-outline-success" 
+                                       target="_blank"
+                                       title="Ver documento en el navegador">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                    
+                                    <!-- Botón Descargar -->
                                     <a href="{% url 'trabajadores:documento_download' doc.id_documento %}" 
                                        class="btn btn-outline-info" 
                                        title="Descargar">
                                         <i class="bi bi-download"></i>
                                     </a>
+                                    
                                     <a href="{% url 'trabajadores:documento_update' doc.id_documento %}" 
                                        class="btn btn-outline-primary" 
                                        title="Editar">

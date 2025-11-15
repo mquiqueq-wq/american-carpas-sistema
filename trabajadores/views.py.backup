@@ -2,7 +2,7 @@
 import io
 #from django.contrib.auth.decorators import login_required
 from datetime import date, timedelta
-from django.http import HttpResponse, JsonResponse, FileResponse, Http404
+from django.http import HttpResponse, JsonResponse
 from django.template.loader import render_to_string
 import openpyxl
 from openpyxl.utils import get_column_letter
@@ -1493,74 +1493,6 @@ def documento_download(request, id_documento):
     except Exception as e:
         messages.error(request, f'Error al descargar el archivo: {str(e)}')
         return redirect('trabajadores:trabajador_detail', id_trabajador=documento.id_trabajador.id_trabajador)
-
-
-def documento_view(request, id_documento):
-    """
-    Visualizar documento en navegador - VERSIÓN ULTRA-SIMPLIFICADA
-    Elimina toda complejidad y usa el enfoque más directo posible
-    (Misma solución que funcionó en módulo de proveedores)
-    """
-    import os
-    import mimetypes
-    import unicodedata
-    
-    documento = get_object_or_404(TrabajadorDocumento, id_documento=id_documento)
-    
-    # Verificación básica
-    if not documento.archivo:
-        raise Http404("Documento sin archivo")
-    
-    file_path = documento.archivo.path
-    
-    if not os.path.exists(file_path):
-        raise Http404("Archivo no existe")
-    
-    # Usar mimetypes de Python (más confiable que mapeo manual)
-    content_type, encoding = mimetypes.guess_type(file_path)
-    
-    # Si no detecta, usar mapeo manual como fallback
-    if not content_type:
-        ext = os.path.splitext(file_path)[1].lower()
-        mime_map = {
-            '.pdf': 'application/pdf',
-            '.png': 'image/png',
-            '.jpg': 'image/jpeg',
-            '.jpeg': 'image/jpeg',
-            '.gif': 'image/gif',
-            '.webp': 'image/webp',
-            '.svg': 'image/svg+xml',
-            '.bmp': 'image/bmp',
-            '.txt': 'text/plain',
-            '.doc': 'application/msword',
-            '.docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-        }
-        content_type = mime_map.get(ext, 'application/octet-stream')
-    
-    # Leer archivo completo
-    with open(file_path, 'rb') as f:
-        file_content = f.read()
-    
-    # Crear respuesta HTTP
-    response = HttpResponse(file_content, content_type=content_type)
-    
-    # Preparar nombre de archivo - SIMPLIFICADO
-    # Tomar el nombre original y convertir a ASCII puro
-    filename = os.path.basename(file_path)
-    
-    # Normalizar a ASCII (eliminar acentos)
-    filename_ascii = unicodedata.normalize('NFKD', filename)
-    filename_ascii = filename_ascii.encode('ASCII', 'ignore').decode('ASCII')
-    
-    # Reemplazar espacios y caracteres problemáticos
-    filename_ascii = filename_ascii.replace(' ', '_')
-    filename_ascii = ''.join(c for c in filename_ascii if c.isalnum() or c in ('_', '-', '.'))
-    
-    # Content-Disposition ULTRA SIMPLE
-    response['Content-Disposition'] = f'inline; filename="{filename_ascii}"'
-    response['Content-Length'] = str(len(file_content))
-    
-    return response
 
 
 # ====================================================================
