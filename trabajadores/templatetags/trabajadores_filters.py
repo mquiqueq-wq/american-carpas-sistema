@@ -2,9 +2,11 @@ from django import template
 
 register = template.Library()
 
+
 @register.filter
 def attr(obj, name):
     return getattr(obj, name, '')
+
 
 @register.filter
 def get_item(d, key):
@@ -13,39 +15,38 @@ def get_item(d, key):
     except Exception:
         return ''
 
+
 @register.filter(name='currency')
 def currency(value):
     """
     Formatea un número como moneda colombiana.
-    Ejemplo: 1500000 -> $1.500.000
+    Ejemplo: 150000 -> $1.500.000
     """
     try:
-        # Convertir a float y formatear
         value = float(value)
-        # Formatear con separador de miles
-        formatted = "${:,.0f}".format(value)
-        # Reemplazar coma por punto (formato colombiano)
+        # 150000 -> "150,000"
+        formatted = "{:,.0f}".format(value)
+        # Pasar a formato colombiano: 150.000
         formatted = formatted.replace(",", ".")
-        return formatted
+        return f"${formatted}"
     except (ValueError, TypeError):
         return value
+
 
 @register.filter(name='abs')
 def absolute_value(value):
     """
     Retorna el valor absoluto de un número.
     Ejemplo: -5 -> 5
-    
-    Nombre de función diferente para evitar conflictos con abs() nativo
     """
     try:
-        # Convertir a entero y obtener valor absoluto
         num = int(value)
         if num < 0:
             return -num
         return num
     except (ValueError, TypeError):
         return 0
+
 
 @register.filter
 def filter_vencidos(documentos):
@@ -57,6 +58,7 @@ def filter_vencidos(documentos):
             if dias is not None and dias < 0:
                 vencidos.append(doc)
     return vencidos
+
 
 @register.filter
 def filter_proximos_vencer(documentos):

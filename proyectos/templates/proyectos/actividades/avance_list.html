@@ -1,0 +1,147 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Avances - {{ actividad.numero_actividad }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Encabezado -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h2 class="mb-1">Avances de la Actividad</h2>
+                    <p class="text-muted mb-1">
+                        <strong>Proyecto:</strong> {{ proyecto.codigo_proyecto }} - {{ proyecto.nombre_proyecto }}<br>
+                        <strong>Actividad:</strong> {{ actividad.numero_actividad }} - {{ actividad.nombre_actividad }}
+                    </p>
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb mb-0">
+                            <li class="breadcrumb-item">
+                                <a href="{% url 'proyectos:home' %}">Proyectos</a>
+                            </li>
+                            <li class="breadcrumb-item">
+                                <a href="{% url 'proyectos:proyecto_detail' proyecto.id_proyecto %}">
+                                    {{ proyecto.codigo_proyecto }}
+                                </a>
+                            </li>
+                            <li class="breadcrumb-item">
+                                <a href="{% url 'proyectos:actividad_list' proyecto.id_proyecto %}">
+                                    Actividades
+                                </a>
+                            </li>
+                            <li class="breadcrumb-item active">Avances</li>
+                        </ol>
+                    </nav>
+                </div>
+                <div class="text-end">
+                    <a href="{% url 'proyectos:avance_create' actividad.id_actividad %}" class="btn btn-primary mb-2">
+                        <i class="bi bi-plus-lg"></i> Registrar Avance
+                    </a>
+                    <br>
+                    <a href="{% url 'proyectos:actividad_list' proyecto.id_proyecto %}" class="btn btn-outline-secondary btn-sm">
+                        <i class="bi bi-arrow-left"></i> Volver a Actividades
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Resumen rápido de la actividad -->
+    <div class="row mb-3">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-md-4 mb-2 mb-md-0">
+                            <strong>Cantidad:</strong><br>
+                            {{ actividad.cantidad_ejecutada_total }} / {{ actividad.cantidad_programada }}
+                            {{ actividad.get_unidad_medida_display }}
+                        </div>
+                        <div class="col-md-4 mb-2 mb-md-0">
+                            <strong>Avance:</strong><br>
+                            <div class="progress" style="height: 20px;">
+                                <div class="progress-bar 
+                                {% if actividad.porcentaje_avance >= 100 %}bg-success
+                                {% elif actividad.porcentaje_avance >= 50 %}bg-info
+                                {% else %}bg-warning{% endif %}"
+                                style="width: {{ actividad.porcentaje_avance_css }}%;">
+                                    {{ actividad.porcentaje_avance|floatformat:2 }}%
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <strong>Estado:</strong><br>
+                            {% if actividad.esta_completada %}
+                                <span class="badge bg-success">Completada</span>
+                            {% elif actividad.esta_atrasada_programado %}
+                                <span class="badge bg-danger">
+                                    Atrasada ({{ actividad.retraso_dias }} días)
+                                </span>
+                            {% elif actividad.necesita_atencion %}
+                                <span class="badge bg-warning text-dark">Próxima a vencer</span>
+                            {% else %}
+                                <span class="badge bg-info">En progreso</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabla de avances -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    {% if avances %}
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Fecha</th>
+                                        <th>Cantidad Ejecutada</th>
+                                        <th>Observaciones</th>
+                                        <th class="text-end">Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for avance in avances %}
+                                        <tr>
+                                            <td>{{ avance.fecha_avance|date:"d/m/Y" }}</td>
+                                            <td>
+                                                {{ avance.cantidad_ejecutada }}
+                                                {{ actividad.get_unidad_medida_display }}
+                                            </td>
+                                            <td>{{ avance.observaciones|default:"-" }}</td>
+                                            <td class="text-end">
+                                                <a href="{% url 'proyectos:avance_update' avance.id_avance %}" 
+                                                   class="btn btn-sm btn-outline-primary">
+                                                    <i class="bi bi-pencil"></i>
+                                                </a>
+                                                <a href="{% url 'proyectos:avance_delete' avance.id_avance %}" 
+                                                   class="btn btn-sm btn-outline-danger">
+                                                    <i class="bi bi-trash"></i>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="bi bi-clock-history" style="font-size: 3rem; color: #ccc;"></i>
+                            <p class="text-muted mt-3">No hay avances registrados para esta actividad.</p>
+                            <a href="{% url 'proyectos:avance_create' actividad.id_actividad %}" class="btn btn-primary">
+                                <i class="bi bi-plus-lg"></i> Registrar el primer avance
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

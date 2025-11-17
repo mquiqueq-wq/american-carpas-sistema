@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+
+{% block title %}Eliminar Evidencia - {{ evidencia.titulo }}{% endblock %}
+
+{% block content %}
+<div class="container py-4 contenedor-principal">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card border-danger">
+                <div class="card-header bg-danger text-white">
+                    <i class="bi bi-exclamation-triangle-fill"></i>
+                    Confirmar eliminación de evidencia
+                </div>
+                <div class="card-body">
+                    <p class="mb-3">
+                        ¿Está seguro de que desea eliminar la siguiente evidencia fotográfica?
+                    </p>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-4">
+                            {% if evidencia.imagen %}
+                                <img src="{{ evidencia.imagen.url }}" alt="" class="img-fluid rounded">
+                            {% else %}
+                                <div class="d-flex justify-content-center align-items-center bg-light" style="height: 180px;">
+                                    <i class="bi bi-image text-muted" style="font-size: 3rem;"></i>
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-8">
+                            <ul class="list-unstyled mb-2">
+                                <li><strong>Proyecto:</strong> {{ proyecto.codigo_proyecto }} - {{ proyecto.nombre_proyecto }}</li>
+                                <li><strong>Título:</strong> {{ evidencia.titulo }}</li>
+                                <li><strong>Tipo de evidencia:</strong> {{ evidencia.get_tipo_evidencia_display }}</li>
+                                <li><strong>Descripción:</strong> {{ evidencia.descripcion|default:"Sin descripción" }}</li>
+                                <li><strong>Fecha de captura:</strong> {{ evidencia.fecha_captura|date:"d/m/Y" }}</li>
+                                {% if evidencia.ubicacion_descripcion %}
+                                <li><strong>Ubicación:</strong> {{ evidencia.ubicacion_descripcion }}</li>
+                                {% endif %}
+                                {% if evidencia.actividad %}
+                                <li><strong>Actividad relacionada:</strong> 
+                                    {{ evidencia.actividad.numero_actividad }} - {{ evidencia.actividad.nombre_actividad }}
+                                </li>
+                                {% endif %}
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-warning">
+                        <i class="bi bi-info-circle-fill me-2"></i>
+                        Esta acción no se puede deshacer. La imagen asociada también dejará de estar disponible.
+                    </div>
+
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="d-flex justify-content-end gap-2">
+                            <a href="{% url 'proyectos:evidencia_list' proyecto.id_proyecto %}"
+                               class="btn btn-outline-secondary">
+                                <i class="bi bi-arrow-left"></i> Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-danger">
+                                <i class="bi bi-trash"></i> Eliminar definitivamente
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="mt-3">
+                <a href="{% url 'proyectos:evidencia_list' proyecto.id_proyecto %}" class="text-muted small">
+                    <i class="bi bi-arrow-left"></i> Volver al listado de evidencias
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

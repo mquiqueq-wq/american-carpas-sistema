@@ -1,0 +1,164 @@
+{% extends 'base.html' %}
+
+{% block title %}Proyectos{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Encabezado -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h3><i class="bi bi-kanban text-primary"></i> Proyectos</h3>
+            <p class="text-muted mb-0">Gestión de proyectos de ingeniería civil</p>
+        </div>
+        <a href="{% url 'proyectos:proyecto_create' %}" class="btn btn-success">
+            <i class="bi bi-plus-circle"></i> Nuevo Proyecto
+        </a>
+    </div>
+
+    <!-- Filtros y búsqueda -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-4">
+                    <input type="text" name="q" class="form-control" 
+                           placeholder="Buscar por código, nombre o cliente..." 
+                           value="{{ query }}">
+                </div>
+                <div class="col-md-3">
+                    <select name="estado" class="form-select">
+                        <option value="">-- Todos los estados --</option>
+                        {% for estado in estados_disponibles %}
+                            <option value="{{ estado.id_estado_proyecto }}" {% if filtro_estado == estado.id_estado_proyecto|stringformat:"s" %}selected{% endif %}>
+                                {{ estado.nombre_estado }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <select name="tipo" class="form-select">
+                        <option value="">-- Todos los tipos --</option>
+                        {% for tipo in tipos_disponibles %}
+                            <option value="{{ tipo.id_tipo_proyecto }}" {% if filtro_tipo == tipo.id_tipo_proyecto|stringformat:"s" %}selected{% endif %}>
+                                {{ tipo.nombre_tipo }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-search"></i> Buscar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Tabla de proyectos -->
+    <div class="card">
+        <div class="card-body">
+            {% if page_obj %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Código</th>
+                                <th>Nombre</th>
+                                <th>Cliente</th>
+                                <th>Tipo</th>
+                                <th>Estado</th>
+                                <th>Fecha Inicio</th>
+                                <th class="text-center">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for proyecto in page_obj %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ proyecto.codigo_proyecto }}</strong>
+                                    </td>
+                                    <td>
+                                        {{ proyecto.nombre_proyecto|truncatewords:6 }}
+                                    </td>
+                                    <td>
+                                        <small>{{ proyecto.cliente.razon_social|truncatewords:4 }}</small>
+                                    </td>
+                                    <td>
+                                        {% if proyecto.tipo_proyecto.icono %}
+                                            <i class="bi {{ proyecto.tipo_proyecto.icono }} text-{{ proyecto.tipo_proyecto.color_identificador }}"></i>
+                                        {% endif %}
+                                        <small>{{ proyecto.tipo_proyecto.nombre_tipo }}</small>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-{{ proyecto.estado_proyecto.color_badge }}">
+                                            {{ proyecto.estado_proyecto.nombre_estado }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        {{ proyecto.fecha_inicio|date:"d/m/Y" }}
+                                    </td>
+                                    <td class="text-center">
+                                        <a href="{% url 'proyectos:proyecto_detail' proyecto.id_proyecto %}" 
+                                           class="btn btn-sm btn-outline-info" title="Ver detalle">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                        <a href="{% url 'proyectos:proyecto_update' proyecto.id_proyecto %}" 
+                                           class="btn btn-sm btn-outline-primary" title="Editar">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                        <a href="{% url 'proyectos:proyecto_delete' proyecto.id_proyecto %}" 
+                                           class="btn btn-sm btn-outline-danger" title="Eliminar">
+                                            <i class="bi bi-trash"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Paginación -->
+                {% if page_obj.has_other_pages %}
+                    <nav>
+                        <ul class="pagination justify-content-center mt-3">
+                            {% if page_obj.has_previous %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if query %}&q={{ query }}{% endif %}{% if filtro_estado %}&estado={{ filtro_estado }}{% endif %}{% if filtro_tipo %}&tipo={{ filtro_tipo }}{% endif %}">
+                                        Anterior
+                                    </a>
+                                </li>
+                            {% endif %}
+
+                            <li class="page-item disabled">
+                                <span class="page-link">
+                                    Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
+                                </span>
+                            </li>
+
+                            {% if page_obj.has_next %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if query %}&q={{ query }}{% endif %}{% if filtro_estado %}&estado={{ filtro_estado }}{% endif %}{% if filtro_tipo %}&tipo={{ filtro_tipo }}{% endif %}">
+                                        Siguiente
+                                    </a>
+                                </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                {% endif %}
+            {% else %}
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle"></i>
+                    No se encontraron proyectos. 
+                    <a href="{% url 'proyectos:proyecto_create' %}">Crear el primero</a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Botón volver -->
+    <div class="mt-3">
+        <a href="{% url 'proyectos:home' %}" class="btn btn-secondary">
+            <i class="bi bi-arrow-left"></i> Volver al Módulo
+        </a>
+    </div>
+</div>
+{% endblock %}

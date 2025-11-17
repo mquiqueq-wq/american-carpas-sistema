@@ -1,0 +1,219 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ cliente.razon_social }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Encabezado -->
+    <div class="mb-4">
+        <div class="d-flex justify-content-between align-items-start">
+            <div>
+                <h3>
+                    <i class="bi bi-building text-primary"></i> {{ cliente.razon_social }}
+                    {% if not cliente.activo %}
+                        <span class="badge bg-secondary">Inactivo</span>
+                    {% endif %}
+                </h3>
+                {% if cliente.nombre_comercial %}
+                    <p class="text-muted mb-0">{{ cliente.nombre_comercial }}</p>
+                {% endif %}
+            </div>
+            <div class="btn-group">
+                <a href="{% url 'proyectos:cliente_update' cliente.id_cliente %}" class="btn btn-primary">
+                    <i class="bi bi-pencil"></i> Editar
+                </a>
+                <a href="{% url 'proyectos:cliente_delete' cliente.id_cliente %}" class="btn btn-outline-danger">
+                    <i class="bi bi-trash"></i> Eliminar
+                </a>
+            </div>
+        </div>
+        <nav aria-label="breadcrumb" class="mt-2">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'proyectos:home' %}">Proyectos</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'proyectos:cliente_list' %}">Clientes</a></li>
+                <li class="breadcrumb-item active">{{ cliente.razon_social }}</li>
+            </ol>
+        </nav>
+    </div>
+
+    <div class="row">
+        <!-- Información del Cliente -->
+        <div class="col-lg-8">
+            <!-- Identificación -->
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="bi bi-card-text"></i> Identificación</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <strong>Tipo de Documento:</strong><br>
+                            <span class="badge bg-secondary">{{ cliente.get_tipo_documento_display }}</span>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong>Número de Documento:</strong><br>
+                            {{ cliente.numero_documento }}
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <strong>Razón Social:</strong><br>
+                            {{ cliente.razon_social }}
+                        </div>
+                        {% if cliente.nombre_comercial %}
+                        <div class="col-md-6 mb-3">
+                            <strong>Nombre Comercial:</strong><br>
+                            {{ cliente.nombre_comercial }}
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% if cliente.representante_legal %}
+                    <div class="mb-0">
+                        <strong>Representante Legal:</strong><br>
+                        {{ cliente.representante_legal }}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Información de Contacto -->
+            <div class="card mb-4">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="bi bi-telephone"></i> Contacto</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <strong><i class="bi bi-telephone-fill text-success"></i> Teléfono Principal:</strong><br>
+                            <a href="tel:{{ cliente.telefono_principal }}">{{ cliente.telefono_principal }}</a>
+                        </div>
+                        {% if cliente.telefono_secundario %}
+                        <div class="col-md-6 mb-3">
+                            <strong><i class="bi bi-telephone"></i> Teléfono Secundario:</strong><br>
+                            <a href="tel:{{ cliente.telefono_secundario }}">{{ cliente.telefono_secundario }}</a>
+                        </div>
+                        {% endif %}
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-0">
+                            <strong><i class="bi bi-envelope-fill text-primary"></i> Email Principal:</strong><br>
+                            <a href="mailto:{{ cliente.email_principal }}">{{ cliente.email_principal }}</a>
+                        </div>
+                        {% if cliente.email_secundario %}
+                        <div class="col-md-6 mb-0">
+                            <strong><i class="bi bi-envelope"></i> Email Secundario:</strong><br>
+                            <a href="mailto:{{ cliente.email_secundario }}">{{ cliente.email_secundario }}</a>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Ubicación -->
+            <div class="card mb-4">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0"><i class="bi bi-geo-alt"></i> Ubicación</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <strong>Dirección:</strong><br>
+                        {{ cliente.direccion }}
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <strong>Ciudad:</strong><br>
+                            {{ cliente.ciudad }}
+                        </div>
+                        <div class="col-md-4">
+                            <strong>Departamento:</strong><br>
+                            {{ cliente.departamento }}
+                        </div>
+                        <div class="col-md-4">
+                            <strong>País:</strong><br>
+                            {{ cliente.pais }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Información Adicional -->
+            {% if cliente.sitio_web or cliente.observaciones %}
+            <div class="card mb-4">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="bi bi-info-circle"></i> Información Adicional</h5>
+                </div>
+                <div class="card-body">
+                    {% if cliente.sitio_web %}
+                    <div class="mb-3">
+                        <strong>Sitio Web:</strong><br>
+                        <a href="{{ cliente.sitio_web }}" target="_blank">{{ cliente.sitio_web }} <i class="bi bi-box-arrow-up-right"></i></a>
+                    </div>
+                    {% endif %}
+                    {% if cliente.observaciones %}
+                    <div class="mb-0">
+                        <strong>Observaciones:</strong><br>
+                        {{ cliente.observaciones }}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Panel lateral -->
+        <div class="col-lg-4">
+            <!-- Resumen -->
+            <div class="card mb-4">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="mb-0"><i class="bi bi-graph-up"></i> Resumen</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <strong>Total de Proyectos:</strong>
+                        <h2 class="mb-0">{{ total_proyectos }}</h2>
+                    </div>
+                    <div class="mb-3">
+                        <strong>Proyectos Activos:</strong>
+                        <h3 class="mb-0 text-success">{{ proyectos_activos.count }}</h3>
+                    </div>
+                    <div class="mb-0">
+                        <strong>Fecha de Registro:</strong><br>
+                        {{ cliente.fecha_registro|date:"d/m/Y" }}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Proyectos del Cliente -->
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="bi bi-kanban"></i> Proyectos</h5>
+                </div>
+                <div class="card-body">
+                    {% if proyectos_activos %}
+                        <div class="list-group list-group-flush">
+                            {% for proyecto in proyectos_activos %}
+                                <div class="list-group-item px-0">
+                                    <strong>{{ proyecto.nombre_proyecto }}</strong><br>
+                                    <small class="text-muted">{{ proyecto.codigo_proyecto }}</small>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="alert alert-info mb-0">
+                            <i class="bi bi-info-circle"></i>
+                            Este cliente aún no tiene proyectos registrados.
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Botón volver -->
+    <div class="mt-3">
+        <a href="{% url 'proyectos:cliente_list' %}" class="btn btn-secondary">
+            <i class="bi bi-arrow-left"></i> Volver al Listado
+        </a>
+    </div>
+</div>
+{% endblock %}

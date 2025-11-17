@@ -1,0 +1,233 @@
+{% extends 'base.html' %}
+
+{% block title %}Módulo: Proyectos{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Encabezado del módulo -->
+    <div class="mb-4">
+        <h2><i class="bi bi-kanban text-primary"></i> Módulo: Proyectos</h2>
+        <p class="text-muted">Gestión integral de proyectos de ingeniería civil</p>
+    </div>
+    
+    <!-- Grid de funcionalidades -->
+    <div class="row g-4 mb-5">
+        <!-- 1. Dashboard -->
+        <div class="col-6 col-md-4 col-lg-3">
+            <a href="{% url 'proximamente' %}?modulo=proyectos_dashboard" class="text-decoration-none">
+                <div class="card menu-card card-azul">
+                    <div class="card-body">
+                        <i class="bi bi-speedometer2 menu-icon-large"></i>
+                        <h6 class="fw-bold">Dashboard</h6>
+                        <small class="text-muted">Resumen general</small>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <!-- 2. Listado de Proyectos -->
+        <div class="col-6 col-md-4 col-lg-3">
+            <a href="{% url 'proyectos:proyecto_list' %}" class="text-decoration-none">
+                <div class="card menu-card card-azul">
+                    <div class="card-body">
+                        <i class="bi bi-list-ul menu-icon-large"></i>
+                        <h6 class="fw-bold">Listado</h6>
+                        <small class="text-muted">Ver proyectos</small>
+                        <span class="badge bg-primary mt-2">Fase 3</span>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <!-- 3. Nuevo Proyecto -->
+        <div class="col-6 col-md-4 col-lg-3">
+            <a href="{% url 'proyectos:proyecto_create' %}" class="text-decoration-none">
+                <div class="card menu-card card-verde">
+                    <div class="card-body">
+                        <i class="bi bi-plus-circle menu-icon-large"></i>
+                        <h6 class="fw-bold">Nuevo Proyecto</h6>
+                        <small class="text-muted">Registrar</small>
+                        <span class="badge bg-success mt-2">Fase 3</span>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <!-- 4. Clientes -->
+        <div class="col-6 col-md-4 col-lg-3">
+            <a href="{% url 'proyectos:cliente_list' %}" class="text-decoration-none">
+                <div class="card menu-card card-azul">
+                    <div class="card-body">
+                        <i class="bi bi-building menu-icon-large"></i>
+                        <h6 class="fw-bold">Clientes</h6>
+                        <small class="text-muted">Gestión</small>
+                        <span class="badge bg-primary mt-2">Fase 2</span>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <!-- 5. Tipos de Proyectos -->
+        <div class="col-6 col-md-4 col-lg-3">
+            <a href="{% url 'proyectos:tipo_proyecto_list' %}" class="text-decoration-none">
+                <div class="card menu-card card-verde">
+                    <div class="card-body">
+                        <i class="bi bi-card-list menu-icon-large"></i>
+                        <h6 class="fw-bold">Tipos Proyectos</h6>
+                        <small class="text-muted">Catálogo</small>
+                        <span class="badge bg-success mt-2">{{ total_tipos }}</span>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <!-- 6. Estados -->
+        <div class="col-6 col-md-4 col-lg-3">
+            <a href="{% url 'proyectos:estado_proyecto_list' %}" class="text-decoration-none">
+                <div class="card menu-card card-azul">
+                    <div class="card-body">
+                        <i class="bi bi-signpost menu-icon-large"></i>
+                        <h6 class="fw-bold">Estados</h6>
+                        <small class="text-muted">Catálogo</small>
+                        <span class="badge bg-primary mt-2">{{ total_estados }}</span>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <!-- 7. Tipos Documentos -->
+        <div class="col-6 col-md-4 col-lg-3">
+            <a href="{% url 'proyectos:tipo_documento_list' %}" class="text-decoration-none">
+                <div class="card menu-card card-verde">
+                    <div class="card-body">
+                        <i class="bi bi-file-earmark-text menu-icon-large"></i>
+                        <h6 class="fw-bold">Tipos Documentos</h6>
+                        <small class="text-muted">Catálogo</small>
+                        <span class="badge bg-success mt-2">{{ total_tipos_documentos }}</span>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <!-- 8. Trabajadores Asignados -->
+        <div class="col-6 col-md-4 col-lg-3">
+            <a href="{% url 'proximamente' %}?modulo=trabajadores_proyectos" class="text-decoration-none">
+                <div class="card menu-card card-azul">
+                    <div class="card-body">
+                        <i class="bi bi-person-lines-fill menu-icon-large"></i>
+                        <h6 class="fw-bold">Trabajadores</h6>
+                        <small class="text-muted">Asignaciones</small>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <!-- 9. Documentos -->
+        <div class="col-6 col-md-4 col-lg-3">
+            {# Como la gestión de documentos es por proyecto, dejamos este acceso
+               apuntando al listado de proyectos para luego entrar a documentos
+               de un proyecto específico. #}
+            <a href="{% url 'proyectos:proyecto_list' %}" class="text-decoration-none">
+                <div class="card menu-card card-verde">
+                    <div class="card-body">
+                        <i class="bi bi-files menu-icon-large"></i>
+                        <h6 class="fw-bold">Documentos</h6>
+                        <small class="text-muted">Gestión documental (por proyecto)</small>
+                        <span class="badge bg-success mt-2">Fase 4</span>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <!-- 10. Evidencia Fotográfica -->
+        <div class="col-6 col-md-4 col-lg-3">
+            {# Igual que documentos: normalmente se gestionará por proyecto.
+               Por ahora queda preparado como funcionalidad de Fase 4. #}
+            <a href="{% url 'proyectos:proyecto_list' %}" class="text-decoration-none">
+                <div class="card menu-card card-azul">
+                    <div class="card-body">
+                        <i class="bi bi-camera menu-icon-large"></i>
+                        <h6 class="fw-bold">Evidencias</h6>
+                        <small class="text-muted">Fotografías (por proyecto)</small>
+                        <span class="badge bg-primary mt-2">Fase 4</span>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <!-- 11. Alertas -->
+        <div class="col-6 col-md-4 col-lg-3">
+            <a href="{% url 'proximamente' %}?modulo=alertas_proyectos" class="text-decoration-none">
+                <div class="card menu-card border-warning">
+                    <div class="card-body">
+                        <i class="bi bi-exclamation-triangle-fill menu-icon-large text-warning"></i>
+                        <h6 class="fw-bold">Alertas</h6>
+                        <small class="text-muted">Documentos/Vencimientos</small>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <!-- 12. Avance General -->
+        <div class="col-6 col-md-4 col-lg-3">
+            <a href="{% url 'proximamente' %}?modulo=avance_proyectos" class="text-decoration-none">
+                <div class="card menu-card card-verde">
+                    <div class="card-body">
+                        <i class="bi bi-graph-up-arrow menu-icon-large"></i>
+                        <h6 class="fw-bold">Avance General</h6>
+                        <small class="text-muted">Progreso</small>
+                    </div>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    <!-- Información de estado del módulo -->
+    <div class="alert alert-success" role="alert">
+        <div class="d-flex align-items-center">
+            <i class="bi bi-check-circle-fill me-2" style="font-size: 1.5rem;"></i>
+            <div>
+                <h6 class="alert-heading mb-1">Módulo en Desarrollo - Fase 3 Completada</h6>
+                <p class="mb-0">
+                    <strong>Funcionalidades activas:</strong> Catálogos + Gestión de Clientes + Gestión de Proyectos.<br>
+                    <strong>En preparación:</strong> Gestión de Documentos y Evidencias por proyecto (Fase 4).
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Animación de entrada para las tarjetas */
+    .menu-card {
+        animation: fadeInUp 0.5s ease forwards;
+        opacity: 0;
+    }
+    
+    .menu-card:nth-child(1) { animation-delay: 0.1s; }
+    .menu-card:nth-child(2) { animation-delay: 0.2s; }
+    .menu-card:nth-child(3) { animation-delay: 0.3s; }
+    .menu-card:nth-child(4) { animation-delay: 0.4s; }
+    .menu-card:nth-child(5) { animation-delay: 0.5s; }
+    .menu-card:nth-child(6) { animation-delay: 0.6s; }
+    .menu-card:nth-child(7) { animation-delay: 0.7s; }
+    .menu-card:nth-child(8) { animation-delay: 0.8s; }
+    .menu-card:nth-child(9) { animation-delay: 0.9s; }
+    .menu-card:nth-child(10) { animation-delay: 1.0s; }
+    .menu-card:nth-child(11) { animation-delay: 1.1s; }
+    .menu-card:nth-child(12) { animation-delay: 1.2s; }
+    
+    @keyframes fadeInUp {
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+    }
+</style>
+{% endblock %}

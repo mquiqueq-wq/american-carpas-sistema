@@ -1,0 +1,101 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ titulo }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Encabezado -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h2 class="mb-1">{{ titulo }}</h2>
+                    <p class="text-muted mb-1">
+                        <strong>Proyecto:</strong> {{ proyecto.codigo_proyecto }} - {{ proyecto.nombre_proyecto }}<br>
+                        <strong>Actividad:</strong> {{ actividad.numero_actividad }} - {{ actividad.nombre_actividad }}
+                    </p>
+                </div>
+                <div>
+                    <a href="{% url 'proyectos:avance_list' actividad.id_actividad %}" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left"></i> Volver a Avances
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Formulario -->
+    <div class="row">
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        {{ form.non_field_errors }}
+
+                        <div class="mb-3">
+                            <label class="form-label">Fecha del Avance</label>
+                            {{ form.fecha_avance }}
+                            {{ form.fecha_avance.errors }}
+                        </div>
+
+                        {{ form.actividad }} {# normalmente está oculto #}
+
+                        <div class="mb-3">
+                            <label class="form-label">Cantidad Ejecutada</label>
+                            {{ form.cantidad_ejecutada }}
+                            <div class="form-text">
+                                Unidad: {{ actividad.get_unidad_medida_display }}
+                            </div>
+                            {{ form.cantidad_ejecutada.errors }}
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Observaciones</label>
+                            {{ form.observaciones }}
+                            {{ form.observaciones.errors }}
+                        </div>
+
+                        <div class="d-flex justify-content-end">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-save"></i> Guardar
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Panel de resumen -->
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">Resumen de la Actividad</h5>
+                </div>
+                <div class="card-body">
+                    <p class="mb-2">
+                        <strong>Cantidad total:</strong><br>
+                        {{ actividad.cantidad_programada }} {{ actividad.get_unidad_medida_display }}
+                    </p>
+                    <p class="mb-2">
+                        <strong>Cantidad ejecutada actual:</strong><br>
+                        {{ actividad.cantidad_ejecutada_total }} {{ actividad.get_unidad_medida_display }}
+                    </p>
+                    <p class="mb-0">
+                        <strong>Avance:</strong><br>
+                        <div class="progress" style="height: 20px;">
+                            <div class="progress-bar 
+                            {% if actividad.porcentaje_avance >= 100 %}bg-success
+                            {% elif actividad.porcentaje_avance >= 50 %}bg-info
+                            {% else %}bg-warning{% endif %}"
+                            style="width: {{ actividad.porcentaje_avance }}%">
+                                {{ actividad.porcentaje_avance }}%
+                            </div>
+                        </div>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

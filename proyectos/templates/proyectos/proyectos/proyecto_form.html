@@ -1,0 +1,259 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ titulo }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <!-- Encabezado -->
+            <div class="mb-4">
+                <h3><i class="bi bi-kanban text-primary"></i> {{ titulo }}</h3>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="{% url 'proyectos:home' %}">Proyectos</a></li>
+                        <li class="breadcrumb-item"><a href="{% url 'proyectos:proyecto_list' %}">Listado</a></li>
+                        <li class="breadcrumb-item active">{{ action }}</li>
+                    </ol>
+                </nav>
+            </div>
+
+            <!-- Formulario -->
+            <div class="card">
+                <div class="card-body">
+                    <form method="post" novalidate>
+                        {% csrf_token %}
+
+                        <!-- Información General -->
+                        <div class="mb-4">
+                            <h5 class="border-bottom pb-2 text-primary">
+                                <i class="bi bi-info-circle"></i> Información General
+                            </h5>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="{{ form.cliente.id_for_label }}" class="form-label fw-bold">
+                                        {{ form.cliente.label }} <span class="text-danger">*</span>
+                                    </label>
+                                    {{ form.cliente }}
+                                    <small class="text-muted d-block">{{ form.cliente.help_text }}</small>
+                                    {% if form.cliente.errors %}
+                                        <div class="invalid-feedback d-block">{{ form.cliente.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-3 mb-3">
+                                    <label for="{{ form.tipo_proyecto.id_for_label }}" class="form-label fw-bold">
+                                        {{ form.tipo_proyecto.label }} <span class="text-danger">*</span>
+                                    </label>
+                                    {{ form.tipo_proyecto }}
+                                    {% if form.tipo_proyecto.errors %}
+                                        <div class="invalid-feedback d-block">{{ form.tipo_proyecto.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-3 mb-3">
+                                    <label for="{{ form.estado_proyecto.id_for_label }}" class="form-label fw-bold">
+                                        {{ form.estado_proyecto.label }} <span class="text-danger">*</span>
+                                    </label>
+                                    {{ form.estado_proyecto }}
+                                    {% if form.estado_proyecto.errors %}
+                                        <div class="invalid-feedback d-block">{{ form.estado_proyecto.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-4 mb-3">
+                                    <label for="{{ form.codigo_proyecto.id_for_label }}" class="form-label fw-bold">
+                                        {{ form.codigo_proyecto.label }} <span class="text-danger">*</span>
+                                    </label>
+                                    {{ form.codigo_proyecto }}
+                                    <small class="text-muted d-block">{{ form.codigo_proyecto.help_text }}</small>
+                                    {% if form.codigo_proyecto.errors %}
+                                        <div class="invalid-feedback d-block">{{ form.codigo_proyecto.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-8 mb-3">
+                                    <label for="{{ form.nombre_proyecto.id_for_label }}" class="form-label fw-bold">
+                                        {{ form.nombre_proyecto.label }} <span class="text-danger">*</span>
+                                    </label>
+                                    {{ form.nombre_proyecto }}
+                                    {% if form.nombre_proyecto.errors %}
+                                        <div class="invalid-feedback d-block">{{ form.nombre_proyecto.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="{{ form.descripcion.id_for_label }}" class="form-label fw-bold">
+                                    {{ form.descripcion.label }} <span class="text-danger">*</span>
+                                </label>
+                                {{ form.descripcion }}
+                                {% if form.descripcion.errors %}
+                                    <div class="invalid-feedback d-block">{{ form.descripcion.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Ingeniero Responsable -->
+                        <div class="mb-4">
+                            <h5 class="border-bottom pb-2 text-success">
+                                <i class="bi bi-person-badge"></i> Ingeniero Responsable (Cliente)
+                            </h5>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="{{ form.ingeniero_responsable.id_for_label }}" class="form-label fw-bold">
+                                        {{ form.ingeniero_responsable.label }} <span class="text-danger">*</span>
+                                    </label>
+                                    {{ form.ingeniero_responsable }}
+                                    <small class="text-muted d-block">{{ form.ingeniero_responsable.help_text }}</small>
+                                    {% if form.ingeniero_responsable.errors %}
+                                        <div class="invalid-feedback d-block">{{ form.ingeniero_responsable.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-3 mb-3">
+                                    <label for="{{ form.telefono_ingeniero.id_for_label }}" class="form-label fw-bold">
+                                        {{ form.telefono_ingeniero.label }}
+                                    </label>
+                                    {{ form.telefono_ingeniero }}
+                                    {% if form.telefono_ingeniero.errors %}
+                                        <div class="invalid-feedback d-block">{{ form.telefono_ingeniero.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-3 mb-3">
+                                    <label for="{{ form.email_ingeniero.id_for_label }}" class="form-label fw-bold">
+                                        {{ form.email_ingeniero.label }}
+                                    </label>
+                                    {{ form.email_ingeniero }}
+                                    {% if form.email_ingeniero.errors %}
+                                        <div class="invalid-feedback d-block">{{ form.email_ingeniero.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Ubicación -->
+                        <div class="mb-4">
+                            <h5 class="border-bottom pb-2 text-warning">
+                                <i class="bi bi-geo-alt"></i> Ubicación del Proyecto
+                            </h5>
+                            <div class="mb-3">
+                                <label for="{{ form.direccion_proyecto.id_for_label }}" class="form-label fw-bold">
+                                    {{ form.direccion_proyecto.label }} <span class="text-danger">*</span>
+                                </label>
+                                {{ form.direccion_proyecto }}
+                                <small class="text-muted d-block">{{ form.direccion_proyecto.help_text }}</small>
+                                {% if form.direccion_proyecto.errors %}
+                                    <div class="invalid-feedback d-block">{{ form.direccion_proyecto.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="{{ form.ciudad_proyecto.id_for_label }}" class="form-label fw-bold">
+                                        {{ form.ciudad_proyecto.label }} <span class="text-danger">*</span>
+                                    </label>
+                                    {{ form.ciudad_proyecto }}
+                                    {% if form.ciudad_proyecto.errors %}
+                                        <div class="invalid-feedback d-block">{{ form.ciudad_proyecto.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="{{ form.departamento_proyecto.id_for_label }}" class="form-label fw-bold">
+                                        {{ form.departamento_proyecto.label }} <span class="text-danger">*</span>
+                                    </label>
+                                    {{ form.departamento_proyecto }}
+                                    {% if form.departamento_proyecto.errors %}
+                                        <div class="invalid-feedback d-block">{{ form.departamento_proyecto.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Fechas y Presupuesto -->
+                        <div class="mb-4">
+                            <h5 class="border-bottom pb-2 text-info">
+                                <i class="bi bi-calendar-check"></i> Fechas y Presupuesto
+                            </h5>
+                            <div class="row">
+                                <div class="col-md-4 mb-3">
+                                    <label for="{{ form.fecha_inicio.id_for_label }}" class="form-label fw-bold">
+                                        {{ form.fecha_inicio.label }} <span class="text-danger">*</span>
+                                    </label>
+                                    {{ form.fecha_inicio }}
+                                    {% if form.fecha_inicio.errors %}
+                                        <div class="invalid-feedback d-block">{{ form.fecha_inicio.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label for="{{ form.fecha_fin_estimada.id_for_label }}" class="form-label fw-bold">
+                                        {{ form.fecha_fin_estimada.label }} <span class="text-danger">*</span>
+                                    </label>
+                                    {{ form.fecha_fin_estimada }}
+                                    {% if form.fecha_fin_estimada.errors %}
+                                        <div class="invalid-feedback d-block">{{ form.fecha_fin_estimada.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label for="{{ form.fecha_fin_real.id_for_label }}" class="form-label fw-bold">
+                                        {{ form.fecha_fin_real.label }}
+                                    </label>
+                                    {{ form.fecha_fin_real }}
+                                    <small class="text-muted d-block">{{ form.fecha_fin_real.help_text }}</small>
+                                    {% if form.fecha_fin_real.errors %}
+                                        <div class="invalid-feedback d-block">{{ form.fecha_fin_real.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="{{ form.presupuesto_estimado.id_for_label }}" class="form-label fw-bold">
+                                    {{ form.presupuesto_estimado.label }}
+                                </label>
+                                {{ form.presupuesto_estimado }}
+                                <small class="text-muted d-block">{{ form.presupuesto_estimado.help_text }}</small>
+                                {% if form.presupuesto_estimado.errors %}
+                                    <div class="invalid-feedback d-block">{{ form.presupuesto_estimado.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Observaciones -->
+                        <div class="mb-4">
+                            <h5 class="border-bottom pb-2 text-secondary">
+                                <i class="bi bi-card-text"></i> Información Adicional
+                            </h5>
+                            <div class="mb-3">
+                                <label for="{{ form.observaciones.id_for_label }}" class="form-label fw-bold">
+                                    {{ form.observaciones.label }}
+                                </label>
+                                {{ form.observaciones }}
+                                {% if form.observaciones.errors %}
+                                    <div class="invalid-feedback d-block">{{ form.observaciones.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+
+                            <div class="form-check">
+                                {{ form.activo }}
+                                <label class="form-check-label" for="{{ form.activo.id_for_label }}">
+                                    {{ form.activo.label }}
+                                </label>
+                                {% if form.activo.errors %}
+                                    <div class="invalid-feedback d-block">{{ form.activo.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Botones -->
+                        <div class="d-flex justify-content-between mt-4">
+                            <a href="{% url 'proyectos:proyecto_list' %}" class="btn btn-secondary">
+                                <i class="bi bi-x-circle"></i> Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-success">
+                                <i class="bi bi-check-circle"></i> {{ action }}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

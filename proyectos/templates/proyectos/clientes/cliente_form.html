@@ -1,0 +1,233 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ titulo }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <!-- Encabezado -->
+            <div class="mb-4">
+                <h3><i class="bi bi-building text-primary"></i> {{ titulo }}</h3>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="{% url 'proyectos:home' %}">Proyectos</a></li>
+                        <li class="breadcrumb-item"><a href="{% url 'proyectos:cliente_list' %}">Clientes</a></li>
+                        <li class="breadcrumb-item active">{{ action }}</li>
+                    </ol>
+                </nav>
+            </div>
+
+            <!-- Formulario -->
+            <div class="card">
+                <div class="card-body">
+                    <form method="post" novalidate>
+                        {% csrf_token %}
+
+                        <!-- Identificación -->
+                        <div class="mb-4">
+                            <h5 class="border-bottom pb-2 text-primary">
+                                <i class="bi bi-card-text"></i> Identificación
+                            </h5>
+                            <div class="row">
+                                <div class="col-md-4 mb-3">
+                                    <label for="{{ form.tipo_documento.id_for_label }}" class="form-label fw-bold">
+                                        {{ form.tipo_documento.label }} <span class="text-danger">*</span>
+                                    </label>
+                                    {{ form.tipo_documento }}
+                                    {% if form.tipo_documento.errors %}
+                                        <div class="invalid-feedback d-block">{{ form.tipo_documento.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-8 mb-3">
+                                    <label for="{{ form.numero_documento.id_for_label }}" class="form-label fw-bold">
+                                        {{ form.numero_documento.label }} <span class="text-danger">*</span>
+                                    </label>
+                                    {{ form.numero_documento }}
+                                    <small class="form-text text-muted d-block">{{ form.numero_documento.help_text }}</small>
+                                    {% if form.numero_documento.errors %}
+                                        <div class="invalid-feedback d-block">{{ form.numero_documento.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="{{ form.razon_social.id_for_label }}" class="form-label fw-bold">
+                                        {{ form.razon_social.label }} <span class="text-danger">*</span>
+                                    </label>
+                                    {{ form.razon_social }}
+                                    <small class="form-text text-muted d-block">{{ form.razon_social.help_text }}</small>
+                                    {% if form.razon_social.errors %}
+                                        <div class="invalid-feedback d-block">{{ form.razon_social.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="{{ form.nombre_comercial.id_for_label }}" class="form-label fw-bold">
+                                        {{ form.nombre_comercial.label }}
+                                    </label>
+                                    {{ form.nombre_comercial }}
+                                    {% if form.nombre_comercial.errors %}
+                                        <div class="invalid-feedback d-block">{{ form.nombre_comercial.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="{{ form.representante_legal.id_for_label }}" class="form-label fw-bold">
+                                    {{ form.representante_legal.label }}
+                                </label>
+                                {{ form.representante_legal }}
+                                {% if form.representante_legal.errors %}
+                                    <div class="invalid-feedback d-block">{{ form.representante_legal.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Información de Contacto -->
+                        <div class="mb-4">
+                            <h5 class="border-bottom pb-2 text-success">
+                                <i class="bi bi-telephone"></i> Información de Contacto
+                            </h5>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="{{ form.telefono_principal.id_for_label }}" class="form-label fw-bold">
+                                        {{ form.telefono_principal.label }} <span class="text-danger">*</span>
+                                    </label>
+                                    {{ form.telefono_principal }}
+                                    {% if form.telefono_principal.errors %}
+                                        <div class="invalid-feedback d-block">{{ form.telefono_principal.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="{{ form.telefono_secundario.id_for_label }}" class="form-label fw-bold">
+                                        {{ form.telefono_secundario.label }}
+                                    </label>
+                                    {{ form.telefono_secundario }}
+                                    {% if form.telefono_secundario.errors %}
+                                        <div class="invalid-feedback d-block">{{ form.telefono_secundario.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="{{ form.email_principal.id_for_label }}" class="form-label fw-bold">
+                                        {{ form.email_principal.label }} <span class="text-danger">*</span>
+                                    </label>
+                                    {{ form.email_principal }}
+                                    {% if form.email_principal.errors %}
+                                        <div class="invalid-feedback d-block">{{ form.email_principal.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="{{ form.email_secundario.id_for_label }}" class="form-label fw-bold">
+                                        {{ form.email_secundario.label }}
+                                    </label>
+                                    {{ form.email_secundario }}
+                                    {% if form.email_secundario.errors %}
+                                        <div class="invalid-feedback d-block">{{ form.email_secundario.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Ubicación -->
+                        <div class="mb-4">
+                            <h5 class="border-bottom pb-2 text-warning">
+                                <i class="bi bi-geo-alt"></i> Ubicación
+                            </h5>
+                            <div class="mb-3">
+                                <label for="{{ form.direccion.id_for_label }}" class="form-label fw-bold">
+                                    {{ form.direccion.label }} <span class="text-danger">*</span>
+                                </label>
+                                {{ form.direccion }}
+                                {% if form.direccion.errors %}
+                                    <div class="invalid-feedback d-block">{{ form.direccion.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-4 mb-3">
+                                    <label for="{{ form.ciudad.id_for_label }}" class="form-label fw-bold">
+                                        {{ form.ciudad.label }} <span class="text-danger">*</span>
+                                    </label>
+                                    {{ form.ciudad }}
+                                    {% if form.ciudad.errors %}
+                                        <div class="invalid-feedback d-block">{{ form.ciudad.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label for="{{ form.departamento.id_for_label }}" class="form-label fw-bold">
+                                        {{ form.departamento.label }} <span class="text-danger">*</span>
+                                    </label>
+                                    {{ form.departamento }}
+                                    {% if form.departamento.errors %}
+                                        <div class="invalid-feedback d-block">{{ form.departamento.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label for="{{ form.pais.id_for_label }}" class="form-label fw-bold">
+                                        {{ form.pais.label }} <span class="text-danger">*</span>
+                                    </label>
+                                    {{ form.pais }}
+                                    {% if form.pais.errors %}
+                                        <div class="invalid-feedback d-block">{{ form.pais.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Información Adicional -->
+                        <div class="mb-4">
+                            <h5 class="border-bottom pb-2 text-info">
+                                <i class="bi bi-info-circle"></i> Información Adicional
+                            </h5>
+                            <div class="mb-3">
+                                <label for="{{ form.sitio_web.id_for_label }}" class="form-label fw-bold">
+                                    {{ form.sitio_web.label }}
+                                </label>
+                                {{ form.sitio_web }}
+                                <small class="form-text text-muted d-block">{{ form.sitio_web.help_text }}</small>
+                                {% if form.sitio_web.errors %}
+                                    <div class="invalid-feedback d-block">{{ form.sitio_web.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="{{ form.observaciones.id_for_label }}" class="form-label fw-bold">
+                                    {{ form.observaciones.label }}
+                                </label>
+                                {{ form.observaciones }}
+                                {% if form.observaciones.errors %}
+                                    <div class="invalid-feedback d-block">{{ form.observaciones.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+
+                            <div class="form-check">
+                                {{ form.activo }}
+                                <label class="form-check-label" for="{{ form.activo.id_for_label }}">
+                                    {{ form.activo.label }}
+                                </label>
+                                {% if form.activo.errors %}
+                                    <div class="invalid-feedback d-block">{{ form.activo.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Botones -->
+                        <div class="d-flex justify-content-between mt-4">
+                            <a href="{% url 'proyectos:cliente_list' %}" class="btn btn-secondary">
+                                <i class="bi bi-x-circle"></i> Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-check-circle"></i> {{ action }}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

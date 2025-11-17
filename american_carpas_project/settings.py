@@ -41,8 +41,10 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'trabajadores',  # Aplicación personalizada
+    'django.contrib.humanize',
+    'trabajadores',
     'proveedores',
+    'proyectos',
 ]
 
 MIDDLEWARE = [

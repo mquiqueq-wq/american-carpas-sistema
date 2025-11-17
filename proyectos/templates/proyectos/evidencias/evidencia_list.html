@@ -1,0 +1,110 @@
+{% extends 'base.html' %}
+
+{% block title %}Evidencias - {{ proyecto.codigo_proyecto }}{% endblock %}
+
+{% block content %}
+<div class="container py-4 contenedor-principal">
+    <!-- Encabezado -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h2 class="mb-1">
+                <i class="bi bi-camera text-primary"></i>
+                Evidencias Fotográficas
+            </h2>
+            <p class="text-muted mb-0">
+                <strong>{{ proyecto.codigo_proyecto }}</strong> - {{ proyecto.nombre_proyecto }}
+            </p>
+        </div>
+        <div class="text-end">
+            <a href="{% url 'proyectos:proyecto_detail' proyecto.id_proyecto %}" class="btn btn-outline-secondary btn-sm mb-2">
+                <i class="bi bi-arrow-left"></i> Volver al proyecto
+            </a><br>
+            <a href="{% url 'proyectos:evidencia_create' proyecto.id_proyecto %}" class="btn btn-success-custom btn-sm">
+                <i class="bi bi-cloud-upload"></i> Subir Evidencia
+            </a>
+        </div>
+    </div>
+
+    <div class="separador-custom"></div>
+
+    {% if evidencias %}
+        <!-- Galería de evidencias -->
+        <div class="card card-azul">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span><i class="bi bi-images"></i> Evidencias registradas ({{ evidencias|length }})</span>
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    {% for ev in evidencias %}
+                    <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+                        <div class="card h-100">
+                            {% if ev.imagen %}
+                                <a href="{{ ev.imagen.url }}" target="_blank">
+                                    <img src="{{ ev.imagen.url }}" class="card-img-top" alt="{{ ev.titulo }}">
+                                </a>
+                            {% else %}
+                                <div class="d-flex justify-content-center align-items-center bg-light" style="height: 180px;">
+                                    <i class="bi bi-image text-muted" style="font-size: 3rem;"></i>
+                                </div>
+                            {% endif %}
+                            <div class="card-body d-flex flex-column">
+                                <h6 class="card-title mb-1">
+                                    {{ ev.titulo }}
+                                </h6>
+                                <p class="card-text text-muted mb-2" style="font-size: 0.85rem;">
+                                    {{ ev.descripcion|default:"Sin descripción" }}
+                                </p>
+
+                                <p class="mb-1" style="font-size: 0.8rem;">
+                                    <i class="bi bi-calendar-event me-1"></i>
+                                    {{ ev.fecha_captura|date:"d/m/Y" }}
+                                </p>
+
+                                {% if ev.ubicacion_descripcion %}
+                                <p class="mb-1" style="font-size: 0.8rem;">
+                                    <i class="bi bi-geo-alt me-1"></i>
+                                    {{ ev.ubicacion_descripcion }}
+                                </p>
+                                {% endif %}
+
+                                {% if ev.actividad %}
+                                <p class="mb-2" style="font-size: 0.8rem;">
+                                    <i class="bi bi-list-check me-1"></i>
+                                    {{ ev.actividad.numero_actividad }} - {{ ev.actividad.nombre_actividad }}
+                                </p>
+                                {% endif %}
+
+                                <div class="mt-auto d-flex justify-content-between align-items-center">
+                                    <span class="badge bg-info">
+                                        {{ ev.get_tipo_evidencia_display }}
+                                    </span>
+                                    <a href="{% url 'proyectos:evidencia_delete' ev.id_evidencia %}"
+                                       class="btn btn-sm btn-outline-danger">
+                                        <i class="bi bi-trash"></i>
+                                    </a>
+                                </div>
+                            </div>
+                            <div class="card-footer text-muted" style="font-size: 0.75rem;">
+                                <i class="bi bi-clock-history me-1"></i>
+                                Cargada: {{ ev.fecha_carga|date:"d/m/Y H:i" }}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <div class="alert alert-custom-info">
+            <div class="d-flex align-items-center">
+                <i class="bi bi-info-circle-fill me-2"></i>
+                <div>
+                    <strong>No hay evidencias registradas para este proyecto.</strong><br>
+                    Puede subir nuevas evidencias usando el botón
+                    <span class="badge bg-success"><i class="bi bi-cloud-upload"></i> Subir Evidencia</span>.
+                </div>
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

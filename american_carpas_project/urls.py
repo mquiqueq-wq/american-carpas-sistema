@@ -21,6 +21,9 @@ urlpatterns = [
     # App proveedores
     path('proveedores/', include('proveedores.urls')),
 
+    # App proyectos
+    path('proyectos/', include('proyectos.urls')),
+
     # Página de próximamente
     path('proximamente/', TemplateView.as_view(template_name='proximamente.html'), name='proximamente'),
     

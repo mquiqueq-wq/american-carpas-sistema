@@ -1,0 +1,124 @@
+{% extends 'base.html' %}
+{% load custom_filters %}
+{% block title %}Documentos - {{ proyecto.codigo_proyecto }}{% endblock %}
+
+{% block content %}
+<div class="container py-4 contenedor-principal">
+    <!-- Encabezado -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h2 class="mb-1">
+                <i class="bi bi-files text-primary"></i>
+                Documentos del Proyecto
+            </h2>
+            <p class="text-muted mb-0">
+                <strong>{{ proyecto.codigo_proyecto }}</strong> - {{ proyecto.nombre_proyecto }}
+            </p>
+        </div>
+        <div class="text-end">
+            <a href="{% url 'proyectos:proyecto_detail' proyecto.id_proyecto %}" class="btn btn-outline-secondary btn-sm mb-2">
+                <i class="bi bi-arrow-left"></i> Volver al proyecto
+            </a><br>
+            <a href="{% url 'proyectos:documento_create' proyecto.id_proyecto %}" class="btn btn-success-custom btn-sm">
+                <i class="bi bi-upload"></i> Subir Documento
+            </a>
+        </div>
+    </div>
+
+    <div class="separador-custom"></div>
+
+    {% if documentos %}
+        <div class="card card-azul">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span><i class="bi bi-folder2-open"></i> Documentos cargados ({{ documentos|length }})</span>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0 align-middle">
+                        <thead>
+                            <tr>
+                                <th>Nombre</th>
+                                <th>Tipo</th>
+                                <th>Número</th>
+                                <th>Emisión</th>
+                                <th>Vencimiento</th>
+                                <th>Estado Vigencia</th>
+                                <th>Archivo</th>
+                                <th class="text-center">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for doc in documentos %}
+                            <tr>
+                                <td>
+                                    <strong>{{ doc.nombre_documento }}</strong><br>
+                                    <small class="text-muted">
+                                        Cargado: {{ doc.fecha_carga|date:"d/m/Y H:i" }}
+                                    </small>
+                                </td>
+                                <td>
+                                    <span class="badge bg-info">
+                                        {{ doc.tipo_documento.nombre_tipo_documento }}
+                                    </span>
+                                </td>
+                                <td>{{ doc.numero_documento|default:"—" }}</td>
+                                <td>{{ doc.fecha_emision|date:"d/m/Y"|default:"—" }}</td>
+                                <td>{{ doc.fecha_vencimiento|date:"d/m/Y"|default:"—" }}</td>
+                                <td>
+                                    {% if doc.tipo_documento.requiere_vigencia %}
+                                        {% if doc.fecha_vencimiento %}
+                                            {% if doc.esta_vigente %}
+                                                <span class="badge bg-success">Vigente</span>
+                                                {% with dias=doc.dias_para_vencer %}
+                                                    {% if dias is not None and dias <= doc.tipo_documento.dias_alerta_vencimiento and dias >= 0 %}
+                                                        <br><small class="text-warning">Vence en {{ dias }} días</small>
+                                                    {% elif dias is not None and dias < 0 %}
+                                                        <br><small class="text-danger">Vencido hace {{ dias|abs }} días</small>
+                                                    {% endif %}
+                                                {% endwith %}
+                                            {% else %}
+                                                <span class="badge bg-danger">Vencido</span>
+                                            {% endif %}
+                                        {% else %}
+                                            <span class="badge bg-secondary">Sin fecha</span>
+                                        {% endif %}
+                                    {% else %}
+                                        <span class="badge bg-secondary">Sin control</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if doc.archivo %}
+                                        <a href="{{ doc.archivo.url }}" class="btn btn-sm btn-outline-primary" target="_blank">
+                                            <i class="bi bi-box-arrow-up-right"></i> Ver
+                                        </a>
+                                    {% else %}
+                                        <span class="text-muted">No disponible</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-center">
+                                    <a href="{% url 'proyectos:documento_delete' doc.id_documento %}"
+                                       class="btn btn-sm btn-outline-danger">
+                                        <i class="bi bi-trash"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <div class="alert alert-custom-info">
+            <div class="d-flex align-items-center">
+                <i class="bi bi-info-circle-fill me-2"></i>
+                <div>
+                    <strong>No hay documentos cargados para este proyecto.</strong><br>
+                    Puede subir nuevos documentos usando el botón
+                    <span class="badge bg-success"><i class="bi bi-upload"></i> Subir Documento</span>.
+                </div>
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+
+{% block title %}Diagrama de Gantt - {{ proyecto.codigo_proyecto }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2>Diagrama de Gantt</h2>
+        <a href="{% url 'proyectos:proyecto_detail' proyecto.id_proyecto %}" class="btn btn-secondary btn-sm">
+            <i class="bi bi-arrow-left"></i> Volver al proyecto
+        </a>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <strong>{{ proyecto.codigo_proyecto }} - {{ proyecto.nombre_proyecto }}</strong>
+        </div>
+        <div class="card-body p-0">
+            <!-- Contenedor del Gantt -->
+            <div id="gantt_here" style="width: 100%; height: 600px;"></div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+    {{ block.super }}
+
+    {# EJEMPLO con dhtmlxGantt (puedes cambiar de librería) #}
+    <!-- CSS y JS de la librería (ajusta las URLs a tu setup) -->
+    <link rel="stylesheet" href="https://cdn.dhtmlx.com/gantt/edge/dhtmlxgantt.css">
+    <script src="https://cdn.dhtmlx.com/gantt/edge/dhtmlxgantt.js"></script>
+
+    <script>
+        (function() {
+            // Configuración básica del gantt
+            gantt.config.xml_date = "%Y-%m-%d";
+
+            gantt.config.columns = [
+                {name:"text",       label:"Actividad",  width:"*", tree:true },
+                {name:"start_date", label:"Inicio",     align:"center" },
+                {name:"end_date",   label:"Fin",        align:"center" },
+                {name:"add",        label:"",           width:44 }
+            ];
+
+            gantt.config.scale_unit = "day";
+            gantt.config.date_scale = "%d %M";
+            gantt.config.subscales = [
+                {unit:"month", step:1, date:"%F %Y"}
+            ];
+
+            gantt.init("gantt_here");
+
+            // Cargar datos desde nuestro endpoint JSON
+            const urlData = "{% url 'proyectos:proyecto_gantt_data' proyecto.id_proyecto %}";
+
+            fetch(urlData)
+                .then(response => response.json())
+                .then(json => {
+                    /*
+                    Nuestro endpoint devuelve:
+                    {
+                        "data": [ {id, text, start_date, end_date, progress, parent, open}, ... ]
+                    }
+                    dhtmlxGantt acepta directamente un objeto con {data: [...]}.
+                    */
+                    gantt.parse(json);
+                })
+                .catch(err => {
+                    console.error("Error al cargar datos del Gantt:", err);
+                    alert("No se pudieron cargar los datos del diagrama de Gantt.");
+                });
+
+        })();
+    </script>
+{% endblock %}
