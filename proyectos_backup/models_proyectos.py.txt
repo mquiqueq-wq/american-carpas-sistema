@@ -1,0 +1,888 @@
+"""
+Modelos para el módulo de gestión de proyectos
+American Carpas 1 SAS
+
+Este módulo contiene todos los modelos necesarios para la gestión completa
+de proyectos de ingeniería civil, incluyendo:
+- Catálogos base
+- Gestión de clientes
+- Proyectos y actividades
+- Asignación de trabajadores
+- Control de documentos
+- Evidencias fotográficas
+"""
+
+from django.db import models
+from django.core.validators import MinValueValidator, MaxValueValidator
+from trabajadores.models import TrabajadorPersonal
+
+
+# =====================================================
+# FASE 1: CATÁLOGOS BASE
+# =====================================================
+
+class TipoProyecto(models.Model):
+    """
+    Catálogo de tipos de proyectos que maneja la empresa.
+    Ejemplo: Fabricación de carpas, Adoquinado peatonal, etc.
+    """
+    id_tipo_proyecto = models.AutoField(primary_key=True)
+    nombre_tipo = models.CharField(
+        max_length=100,
+        unique=True,
+        verbose_name="Nombre del Tipo de Proyecto"
+    )
+    descripcion = models.TextField(
+        blank=True,
+        null=True,
+        verbose_name="Descripción"
+    )
+    color_identificador = models.CharField(
+        max_length=20,
+        default='primary',
+        verbose_name="Color Identificador",
+        help_text="Color para badges: primary, secondary, success, danger, warning, info"
+    )
+    icono = models.CharField(
+        max_length=50,
+        blank=True,
+        null=True,
+        verbose_name="Icono Bootstrap",
+        help_text="Clase de icono de Bootstrap Icons. Ej: bi-hammer"
+    )
+    activo = models.BooleanField(
+        default=True,
+        verbose_name="Activo"
+    )
+    
+    class Meta:
+        db_table = 'proyectos_tipos'
+        verbose_name = 'Tipo de Proyecto'
+        verbose_name_plural = 'Tipos de Proyectos'
+        ordering = ['nombre_tipo']
+    
+    def __str__(self):
+        return self.nombre_tipo
+
+
+class EstadoProyecto(models.Model):
+    """
+    Catálogo de estados por los que puede pasar un proyecto.
+    Ejemplo: Planificación, En ejecución, Finalizado, etc.
+    """
+    id_estado_proyecto = models.AutoField(primary_key=True)
+    nombre_estado = models.CharField(
+        max_length=50,
+        unique=True,
+        verbose_name="Nombre del Estado"
+    )
+    descripcion = models.TextField(
+        blank=True,
+        null=True,
+        verbose_name="Descripción"
+    )
+    color_badge = models.CharField(
+        max_length=20,
+        default='secondary',
+        verbose_name="Color del Badge",
+        help_text="Color para badges: primary, secondary, success, danger, warning, info"
+    )
+    permite_edicion = models.BooleanField(
+        default=True,
+        verbose_name="Permite Edición",
+        help_text="Si permite editar el proyecto en este estado"
+    )
+    es_estado_final = models.BooleanField(
+        default=False,
+        verbose_name="Es Estado Final",
+        help_text="Indica si es un estado final del proyecto"
+    )
+    orden_visualizacion = models.IntegerField(
+        default=0,
+        verbose_name="Orden de Visualización"
+    )
+    activo = models.BooleanField(
+        default=True,
+        verbose_name="Activo"
+    )
+    
+    class Meta:
+        db_table = 'proyectos_estados'
+        verbose_name = 'Estado de Proyecto'
+        verbose_name_plural = 'Estados de Proyectos'
+        ordering = ['orden_visualizacion', 'nombre_estado']
+    
+    def __str__(self):
+        return self.nombre_estado
+
+
+class TipoDocumentoProyecto(models.Model):
+    """
+    Catálogo de tipos de documentos que se pueden asociar a proyectos.
+    Ejemplo: Licencia de construcción, Póliza de seguros, etc.
+    """
+    id_tipo_documento = models.AutoField(primary_key=True)
+    nombre_tipo_documento = models.CharField(
+        max_length=100,
+        unique=True,
+        verbose_name="Nombre del Tipo de Documento"
+    )
+    descripcion = models.TextField(
+        blank=True,
+        null=True,
+        verbose_name="Descripción"
+    )
+    requiere_vigencia = models.BooleanField(
+        default=False,
+        verbose_name="Requiere Control de Vigencia",
+        help_text="Si el documento tiene fecha de vencimiento"
+    )
+    dias_alerta_vencimiento = models.IntegerField(
+        default=30,
+        verbose_name="Días de Alerta antes del Vencimiento"
+    )
+    icono = models.CharField(
+        max_length=50,
+        blank=True,
+        null=True,
+        verbose_name="Icono Bootstrap",
+        help_text="Clase de icono de Bootstrap Icons"
+    )
+    orden_visualizacion = models.IntegerField(
+        default=0,
+        verbose_name="Orden de Visualización"
+    )
+    activo = models.BooleanField(
+        default=True,
+        verbose_name="Activo"
+    )
+    
+    class Meta:
+        db_table = 'proyectos_tipos_documentos'
+        verbose_name = 'Tipo de Documento de Proyecto'
+        verbose_name_plural = 'Tipos de Documentos de Proyectos'
+        ordering = ['orden_visualizacion', 'nombre_tipo_documento']
+    
+    def __str__(self):
+        return self.nombre_tipo_documento
+
+
+# =====================================================
+# FASE 2: MODELO CLIENTE
+# =====================================================
+
+class Cliente(models.Model):
+    """
+    Modelo de clientes que contratan proyectos.
+    Un cliente puede tener múltiples proyectos con diferentes administraciones.
+    """
+    
+    TIPO_DOCUMENTO_CHOICES = [
+        ('NIT', 'NIT'),
+        ('CC', 'Cédula de Ciudadanía'),
+        ('CE', 'Cédula de Extranjería'),
+        ('PASAPORTE', 'Pasaporte'),
+    ]
+    
+    id_cliente = models.AutoField(primary_key=True)
+    
+    # Identificación
+    tipo_documento = models.CharField(
+        max_length=20,
+        choices=TIPO_DOCUMENTO_CHOICES,
+        verbose_name="Tipo de Documento"
+    )
+    numero_documento = models.CharField(
+        max_length=20,
+        unique=True,
+        verbose_name="Número de Documento/NIT"
+    )
+    razon_social = models.CharField(
+        max_length=200,
+        verbose_name="Razón Social"
+    )
+    nombre_comercial = models.CharField(
+        max_length=200,
+        blank=True,
+        null=True,
+        verbose_name="Nombre Comercial"
+    )
+    representante_legal = models.CharField(
+        max_length=150,
+        blank=True,
+        null=True,
+        verbose_name="Representante Legal"
+    )
+    
+    # Contacto
+    telefono_principal = models.CharField(
+        max_length=20,
+        verbose_name="Teléfono Principal"
+    )
+    telefono_secundario = models.CharField(
+        max_length=20,
+        blank=True,
+        null=True,
+        verbose_name="Teléfono Secundario"
+    )
+    email_principal = models.EmailField(
+        verbose_name="Email Principal"
+    )
+    email_secundario = models.EmailField(
+        blank=True,
+        null=True,
+        verbose_name="Email Secundario"
+    )
+    
+    # Ubicación
+    direccion = models.CharField(
+        max_length=200,
+        verbose_name="Dirección"
+    )
+    ciudad = models.CharField(
+        max_length=100,
+        verbose_name="Ciudad"
+    )
+    departamento = models.CharField(
+        max_length=100,
+        verbose_name="Departamento"
+    )
+    pais = models.CharField(
+        max_length=100,
+        default='Colombia',
+        verbose_name="País"
+    )
+    
+    # Información adicional
+    sitio_web = models.URLField(
+        blank=True,
+        null=True,
+        verbose_name="Sitio Web"
+    )
+    observaciones = models.TextField(
+        blank=True,
+        null=True,
+        verbose_name="Observaciones"
+    )
+    
+    # Control
+    fecha_registro = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name="Fecha de Registro"
+    )
+    activo = models.BooleanField(
+        default=True,
+        verbose_name="Activo"
+    )
+    
+    class Meta:
+        db_table = 'proyectos_clientes'
+        verbose_name = 'Cliente'
+        verbose_name_plural = 'Clientes'
+        ordering = ['razon_social']
+    
+    def __str__(self):
+        if self.nombre_comercial:
+            return f"{self.razon_social} ({self.nombre_comercial})"
+        return self.razon_social
+    
+    def get_proyectos_activos(self):
+        """Retorna los proyectos activos del cliente"""
+        return self.proyectos.filter(activo=True)
+    
+    def get_total_proyectos(self):
+        """Retorna el total de proyectos del cliente"""
+        return self.proyectos.count()
+
+
+# =====================================================
+# FASE 3: MODELO PROYECTO PRINCIPAL
+# =====================================================
+
+class Proyecto(models.Model):
+    """
+    Modelo principal de proyectos.
+    Cada proyecto pertenece a un cliente y puede tener diferente ingeniero responsable.
+    """
+    id_proyecto = models.AutoField(primary_key=True)
+    
+    # Relaciones
+    cliente = models.ForeignKey(
+        Cliente,
+        on_delete=models.PROTECT,
+        related_name='proyectos',
+        verbose_name="Cliente"
+    )
+    tipo_proyecto = models.ForeignKey(
+        TipoProyecto,
+        on_delete=models.PROTECT,
+        related_name='proyectos',
+        verbose_name="Tipo de Proyecto"
+    )
+    estado_proyecto = models.ForeignKey(
+        EstadoProyecto,
+        on_delete=models.PROTECT,
+        related_name='proyectos_estado',
+        verbose_name="Estado del Proyecto"
+    )
+    
+    # Identificación
+    codigo_proyecto = models.CharField(
+        max_length=50,
+        unique=True,
+        verbose_name="Código del Proyecto"
+    )
+    nombre_proyecto = models.CharField(
+        max_length=200,
+        verbose_name="Nombre del Proyecto"
+    )
+    descripcion = models.TextField(
+        blank=True,
+        null=True,
+        verbose_name="Descripción del Proyecto"
+    )
+    
+    # Responsable del Cliente
+    ingeniero_responsable = models.CharField(
+        max_length=150,
+        verbose_name="Ingeniero Responsable"
+    )
+    cargo_responsable = models.CharField(
+        max_length=100,
+        blank=True,
+        null=True,
+        verbose_name="Cargo del Responsable"
+    )
+    telefono_responsable = models.CharField(
+        max_length=20,
+        blank=True,
+        null=True,
+        verbose_name="Teléfono del Responsable"
+    )
+    email_responsable = models.EmailField(
+        blank=True,
+        null=True,
+        verbose_name="Email del Responsable"
+    )
+    
+    # Ubicación del Proyecto
+    direccion_proyecto = models.CharField(
+        max_length=200,
+        verbose_name="Dirección del Proyecto"
+    )
+    ciudad_proyecto = models.CharField(
+        max_length=100,
+        verbose_name="Ciudad del Proyecto"
+    )
+    departamento_proyecto = models.CharField(
+        max_length=100,
+        verbose_name="Departamento del Proyecto"
+    )
+    
+    # Fechas
+    fecha_inicio = models.DateField(
+        verbose_name="Fecha de Inicio"
+    )
+    fecha_fin_estimada = models.DateField(
+        verbose_name="Fecha de Fin Estimada"
+    )
+    fecha_fin_real = models.DateField(
+        blank=True,
+        null=True,
+        verbose_name="Fecha de Fin Real"
+    )
+    
+    # Financiero
+    presupuesto_estimado = models.DecimalField(
+        max_digits=15,
+        decimal_places=2,
+        blank=True,
+        null=True,
+        verbose_name="Presupuesto Estimado"
+    )
+    
+    # Información adicional
+    observaciones = models.TextField(
+        blank=True,
+        null=True,
+        verbose_name="Observaciones"
+    )
+    
+    # Control
+    fecha_registro = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name="Fecha de Registro"
+    )
+    fecha_modificacion = models.DateTimeField(
+        auto_now=True,
+        verbose_name="Última Modificación"
+    )
+    activo = models.BooleanField(
+        default=True,
+        verbose_name="Activo"
+    )
+    
+    class Meta:
+        db_table = 'proyectos_proyectos'
+        verbose_name = 'Proyecto'
+        verbose_name_plural = 'Proyectos'
+        ordering = ['-fecha_registro']
+    
+    def __str__(self):
+        return f"{self.codigo_proyecto} - {self.nombre_proyecto}"
+    
+    def get_duracion_estimada_dias(self):
+        """Retorna la duración estimada del proyecto en días"""
+        if self.fecha_inicio and self.fecha_fin_estimada:
+            delta = self.fecha_fin_estimada - self.fecha_inicio
+            return delta.days
+        return 0
+    
+    def get_duracion_real_dias(self):
+        """Retorna la duración real del proyecto en días"""
+        if self.fecha_inicio and self.fecha_fin_real:
+            delta = self.fecha_fin_real - self.fecha_inicio
+            return delta.days
+        return None
+    
+    def esta_atrasado(self):
+        """Verifica si el proyecto está atrasado"""
+        from datetime import date
+        if not self.fecha_fin_real and self.fecha_fin_estimada:
+            return date.today() > self.fecha_fin_estimada
+        return False
+    
+    def get_dias_restantes(self):
+        """Retorna los días restantes hasta la fecha fin estimada"""
+        from datetime import date
+        if not self.fecha_fin_real and self.fecha_fin_estimada:
+            delta = self.fecha_fin_estimada - date.today()
+            return delta.days
+        return None
+    
+    def get_porcentaje_avance(self):
+        """Retorna el porcentaje de avance del proyecto basado en actividades"""
+        actividades = self.actividades.filter(activo=True)
+        if not actividades.exists():
+            return 0
+        
+        total_peso = sum(act.peso_actividad for act in actividades)
+        if total_peso == 0:
+            return 0
+        
+        avance_ponderado = sum(
+            (act.porcentaje_avance * act.peso_actividad) / 100 
+            for act in actividades
+        )
+        
+        return round((avance_ponderado / total_peso) * 100, 2)
+    
+    def get_total_actividades(self):
+        """Retorna el total de actividades del proyecto"""
+        return self.actividades.filter(activo=True).count()
+    
+    def get_total_trabajadores_asignados(self):
+        """Retorna el total de trabajadores asignados al proyecto"""
+        return self.asignaciones.filter(activo=True).count()
+    
+    def get_total_documentos(self):
+        """Retorna el total de documentos del proyecto"""
+        return self.documentos.filter(activo=True).count()
+    
+    def get_total_evidencias(self):
+        """Retorna el total de evidencias fotográficas"""
+        return self.evidencias.filter(activo=True).count()
+
+
+# =====================================================
+# FASE 4: MODELO ACTIVIDAD
+# =====================================================
+
+class Actividad(models.Model):
+    """
+    Modelo de actividades del proyecto.
+    Permite jerarquía con numeración manual (ej: 4.1, 4.1.1, 4.1.2)
+    """
+    id_actividad = models.AutoField(primary_key=True)
+    
+    # Relación con Proyecto
+    proyecto = models.ForeignKey(
+        Proyecto,
+        on_delete=models.CASCADE,
+        related_name='actividades',
+        verbose_name="Proyecto"
+    )
+    
+    # Jerarquía (opcional - para actividades padre)
+    actividad_padre = models.ForeignKey(
+        'self',
+        on_delete=models.CASCADE,
+        related_name='subactividades',
+        blank=True,
+        null=True,
+        verbose_name="Actividad Padre"
+    )
+    
+    # Identificación
+    numero_actividad = models.CharField(
+        max_length=20,
+        verbose_name="Número de Actividad",
+        help_text="Ej: 4.1, 4.1.1, 4.1.2"
+    )
+    nombre_actividad = models.CharField(
+        max_length=200,
+        verbose_name="Nombre de la Actividad"
+    )
+    descripcion = models.TextField(
+        blank=True,
+        null=True,
+        verbose_name="Descripción"
+    )
+    
+    # Control de Avance
+    porcentaje_avance = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        default=0,
+        validators=[MinValueValidator(0), MaxValueValidator(100)],
+        verbose_name="Porcentaje de Avance",
+        help_text="De 0 a 100"
+    )
+    peso_actividad = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        default=1,
+        validators=[MinValueValidator(0)],
+        verbose_name="Peso de la Actividad",
+        help_text="Peso relativo para cálculo de avance del proyecto"
+    )
+    
+    # Fechas
+    fecha_inicio_estimada = models.DateField(
+        blank=True,
+        null=True,
+        verbose_name="Fecha Inicio Estimada"
+    )
+    fecha_fin_estimada = models.DateField(
+        blank=True,
+        null=True,
+        verbose_name="Fecha Fin Estimada"
+    )
+    fecha_inicio_real = models.DateField(
+        blank=True,
+        null=True,
+        verbose_name="Fecha Inicio Real"
+    )
+    fecha_fin_real = models.DateField(
+        blank=True,
+        null=True,
+        verbose_name="Fecha Fin Real"
+    )
+    
+    # Información adicional
+    observaciones = models.TextField(
+        blank=True,
+        null=True,
+        verbose_name="Observaciones"
+    )
+    
+    # Control
+    orden_visualizacion = models.IntegerField(
+        default=0,
+        verbose_name="Orden de Visualización"
+    )
+    fecha_registro = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name="Fecha de Registro"
+    )
+    activo = models.BooleanField(
+        default=True,
+        verbose_name="Activo"
+    )
+    
+    class Meta:
+        db_table = 'proyectos_actividades'
+        verbose_name = 'Actividad'
+        verbose_name_plural = 'Actividades'
+        ordering = ['proyecto', 'orden_visualizacion', 'numero_actividad']
+        unique_together = ['proyecto', 'numero_actividad']
+    
+    def __str__(self):
+        return f"{self.numero_actividad} - {self.nombre_actividad}"
+    
+    def get_nivel_jerarquia(self):
+        """Retorna el nivel de jerarquía basado en el número"""
+        return self.numero_actividad.count('.')
+    
+    def esta_completada(self):
+        """Verifica si la actividad está completada"""
+        return self.porcentaje_avance >= 100
+
+
+# =====================================================
+# FASE 5: MODELO ASIGNACIÓN DE TRABAJADORES
+# =====================================================
+
+class AsignacionTrabajador(models.Model):
+    """
+    Modelo para asignar trabajadores a proyectos.
+    Relaciona el módulo de proyectos con el módulo de trabajadores.
+    """
+    id_asignacion = models.AutoField(primary_key=True)
+    
+    # Relaciones
+    proyecto = models.ForeignKey(
+        Proyecto,
+        on_delete=models.CASCADE,
+        related_name='asignaciones',
+        verbose_name="Proyecto"
+    )
+    trabajador = models.ForeignKey(
+        Trabajador,
+        on_delete=models.PROTECT,
+        related_name='asignaciones_proyecto',
+        verbose_name="Trabajador"
+    )
+    
+    # Información de la Asignación
+    fecha_asignacion = models.DateField(
+        verbose_name="Fecha de Asignación"
+    )
+    fecha_desasignacion = models.DateField(
+        blank=True,
+        null=True,
+        verbose_name="Fecha de Desasignación"
+    )
+    rol_en_proyecto = models.CharField(
+        max_length=100,
+        blank=True,
+        null=True,
+        verbose_name="Rol en el Proyecto",
+        help_text="Ej: Operario, Ayudante, Supervisor"
+    )
+    observaciones = models.TextField(
+        blank=True,
+        null=True,
+        verbose_name="Observaciones"
+    )
+    
+    # Control
+    fecha_registro = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name="Fecha de Registro"
+    )
+    activo = models.BooleanField(
+        default=True,
+        verbose_name="Activo"
+    )
+    
+    class Meta:
+        db_table = 'proyectos_asignaciones_trabajadores'
+        verbose_name = 'Asignación de Trabajador'
+        verbose_name_plural = 'Asignaciones de Trabajadores'
+        ordering = ['-fecha_asignacion']
+    
+    def __str__(self):
+        return f"{self.trabajador} - {self.proyecto.codigo_proyecto}"
+    
+    def esta_actualmente_asignado(self):
+        """Verifica si el trabajador está actualmente asignado"""
+        return self.activo and self.fecha_desasignacion is None
+
+
+# =====================================================
+# FASE 6: MODELO DOCUMENTO DE PROYECTO
+# =====================================================
+
+class DocumentoProyecto(models.Model):
+    """
+    Modelo para documentos asociados a proyectos.
+    Maneja documentos con control de vigencia.
+    """
+    id_documento = models.AutoField(primary_key=True)
+    
+    # Relaciones
+    proyecto = models.ForeignKey(
+        Proyecto,
+        on_delete=models.CASCADE,
+        related_name='documentos',
+        verbose_name="Proyecto"
+    )
+    tipo_documento = models.ForeignKey(
+        TipoDocumentoProyecto,
+        on_delete=models.PROTECT,
+        related_name='documentos_proyectos',
+        verbose_name="Tipo de Documento"
+    )
+    
+    # Información del Documento
+    nombre_documento = models.CharField(
+        max_length=200,
+        verbose_name="Nombre del Documento"
+    )
+    numero_documento = models.CharField(
+        max_length=100,
+        blank=True,
+        null=True,
+        verbose_name="Número de Documento",
+        help_text="Número de radicado, consecutivo, etc."
+    )
+    descripcion = models.TextField(
+        blank=True,
+        null=True,
+        verbose_name="Descripción"
+    )
+    
+    # Archivo
+    archivo = models.FileField(
+        upload_to='proyectos/documentos/%Y/%m/',
+        verbose_name="Archivo"
+    )
+    
+    # Vigencia
+    fecha_emision = models.DateField(
+        blank=True,
+        null=True,
+        verbose_name="Fecha de Emisión"
+    )
+    fecha_vencimiento = models.DateField(
+        blank=True,
+        null=True,
+        verbose_name="Fecha de Vencimiento"
+    )
+    
+    # Control
+    fecha_carga = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name="Fecha de Carga"
+    )
+    activo = models.BooleanField(
+        default=True,
+        verbose_name="Activo"
+    )
+    
+    class Meta:
+        db_table = 'proyectos_documentos'
+        verbose_name = 'Documento de Proyecto'
+        verbose_name_plural = 'Documentos de Proyectos'
+        ordering = ['-fecha_carga']
+    
+    def __str__(self):
+        return f"{self.nombre_documento} - {self.proyecto.codigo_proyecto}"
+    
+    def esta_vigente(self):
+        """Verifica si el documento está vigente"""
+        if not self.fecha_vencimiento:
+            return True
+        from datetime import date
+        return date.today() <= self.fecha_vencimiento
+    
+    def dias_para_vencer(self):
+        """Retorna los días restantes hasta el vencimiento"""
+        if not self.fecha_vencimiento:
+            return None
+        from datetime import date
+        delta = self.fecha_vencimiento - date.today()
+        return delta.days
+    
+    def requiere_renovacion(self):
+        """Verifica si el documento requiere renovación pronto"""
+        if not self.fecha_vencimiento or not self.tipo_documento.requiere_vigencia:
+            return False
+        dias = self.dias_para_vencer()
+        if dias is None:
+            return False
+        return 0 <= dias <= self.tipo_documento.dias_alerta_vencimiento
+
+
+# =====================================================
+# FASE 7: MODELO EVIDENCIA FOTOGRÁFICA
+# =====================================================
+
+class EvidenciaFotografica(models.Model):
+    """
+    Modelo para evidencias fotográficas de los proyectos.
+    Permite documentar el avance y detalles del proyecto.
+    """
+    
+    TIPO_EVIDENCIA_CHOICES = [
+        ('INICIO', 'Inicio del Proyecto'),
+        ('AVANCE', 'Avance de Obra'),
+        ('PROBLEMA', 'Problema o Incidencia'),
+        ('SOLUCION', 'Solución Aplicada'),
+        ('CALIDAD', 'Control de Calidad'),
+        ('FINAL', 'Finalización del Proyecto'),
+        ('OTRO', 'Otro'),
+    ]
+    
+    id_evidencia = models.AutoField(primary_key=True)
+    
+    # Relaciones
+    proyecto = models.ForeignKey(
+        Proyecto,
+        on_delete=models.CASCADE,
+        related_name='evidencias',
+        verbose_name="Proyecto"
+    )
+    actividad = models.ForeignKey(
+        Actividad,
+        on_delete=models.SET_NULL,
+        related_name='evidencias',
+        blank=True,
+        null=True,
+        verbose_name="Actividad Relacionada"
+    )
+    
+    # Información de la Evidencia
+    titulo = models.CharField(
+        max_length=200,
+        verbose_name="Título"
+    )
+    descripcion = models.TextField(
+        blank=True,
+        null=True,
+        verbose_name="Descripción"
+    )
+    tipo_evidencia = models.CharField(
+        max_length=20,
+        choices=TIPO_EVIDENCIA_CHOICES,
+        default='AVANCE',
+        verbose_name="Tipo de Evidencia"
+    )
+    
+    # Imagen
+    imagen = models.ImageField(
+        upload_to='proyectos/evidencias/%Y/%m/',
+        verbose_name="Imagen"
+    )
+    
+    # Metadatos
+    fecha_captura = models.DateField(
+        verbose_name="Fecha de Captura"
+    )
+    ubicacion_descripcion = models.CharField(
+        max_length=200,
+        blank=True,
+        null=True,
+        verbose_name="Ubicación",
+        help_text="Descripción de la ubicación donde se tomó la foto"
+    )
+    
+    # Control
+    fecha_carga = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name="Fecha de Carga"
+    )
+    activo = models.BooleanField(
+        default=True,
+        verbose_name="Activo"
+    )
+    
+    class Meta:
+        db_table = 'proyectos_evidencias_fotograficas'
+        verbose_name = 'Evidencia Fotográfica'
+        verbose_name_plural = 'Evidencias Fotográficas'
+        ordering = ['-fecha_captura', '-fecha_carga']
+    
+    def __str__(self):
+        return f"{self.titulo} - {self.proyecto.codigo_proyecto}"

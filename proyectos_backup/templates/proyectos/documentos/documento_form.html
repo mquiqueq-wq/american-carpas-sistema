@@ -1,0 +1,137 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ titulo }} - {{ proyecto.codigo_proyecto }}{% endblock %}
+
+{% block content %}
+<div class="container py-4 contenedor-principal">
+    <!-- Encabezado -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h2 class="mb-1">
+                <i class="bi bi-upload text-success"></i>
+                {{ titulo }}
+            </h2>
+            <p class="text-muted mb-0">
+                Proyecto: <strong>{{ proyecto.codigo_proyecto }}</strong> - {{ proyecto.nombre_proyecto }}
+            </p>
+        </div>
+        <div class="text-end">
+            <a href="{% url 'proyectos:documento_list' proyecto.id_proyecto %}" class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-arrow-left"></i> Volver a documentos
+            </a>
+        </div>
+    </div>
+
+    <div class="separador-custom"></div>
+
+    <div class="card card-verde">
+        <div class="card-header">
+            <i class="bi bi-file-earmark-plus"></i> Datos del documento
+        </div>
+        <div class="card-body">
+            <form method="post" enctype="multipart/form-data" novalidate>
+                {% csrf_token %}
+                
+                <!-- Errores generales -->
+                {% if form.non_field_errors %}
+                    <div class="alert alert-danger">
+                        {{ form.non_field_errors }}
+                    </div>
+                {% endif %}
+
+                <div class="row g-3">
+                    <!-- Proyecto (solo lectura si quieres fijarlo) -->
+                    <div class="col-md-6">
+                        <label class="form-label">Proyecto</label>
+                        <input type="text" class="form-control" value="{{ proyecto.codigo_proyecto }} - {{ proyecto.nombre_proyecto }}" disabled>
+                    </div>
+                    <div class="col-md-6">
+                        {{ form.tipo_documento.label_tag }}
+                        {{ form.tipo_documento }}
+                        {% if form.tipo_documento.help_text %}
+                            <small class="form-text text-muted">{{ form.tipo_documento.help_text }}</small>
+                        {% endif %}
+                        {% for error in form.tipo_documento.errors %}
+                            <div class="text-danger small">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="col-md-6">
+                        {{ form.nombre_documento.label_tag }}
+                        {{ form.nombre_documento }}
+                        {% for error in form.nombre_documento.errors %}
+                            <div class="text-danger small">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="col-md-6">
+                        {{ form.numero_documento.label_tag }}
+                        {{ form.numero_documento }}
+                        {% if form.numero_documento.help_text %}
+                            <small class="form-text text-muted">{{ form.numero_documento.help_text }}</small>
+                        {% endif %}
+                        {% for error in form.numero_documento.errors %}
+                            <div class="text-danger small">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="col-12">
+                        {{ form.descripcion.label_tag }}
+                        {{ form.descripcion }}
+                        {% for error in form.descripcion.errors %}
+                            <div class="text-danger small">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="col-md-6">
+                        {{ form.archivo.label_tag }}
+                        {{ form.archivo }}
+                        {% for error in form.archivo.errors %}
+                            <div class="text-danger small">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="col-md-3">
+                        {{ form.fecha_emision.label_tag }}
+                        {{ form.fecha_emision }}
+                        {% for error in form.fecha_emision.errors %}
+                            <div class="text-danger small">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="col-md-3">
+                        {{ form.fecha_vencimiento.label_tag }}
+                        {{ form.fecha_vencimiento }}
+                        {% for error in form.fecha_vencimiento.errors %}
+                            <div class="text-danger small">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="col-md-3">
+                        <div class="form-check mt-4">
+                            {{ form.activo }}
+                            {{ form.activo.label_tag }}
+                        </div>
+                        {% for error in form.activo.errors %}
+                            <div class="text-danger small">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Campo proyecto oculto para que el form lo reciba correctamente -->
+                {# Si quieres forzar que siempre se asigne al proyecto actual: #}
+                <input type="hidden" name="{{ form.proyecto.name }}" value="{{ proyecto.id_proyecto }}">
+
+                <div class="mt-4 d-flex justify-content-end gap-2">
+                    <a href="{% url 'proyectos:documento_list' proyecto.id_proyecto %}" class="btn btn-outline-secondary">
+                        <i class="bi bi-x-circle"></i> Cancelar
+                    </a>
+                    <button type="submit" class="btn btn-success-custom">
+                        <i class="bi bi-save"></i> Guardar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

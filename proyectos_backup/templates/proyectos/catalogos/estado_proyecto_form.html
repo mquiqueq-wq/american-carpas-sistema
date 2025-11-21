@@ -1,0 +1,148 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ titulo }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <!-- Encabezado -->
+            <div class="mb-4">
+                <h3><i class="bi bi-signpost text-primary"></i> {{ titulo }}</h3>
+                <p class="text-muted">Complete los datos del estado de proyecto</p>
+            </div>
+
+            <!-- Formulario -->
+            <div class="card">
+                <div class="card-body">
+                    <form method="post" novalidate>
+                        {% csrf_token %}
+
+                        <!-- Nombre del Estado -->
+                        <div class="mb-3">
+                            <label for="{{ form.nombre_estado.id_for_label }}" class="form-label fw-bold">
+                                {{ form.nombre_estado.label }} <span class="text-danger">*</span>
+                            </label>
+                            {{ form.nombre_estado }}
+                            {% if form.nombre_estado.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.nombre_estado.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Descripción -->
+                        <div class="mb-3">
+                            <label for="{{ form.descripcion.id_for_label }}" class="form-label fw-bold">
+                                {{ form.descripcion.label }}
+                            </label>
+                            {{ form.descripcion }}
+                            {% if form.descripcion.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.descripcion.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Color del Badge -->
+                        <div class="mb-3">
+                            <label for="{{ form.color_badge.id_for_label }}" class="form-label fw-bold">
+                                {{ form.color_badge.label }}
+                            </label>
+                            {{ form.color_badge }}
+                            {% if form.color_badge.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.color_badge.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <!-- Permite Edición -->
+                                <div class="mb-3">
+                                    <div class="form-check">
+                                        {{ form.permite_edicion }}
+                                        <label class="form-check-label" for="{{ form.permite_edicion.id_for_label }}">
+                                            {{ form.permite_edicion.label }}
+                                        </label>
+                                    </div>
+                                    <small class="form-text text-muted d-block">
+                                        {{ form.permite_edicion.help_text }}
+                                    </small>
+                                    {% if form.permite_edicion.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {{ form.permite_edicion.errors.0 }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <!-- Es Estado Final -->
+                                <div class="mb-3">
+                                    <div class="form-check">
+                                        {{ form.es_estado_final }}
+                                        <label class="form-check-label" for="{{ form.es_estado_final.id_for_label }}">
+                                            {{ form.es_estado_final.label }}
+                                        </label>
+                                    </div>
+                                    <small class="form-text text-muted d-block">
+                                        {{ form.es_estado_final.help_text }}
+                                    </small>
+                                    {% if form.es_estado_final.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {{ form.es_estado_final.errors.0 }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Orden de Visualización -->
+                        <div class="mb-3">
+                            <label for="{{ form.orden_visualizacion.id_for_label }}" class="form-label fw-bold">
+                                {{ form.orden_visualizacion.label }}
+                            </label>
+                            {{ form.orden_visualizacion }}
+                            <small class="form-text text-muted d-block">
+                                {{ form.orden_visualizacion.help_text }}
+                            </small>
+                            {% if form.orden_visualizacion.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.orden_visualizacion.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Activo -->
+                        <div class="mb-3">
+                            <div class="form-check">
+                                {{ form.activo }}
+                                <label class="form-check-label" for="{{ form.activo.id_for_label }}">
+                                    {{ form.activo.label }}
+                                </label>
+                            </div>
+                            {% if form.activo.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.activo.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Botones -->
+                        <div class="d-flex justify-content-between mt-4">
+                            <a href="{% url 'proyectos:estado_proyecto_list' %}" class="btn btn-secondary">
+                                <i class="bi bi-x-circle"></i> Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-check-circle"></i> {{ action }}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

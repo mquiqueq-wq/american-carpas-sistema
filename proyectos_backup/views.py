@@ -4,13 +4,15 @@ American Carpas 1 SAS
 
 Vistas completas para todas las 8 fases
 """
+import pytz
 from django.http import JsonResponse
+from django.utils import timezone
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib import messages
 from django.core.paginator import Paginator
 from django.db.models import Q
 from django.http import HttpResponse
-from datetime import date
+from datetime import date, datetime
 
 from trabajadores.models import TrabajadorPersonal
 from .models import (
@@ -70,26 +72,11 @@ def home_proyectos(request):
 # =====================================================
 
 def tipo_proyecto_list(request):
-    """Listado de tipos de proyectos con búsqueda y paginación"""
-    query = request.GET.get('q', '')
-    
-    # Aplicar búsqueda si existe
-    if query:
-        tipos = TipoProyecto.objects.filter(
-            Q(nombre_tipo__icontains=query) |
-            Q(descripcion__icontains=query)
-        ).order_by('nombre_tipo')
-    else:
-        tipos = TipoProyecto.objects.all().order_by('nombre_tipo')
-    
-    # Paginación
-    paginator = Paginator(tipos, 10)  # 10 elementos por página
-    page_number = request.GET.get('page', 1)
-    page_obj = paginator.get_page(page_number)
+    """Listado de tipos de proyectos"""
+    tipos = TipoProyecto.objects.all().order_by('nombre_tipo')
     
     context = {
-        'page_obj': page_obj,  # ✅ Ahora envía 'page_obj'
-        'query': query,         # ✅ Envía la búsqueda
+        'tipos': tipos,
         'show_module_nav': True,
         'active_module': 'proyectos',
     }
@@ -166,26 +153,11 @@ def tipo_proyecto_delete(request, id_tipo_proyecto):
 # =====================================================
 
 def estado_proyecto_list(request):
-    """Listado de estados de proyectos con búsqueda y paginación"""
-    query = request.GET.get('q', '')
-    
-    # Aplicar búsqueda si existe
-    if query:
-        estados = EstadoProyecto.objects.filter(
-            Q(nombre_estado__icontains=query) |
-            Q(descripcion__icontains=query)
-        ).order_by('orden_visualizacion', 'nombre_estado')
-    else:
-        estados = EstadoProyecto.objects.all().order_by('orden_visualizacion', 'nombre_estado')
-    
-    # Paginación
-    paginator = Paginator(estados, 10)  # 10 elementos por página
-    page_number = request.GET.get('page', 1)
-    page_obj = paginator.get_page(page_number)
+    """Listado de estados de proyectos"""
+    estados = EstadoProyecto.objects.all().order_by('orden_visualizacion', 'nombre_estado')
     
     context = {
-        'page_obj': page_obj,  # ✅ Ahora envía 'page_obj'
-        'query': query,         # ✅ Envía la búsqueda
+        'estados': estados,
         'show_module_nav': True,
         'active_module': 'proyectos',
     }
@@ -814,12 +786,14 @@ def proyecto_gantt_data(request, proyecto_id):
 
     tasks = []
     for act in actividades:
-        # Fechas: usa las estimadas como base. Si falta alguna, la dejamos en None.
-        start = act.fecha_inicio_estimada
-        end = act.fecha_fin_estimada
+        # Fechas: preferir las reales; si no, usar las estimadas
+        start = act.fecha_inicio_real or act.fecha_inicio_estimada
+        end = act.fecha_fin_real or act.fecha_fin_estimada
 
-        # Algunas librerías de Gantt requieren end_date inclusive o exclusiva.
-        # Por ahora devolvemos tal cual el campo de la BD.
+        # Estado para estilos (lo usamos en el Gantt)
+        esta_atrasada = act.esta_atrasada_programado()
+        necesita_atencion = act.necesita_atencion()
+
         tasks.append({
             "id": act.id_actividad,
             "text": f"{act.numero_actividad} - {act.nombre_actividad}",
@@ -827,12 +801,17 @@ def proyecto_gantt_data(request, proyecto_id):
             "end_date": end.isoformat() if end else None,
             "progress": float(act.porcentaje_avance or 0) / 100.0,
             "parent": act.actividad_padre.id_actividad if act.actividad_padre else 0,
-            "open": True,  # para que las ramas aparezcan abiertas
+            "open": True,
+            # Campos extra para estilos y tooltips
+            "esta_atrasada": esta_atrasada,
+            "necesita_atencion": necesita_atencion,
+            "unidad_medida": act.unidad_medida,
+            "cantidad_programada": float(act.cantidad_programada or 0),
+            "cantidad_ejecutada_total": float(act.cantidad_ejecutada_total or 0),
+            "porcentaje_avance": float(act.porcentaje_avance or 0),
         })
 
-    return JsonResponse({
-        "data": tasks,
-    }, safe=False)
+    return JsonResponse({"data": tasks}, safe=False)
 
 def proyecto_gantt_view(request, proyecto_id):
     """
@@ -841,6 +820,61 @@ def proyecto_gantt_view(request, proyecto_id):
     """
     proyecto = get_object_or_404(Proyecto, pk=proyecto_id)
     return render(request, 'proyectos/proyecto_gantt.html', {
+        'proyecto': proyecto,
+    })
+
+def proyecto_gantt_data_highcharts(request, proyecto_id):
+    proyecto = get_object_or_404(Proyecto, pk=proyecto_id)
+    actividades = proyecto.actividades.filter(activo=True).order_by(
+        'actividad_padre__id_actividad', 'orden_visualizacion', 'numero_actividad'
+    )
+
+    def date_to_ts(d):
+        if not d:
+            return None
+        if isinstance(d, datetime):
+            dt = d
+        else:
+            dt = datetime(d.year, d.month, d.day)
+        return int(dt.timestamp() * 1000)
+
+    series_data = []
+
+    for idx, act in enumerate(actividades):
+        start = act.fecha_inicio_real or act.fecha_inicio_estimada
+        end = act.fecha_fin_real or act.fecha_fin_estimada
+        if not start or not end:
+            continue
+
+        progreso = float(act.porcentaje_avance or 0) / 100.0
+
+        if act.esta_atrasada_programado():
+            color = "#dc3545"  # rojo
+        elif act.necesita_atencion():
+            color = "#ffc107"  # amarillo
+        else:
+            color = "#0d6efd"  # azul
+
+        series_data.append({
+            # id interno
+            "id": str(act.id_actividad),
+            # nombre que se mostrará a la izquierda
+            "name": f"{act.numero_actividad} - {act.nombre_actividad}",
+            "start": date_to_ts(start),
+            "end": date_to_ts(end),
+            "completed": progreso,
+            "color": color,
+            # lo enviamos para poder mostrarlo en tooltip
+            "start_display": start.strftime("%d/%m/%Y"),
+            "end_display": end.strftime("%d/%m/%Y"),
+            "rowIndex": idx,  # por si queremos forzar el orden
+        })
+
+    return JsonResponse(series_data, safe=False)
+
+def proyecto_gantt_highcharts(request, proyecto_id):
+    proyecto = get_object_or_404(Proyecto, pk=proyecto_id)
+    return render(request, 'proyectos/proyecto_gantt_highcharts.html', {
         'proyecto': proyecto,
     })
 

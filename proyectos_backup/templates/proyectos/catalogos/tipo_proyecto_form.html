@@ -1,0 +1,106 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ titulo }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <!-- Encabezado -->
+            <div class="mb-4">
+                <h3><i class="bi bi-card-list text-success"></i> {{ titulo }}</h3>
+                <p class="text-muted">Complete los datos del tipo de proyecto</p>
+            </div>
+
+            <!-- Formulario -->
+            <div class="card">
+                <div class="card-body">
+                    <form method="post" novalidate>
+                        {% csrf_token %}
+
+                        <!-- Nombre del Tipo -->
+                        <div class="mb-3">
+                            <label for="{{ form.nombre_tipo.id_for_label }}" class="form-label fw-bold">
+                                {{ form.nombre_tipo.label }} <span class="text-danger">*</span>
+                            </label>
+                            {{ form.nombre_tipo }}
+                            {% if form.nombre_tipo.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.nombre_tipo.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Descripción -->
+                        <div class="mb-3">
+                            <label for="{{ form.descripcion.id_for_label }}" class="form-label fw-bold">
+                                {{ form.descripcion.label }}
+                            </label>
+                            {{ form.descripcion }}
+                            {% if form.descripcion.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.descripcion.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Icono -->
+                        <div class="mb-3">
+                            <label for="{{ form.icono.id_for_label }}" class="form-label fw-bold">
+                                {{ form.icono.label }}
+                            </label>
+                            {{ form.icono }}
+                            <small class="form-text text-muted d-block">
+                                {{ form.icono.help_text|safe }}
+                            </small>
+                            {% if form.icono.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.icono.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Color Identificador -->
+                        <div class="mb-3">
+                            <label for="{{ form.color_identificador.id_for_label }}" class="form-label fw-bold">
+                                {{ form.color_identificador.label }}
+                            </label>
+                            {{ form.color_identificador }}
+                            {% if form.color_identificador.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.color_identificador.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Activo -->
+                        <div class="mb-3">
+                            <div class="form-check">
+                                {{ form.activo }}
+                                <label class="form-check-label" for="{{ form.activo.id_for_label }}">
+                                    {{ form.activo.label }}
+                                </label>
+                            </div>
+                            {% if form.activo.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.activo.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Botones -->
+                        <div class="d-flex justify-content-between mt-4">
+                            <a href="{% url 'proyectos:tipo_proyecto_list' %}" class="btn btn-secondary">
+                                <i class="bi bi-x-circle"></i> Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-success">
+                                <i class="bi bi-check-circle"></i> {{ action }}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

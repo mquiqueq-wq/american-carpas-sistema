@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid mt-3">
+  <h4>{{ proyecto.codigo_proyecto }} - {{ proyecto.nombre_proyecto }}</h4>
+  <div id="gantt-container" style="height: 600px; min-width: 100%;"></div>
+</div>
+
+<script src="https://code.highcharts.com/gantt/highcharts-gantt.js"></script>
+<script src="https://code.highcharts.com/gantt/modules/exporting.js"></script>
+<script src="https://code.highcharts.com/gantt/modules/accessibility.js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const urlData = "{% url 'proyectos:proyecto_gantt_data' proyecto.id_proyecto %}";
+
+    fetch(urlData)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Error al obtener datos del Gantt');
+            }
+            return response.json();
+        })
+        .then(data => {
+            // Highcharts espera start/end en ms, ya los estamos enviando así
+
+            Highcharts.ganttChart('gantt-container', {
+                title: {
+                    text: 'Diagrama de Gantt - {{ proyecto.codigo_proyecto }}'
+                },
+
+                // Scroll vertical si hay muchas actividades
+                chart: {
+                    height: 600
+                },
+
+                xAxis: {
+                    type: 'datetime',
+                    minPadding: 0.05,
+                    maxPadding: 0.05
+                },
+
+                yAxis: {
+                    type: 'category',
+                    grid: {
+                        enabled: true
+                    },
+                    // Con esto Highcharts toma los "name" de cada punto como categorías
+                    staticScale: 30 // altura de cada fila
+                },
+
+                tooltip: {
+                    pointFormatter: function () {
+                        const p = this;
+                        return `
+                            <span style="color:${p.color}">\u25CF</span> <b>${p.name}</b><br/>
+                            Inicio: ${p.start_display}<br/>
+                            Fin: ${p.end_display}<br/>
+                            Avance: ${(p.completed * 100).toFixed(0)}%
+                        `;
+                    }
+                },
+
+                series: [{
+                    name: 'Actividades',
+                    data: data,
+                    dataLabels: {
+                        enabled: true,
+                        align: 'left',
+                        formatter: function () {
+                            return this.point.name;
+                        },
+                        style: {
+                            fontSize: '11px'
+                        }
+                    }
+                }]
+            });
+        })
+        .catch(error => {
+            console.error(error);
+            alert('No se pudo cargar el diagrama de Gantt.');
+        });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,313 @@
+{% extends 'base.html' %}
+{% load custom_filters %}
+
+{% block title %}{{ proyecto.nombre_proyecto }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Encabezado -->
+    <div class="mb-4">
+        <div class="d-flex justify-content-between align-items-start">
+            <div>
+                <h3>
+                    <i class="bi bi-kanban text-primary"></i> {{ proyecto.nombre_proyecto }}
+                    {% if not proyecto.activo %}
+                        <span class="badge bg-secondary">Inactivo</span>
+                    {% endif %}
+                </h3>
+                <p class="text-muted mb-0">
+                    <strong>Código:</strong> {{ proyecto.codigo_proyecto }} | 
+                    <strong>Cliente:</strong> <a href="{% url 'proyectos:cliente_detail' proyecto.cliente.id_cliente %}">{{ proyecto.cliente.razon_social }}</a>
+                </p>
+            </div>
+            <div class="btn-group">
+                <a href="{% url 'proyectos:proyecto_update' proyecto.id_proyecto %}" class="btn btn-primary">
+                    <i class="bi bi-pencil"></i> Editar
+                </a>
+                <a href="{% url 'proyectos:proyecto_delete' proyecto.id_proyecto %}" class="btn btn-outline-danger">
+                    <i class="bi bi-trash"></i> Eliminar
+                </a>
+            </div>
+        </div>
+        <nav aria-label="breadcrumb" class="mt-2">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'proyectos:home' %}">Proyectos</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'proyectos:proyecto_list' %}">Listado</a></li>
+                <li class="breadcrumb-item active">{{ proyecto.codigo_proyecto }}</li>
+            </ol>
+        </nav>
+    </div>
+
+    <div class="row">
+        <!-- Panel Principal -->
+        <div class="col-lg-8">
+            <!-- Estado y Tipo -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <strong>Estado:</strong><br>
+                            <span class="badge bg-{{ proyecto.estado_proyecto.color_badge }} fs-6">
+                                {{ proyecto.estado_proyecto.nombre_estado }}
+                            </span>
+                        </div>
+                        <div class="col-md-4">
+                            <strong>Tipo de Proyecto:</strong><br>
+                            <span class="badge bg-{{ proyecto.tipo_proyecto.color_identificador }} fs-6">
+                                {% if proyecto.tipo_proyecto.icono %}
+                                    <i class="bi {{ proyecto.tipo_proyecto.icono }}"></i>
+                                {% endif %}
+                                {{ proyecto.tipo_proyecto.nombre_tipo }}
+                            </span>
+                        </div>
+                        <div class="col-md-4">
+                            <strong>Avance:</strong><br>
+                            <div class="progress" style="height: 25px;">
+                                <div class="progress-bar bg-success" role="progressbar" 
+                                     style="width: {{ proyecto.get_porcentaje_avance }}%;" 
+                                     aria-valuenow="{{ proyecto.get_porcentaje_avance }}" 
+                                     aria-valuemin="0" aria-valuemax="100">
+                                    {{ proyecto.get_porcentaje_avance }}%
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Descripción -->
+            {% if proyecto.descripcion %}
+            <div class="card mb-4">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="bi bi-file-text"></i> Descripción del Proyecto</h5>
+                </div>
+                <div class="card-body">
+                    {{ proyecto.descripcion|linebreaks }}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Ingeniero Responsable del Cliente -->
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="bi bi-person-badge"></i> Ingeniero Responsable (Cliente)</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <strong>Nombre:</strong><br>
+                            {{ proyecto.ingeniero_responsable }}
+                        </div>
+                        {% if proyecto.cargo_responsable %}
+                        <div class="col-md-6 mb-3">
+                            <strong>Cargo:</strong><br>
+                            {{ proyecto.cargo_responsable }}
+                        </div>
+                        {% endif %}
+                    </div>
+                    <div class="row">
+                        {% if proyecto.telefono_responsable %}
+                        <div class="col-md-6">
+                            <strong>Teléfono:</strong><br>
+                            <a href="tel:{{ proyecto.telefono_responsable }}">{{ proyecto.telefono_responsable }}</a>
+                        </div>
+                        {% endif %}
+                        {% if proyecto.email_responsable %}
+                        <div class="col-md-6">
+                            <strong>Email:</strong><br>
+                            <a href="mailto:{{ proyecto.email_responsable }}">{{ proyecto.email_responsable }}</a>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Ubicación -->
+            <div class="card mb-4">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0"><i class="bi bi-geo-alt"></i> Ubicación del Proyecto</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-2">
+                        <strong>Dirección:</strong><br>
+                        {{ proyecto.direccion_proyecto }}
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <strong>Ciudad:</strong> {{ proyecto.ciudad_proyecto }}
+                        </div>
+                        <div class="col-md-6">
+                            <strong>Departamento:</strong> {{ proyecto.departamento_proyecto }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Fechas y Presupuesto -->
+            <div class="card mb-4">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="bi bi-calendar-check"></i> Fechas y Presupuesto</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <strong>Fecha de Inicio:</strong><br>
+                            {{ proyecto.fecha_inicio|date:"d/m/Y" }}
+                        </div>
+                        <div class="col-md-4">
+                            <strong>Fecha Fin Estimada:</strong><br>
+                            {{ proyecto.fecha_fin_estimada|date:"d/m/Y" }}
+                        </div>
+                        <div class="col-md-4">
+                            <strong>Fecha Fin Real:</strong><br>
+                            {% if proyecto.fecha_fin_real %}
+                                {{ proyecto.fecha_fin_real|date:"d/m/Y" }}
+                            {% else %}
+                                <span class="text-muted">Pendiente</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <strong>Duración Estimada:</strong><br>
+                            {{ proyecto.get_duracion_estimada_dias }} días
+                        </div>
+                        <div class="col-md-6">
+                            <strong>Días Restantes:</strong><br>
+                            {% if proyecto.get_dias_restantes %}
+                                {% if proyecto.esta_atrasado %}
+                                    <span class="text-danger">
+                                        <i class="bi bi-exclamation-triangle-fill"></i>
+                                        Atrasado ({{ proyecto.get_dias_restantes|abs }} días)
+                                    </span>
+                                {% else %}
+                                    <span class="text-success">{{ proyecto.get_dias_restantes }} días</span>
+                                {% endif %}
+                            {% else %}
+                                <span class="text-muted">Finalizado</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% if proyecto.presupuesto_estimado %}
+                    {% load humanize %}
+                    <hr>
+                    <div>
+                        <strong>Presupuesto Estimado:</strong><br>
+                        <h4 class="text-success mb-0">$ {{ proyecto.presupuesto_estimado|floatformat:0|intcomma }}</h4>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Observaciones -->
+            {% if proyecto.observaciones %}
+            <div class="card mb-4">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0"><i class="bi bi-clipboard-check"></i> Observaciones</h5>
+                </div>
+                <div class="card-body">
+                    {{ proyecto.observaciones|linebreaks }}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Panel Lateral -->
+        <div class="col-lg-4">
+            <!-- Cliente -->
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="bi bi-building"></i> Cliente</h5>
+                </div>
+                <div class="card-body">
+                    <h6>{{ proyecto.cliente.razon_social }}</h6>
+                    <p class="mb-2">
+                        <strong>{{ proyecto.cliente.get_tipo_documento_display }}:</strong><br>
+                        {{ proyecto.cliente.numero_documento }}
+                    </p>
+                    <p class="mb-2">
+                        <i class="bi bi-telephone-fill"></i> {{ proyecto.cliente.telefono_principal }}<br>
+                        <i class="bi bi-envelope-fill"></i> {{ proyecto.cliente.email_principal }}
+                    </p>
+                    <a href="{% url 'proyectos:cliente_detail' proyecto.cliente.id_cliente %}" class="btn btn-sm btn-outline-primary">
+                        Ver Cliente Completo
+                    </a>
+                </div>
+            </div>
+
+            <!-- Resumen Rápido -->
+            <div class="card mb-4">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="mb-0"><i class="bi bi-speedometer2"></i> Resumen</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <strong>Total Actividades:</strong>
+                        <h3 class="mb-0">{{ proyecto.get_total_actividades }}</h3>
+                    </div>
+                    <div class="mb-3">
+                        <strong>Trabajadores Asignados:</strong>
+                        <h3 class="mb-0">{{ proyecto.get_total_trabajadores_asignados }}</h3>
+                    </div>
+                    <div class="mb-0">
+                        <strong>Registrado:</strong><br>
+                        {{ proyecto.fecha_registro|date:"d/m/Y H:i" }}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Acciones Rápidas -->
+             <a href="{% url 'proyectos:proyecto_gantt' proyecto.id_proyecto %}" class="btn btn-outline-primary btn-sm">
+    <i class="bi bi-bar-chart-line"></i> Ver diagrama de Gantt
+</a>
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="bi bi-lightning"></i> Acciones Rápidas</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        {# Ver actividades del proyecto #}
+                        <a href="{% url 'proyectos:actividad_list' proyecto.id_proyecto %}" 
+                            class="btn btn-outline-primary">
+                            <i class="bi bi-list-check"></i> Ver Actividades
+                        </a>
+
+                        {# Ver trabajadores asignados al proyecto #}
+                        <a href="{% url 'proyectos:asignacion_list' proyecto.id_proyecto %}" 
+                            class="btn btn-outline-success">
+                            <i class="bi bi-people"></i> Ver Trabajadores
+                        </a>            
+
+                        {# Ver documentos del proyecto #}
+                        <a href="{% url 'proyectos:documento_list' proyecto.id_proyecto %}" 
+                            class="btn btn-outline-warning">
+                             <i class="bi bi-files"></i> Ver Documentos
+                        </a>
+
+                        {# Ver evidencias del proyecto #}
+                        <a href="{% url 'proyectos:evidencia_list' proyecto.id_proyecto %}" 
+                            class="btn btn-outline-info">
+                            <i class="bi bi-camera"></i> Ver Evidencias
+                         </a>
+                    </div>
+                </div>
+             </div>
+        </div>
+    </div>
+
+    <!-- Botón volver -->
+    <div class="mt-3">
+        <a href="{% url 'proyectos:proyecto_list' %}" class="btn btn-secondary">
+            <i class="bi bi-arrow-left"></i> Volver al Listado
+        </a>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .card-header h5 {
+        margin-bottom: 0;
+    }
+</style>
+{% endblock %}

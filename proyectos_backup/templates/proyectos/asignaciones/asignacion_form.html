@@ -1,0 +1,122 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ titulo }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2 class="mb-1">{{ titulo }}</h2>
+            <p class="text-muted">
+                Proyecto: {{ proyecto.codigo_proyecto }} - {{ proyecto.nombre_proyecto }}
+            </p>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-10">
+
+            {# Buscador de trabajadores #}
+            <div class="card border-0 shadow-sm mb-3">
+                <div class="card-body">
+                    <form method="get" class="row g-2">
+                        <div class="col-md-9">
+                            <input type="text" name="q" value="{{ query }}" class="form-control"
+                                   placeholder="Buscar trabajador por documento, nombre o apellidos...">
+                        </div>
+                        <div class="col-md-3 d-grid">
+                            <button type="submit" class="btn btn-outline-primary">
+                                <i class="bi bi-search"></i> Buscar
+                            </button>
+                        </div>
+                    </form>
+                    {% if query %}
+                        <p class="mt-2 text-muted">
+                            Resultados para: "<strong>{{ query }}</strong>"
+                            {% if total_trabajadores == 0 %}
+                                <span class="badge bg-danger ms-2">0 trabajadores encontrados</span>
+                            {% else %}
+                                <span class="badge bg-info ms-2">{{ total_trabajadores }} trabajador(es) encontrados</span>
+                            {% endif %}
+                        </p>
+                    {% else %}
+                        <p class="mt-2 text-muted">
+                            Listando todos los trabajadores activos del sistema.
+                        </p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data" novalidate>
+                        {% csrf_token %}
+
+                        {# Errores generales del formulario (non_field_errors) #}
+                        {% if form.non_field_errors %}
+                            <div class="alert alert-danger">
+                                {% for error in form.non_field_errors %}
+                                    <div>{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+
+                        {# Proyecto mostrado en modo lectura #}
+                        <div class="mb-3">
+                            <label class="form-label">Proyecto</label>
+                            <input type="text"
+                                   class="form-control-plaintext"
+                                   value="{{ proyecto.codigo_proyecto }} - {{ proyecto.nombre_proyecto }}"
+                                   readonly>
+                        </div>
+
+                        {% for field in form %}
+                            {% if field.name == 'proyecto' %}
+                                {# Campo oculto; solo lo renderizamos para que se envíe #}
+                                {{ field }}
+                            {% else %}
+                                <div class="mb-3">
+                                    <label for="{{ field.id_for_label }}" class="form-label">
+                                        {{ field.label }}
+                                        {% if field.field.required %}<span class="text-danger">*</span>{% endif %}
+                                    </label>
+                                    {{ field }}
+                                    {% if field.errors %}
+                                        <div class="invalid-feedback d-block">{{ field.errors }}</div>
+                                    {% endif %}
+
+                                    {# Mensaje específico para el campo trabajador #}
+                                    {% if field.name == "trabajador" %}
+                                        {% if query %}
+                                            <small class="form-text text-muted">
+                                                Selecciona uno de los trabajadores filtrados por la búsqueda "<strong>{{ query }}</strong>".
+                                            </small>
+                                        {% else %}
+                                            <small class="form-text text-muted">
+                                                Puedes usar el buscador superior para filtrar la lista por documento, nombre o apellidos.
+                                            </small>
+                                        {% endif %}
+                                    {% elif field.help_text %}
+                                        <small class="form-text text-muted">{{ field.help_text }}</small>
+                                    {% endif %}
+                                </div>
+                            {% endif %}
+                        {% endfor %}
+
+                        <div class="d-flex justify-content-between mt-4">
+                            <a href="{% url 'proyectos:asignacion_list' proyecto.id_proyecto %}" class="btn btn-secondary">
+                                <i class="bi bi-arrow-left"></i> Volver
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-check-lg"></i> Guardar
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}

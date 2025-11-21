@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+
+{% block title %}Eliminar Avance{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm mt-4">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="mb-0"><i class="bi bi-exclamation-triangle"></i> Confirmar eliminación</h5>
+                </div>
+                <div class="card-body">
+                    <p>
+                        ¿Estás seguro de que deseas eliminar este avance?
+                    </p>
+                    <ul>
+                        <li><strong>Fecha:</strong> {{ avance.fecha_avance|date:"d/m/Y" }}</li>
+                        <li><strong>Cantidad:</strong> {{ avance.cantidad_ejecutada }} {{ avance.actividad.get_unidad_medida_display }}</li>
+                        {% if avance.observaciones %}
+                        <li><strong>Observaciones:</strong> {{ avance.observaciones }}</li>
+                        {% endif %}
+                    </ul>
+
+                    <form method="post" class="mt-3">
+                        {% csrf_token %}
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'proyectos:avance_list' avance.actividad.id_actividad %}" 
+                               class="btn btn-secondary">
+                                <i class="bi bi-x-circle"></i> Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-danger">
+                                <i class="bi bi-trash"></i> Eliminar
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+
+{% block title %}Eliminar Cliente{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card border-danger">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-exclamation-triangle-fill"></i>
+                        Confirmar Eliminación
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <p class="mb-3">
+                        ¿Está seguro que desea eliminar el cliente:
+                    </p>
+                    <div class="alert alert-warning">
+                        <strong>{{ cliente.razon_social }}</strong><br>
+                        <small>{{ cliente.get_tipo_documento_display }}: {{ cliente.numero_documento }}</small>
+                    </div>
+
+                    {% if cliente.get_total_proyectos > 0 %}
+                        <div class="alert alert-danger">
+                            <i class="bi bi-exclamation-circle-fill"></i>
+                            <strong>Atención:</strong> Este cliente tiene {{ cliente.get_total_proyectos }} proyecto(s) asociado(s).
+                            No se podrá eliminar hasta que se eliminen o reasignen los proyectos.
+                        </div>
+                    {% endif %}
+
+                    <p class="text-muted small">
+                        <i class="bi bi-info-circle"></i>
+                        Esta acción no se puede deshacer.
+                    </p>
+
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'proyectos:cliente_detail' cliente.id_cliente %}" class="btn btn-secondary">
+                                <i class="bi bi-x-circle"></i> Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-danger" {% if cliente.get_total_proyectos > 0 %}disabled{% endif %}>
+                                <i class="bi bi-trash"></i> Sí, Eliminar
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

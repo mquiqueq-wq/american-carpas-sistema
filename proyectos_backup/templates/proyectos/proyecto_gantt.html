@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+
+{% block title %}Diagrama de Gantt - {{ proyecto.codigo_proyecto }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2>Diagrama de Gantt</h2>
+        <a href="{% url 'proyectos:proyecto_detail' proyecto.id_proyecto %}" class="btn btn-secondary btn-sm">
+            Volver al proyecto
+        </a>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <strong>{{ proyecto.codigo_proyecto }} - {{ proyecto.nombre_proyecto }}</strong>
+        </div>
+        <div class="card-body p-0">
+            <div id="gantt_here" style="width: 100%; height: 600px;"></div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{{ block.super }}
+
+<link rel="stylesheet" href="https://cdn.dhtmlx.com/gantt/edge/dhtmlxgantt.css">
+<script src="https://cdn.dhtmlx.com/gantt/edge/dhtmlxgantt.js"></script>
+
+<style>
+    /* Forzar altura de filas de escala */
+    .gantt_scale_line, .gantt_scale_line .gantt_scale_cell {
+        height: 22px;
+        line-height: 22px;
+    }
+
+    .gantt_dia_festivo {
+        background-color: #fff3cd !important;
+    }
+</style>
+
+<script>
+(function () {
+    "use strict";
+
+    // Formato de fecha de entrada
+    gantt.config.xml_date = "%Y-%m-%dT%H:%i:%s";
+
+    // ==== ESCALA EN 3 NIVELES, ETIQUETAS MUY CLARAS ====
+    // Usamos scale_unit = "day" y construimos 3 filas manualmente.
+
+    gantt.config.scale_height = 66;      // 3 filas * 22px
+    gantt.config.scale_unit   = "day";
+    gantt.config.step         = 1;
+
+    // Fila principal (la de arriba)
+    gantt.templates.scale_cell_class = null;   // limpiamos por si acaso
+    gantt.templates.scale_cell_class = function(date){
+        // La clase de colores la pondremos luego, ahora solo queremos ver el texto
+        return "";
+    };
+
+    gantt.templates.scale_cell = function (date) {
+        // TEXTO de la PRIMERA FILA
+        // Ponemos un prefijo para ver claramente qué fila es
+        return "[MES] " + gantt.date.date_to_str("%F %Y")(date);
+    };
+
+    // Subescalas: dos filas adicionales
+    gantt.config.subscales = [
+        {
+            unit: "day",
+            step: 1,
+            template: function (date) {
+                var letras = ["D","L","M","M","J","V","S"];
+                return "[DIA] " + letras[date.getDay()];
+            }
+        },
+        {
+            unit: "day",
+            step: 1,
+            template: function (date) {
+                return "[NUM] " + gantt.date.date_to_str("%d")(date);
+            }
+        }
+    ];
+
+    gantt.config.min_column_width = 40;
+
+    // ==== DOMINGOS/FESTIVOS SOLO EN EL TIMELINE (no tocamos la cabecera de momento) ====
+    var festivosColombia = new Set([
+        "2025-01-01","2025-01-06","2025-03-24","2025-04-17","2025-04-18",
+        "2025-05-01","2025-05-26","2025-06-16","2025-06-23","2025-07-07",
+        "2025-07-20","2025-08-07","2025-08-18","2025-10-13","2025-11-03",
+        "2025-11-17","2025-12-08","2025-12-25"
+    ]);
+    function esFestivoColombia(date) {
+        var iso = gantt.date.date_to_str("%Y-%m-%d")(date);
+        return festivosColombia.has(iso);
+    }
+    gantt.templates.timeline_cell_class = function (task, date) {
+        if (date.getDay() === 0 || esFestivoColombia(date)) {
+            return "gantt_dia_festivo";
+        }
+        return "";
+    };
+
+    // ==== COLUMNAS BÁSICAS ====
+    gantt.config.columns = [
+        { name: "text",       label: "Actividad", width: "*", tree: true },
+        { name: "start_date", label: "Inicio",    align: "center", width: 90 },
+        { name: "end_date",   label: "Fin",       align: "center", width: 90 }
+    ];
+
+    // ==== DEBUG: mostrar en consola cómo quedó la escala ====
+    console.log("scale_unit:", gantt.config.scale_unit);
+    console.log("subscales:", gantt.config.subscales);
+
+    // ==== INICIALIZAR Y CARGAR DATOS ====
+    gantt.init("gantt_here");
+
+    var urlData = "{% url 'proyectos:proyecto_gantt_data' proyecto.id_proyecto %}";
+
+    fetch(urlData)
+        .then(r => r.json())
+        .then(json => {
+            gantt.parse(json);
+        })
+        .catch(err => console.error("Error cargando datos Gantt:", err));
+})();
+</script>
+{% endblock %}

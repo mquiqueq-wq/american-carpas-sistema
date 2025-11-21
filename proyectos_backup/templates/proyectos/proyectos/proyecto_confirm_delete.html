@@ -1,0 +1,93 @@
+{% extends 'base.html' %}
+
+{% block title %}Eliminar Proyecto{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card border-danger">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-exclamation-triangle-fill"></i>
+                        Confirmar Eliminación de Proyecto
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <p class="mb-3">
+                        ¿Está seguro que desea eliminar el proyecto:
+                    </p>
+                    
+                    <div class="alert alert-warning">
+                        <h5><strong>{{ proyecto.codigo_proyecto }}</strong></h5>
+                        <p class="mb-0">{{ proyecto.nombre_proyecto }}</p>
+                        <small class="text-muted">Cliente: {{ proyecto.cliente.razon_social }}</small>
+                    </div>
+
+                    <!-- Información del proyecto -->
+                    <div class="card mb-3">
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <strong>Estado:</strong> 
+                                    <span class="badge bg-{{ proyecto.estado_proyecto.color_badge }}">
+                                        {{ proyecto.estado_proyecto.nombre_estado }}
+                                    </span>
+                                </div>
+                                <div class="col-md-6">
+                                    <strong>Tipo:</strong> {{ proyecto.tipo_proyecto.nombre_tipo }}
+                                </div>
+                            </div>
+                            <div class="row mt-2">
+                                <div class="col-md-6">
+                                    <strong>Fecha Inicio:</strong> {{ proyecto.fecha_inicio|date:"d/m/Y" }}
+                                </div>
+                                <div class="col-md-6">
+                                    <strong>Actividades:</strong> {{ proyecto.get_total_actividades }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {% if proyecto.get_total_actividades > 0 or proyecto.get_total_trabajadores_asignados > 0 %}
+                        <div class="alert alert-danger">
+                            <i class="bi bi-exclamation-circle-fill"></i>
+                            <strong>Atención:</strong> Este proyecto tiene datos asociados:
+                            <ul class="mb-0 mt-2">
+                                {% if proyecto.get_total_actividades > 0 %}
+                                    <li>{{ proyecto.get_total_actividades }} actividad(es)</li>
+                                {% endif %}
+                                {% if proyecto.get_total_trabajadores_asignados > 0 %}
+                                    <li>{{ proyecto.get_total_trabajadores_asignados }} trabajador(es) asignado(s)</li>
+                                {% endif %}
+                            </ul>
+                            <p class="mb-0 mt-2">
+                                Se eliminarán todos los datos asociados al proyecto.
+                            </p>
+                        </div>
+                    {% endif %}
+
+                    <p class="text-muted small">
+                        <i class="bi bi-info-circle"></i>
+                        <strong>Esta acción no se puede deshacer.</strong> 
+                        Se perderá toda la información del proyecto incluyendo actividades, 
+                        asignaciones de trabajadores, documentos y evidencias fotográficas.
+                    </p>
+
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'proyectos:proyecto_detail' proyecto.id_proyecto %}" class="btn btn-secondary">
+                                <i class="bi bi-x-circle"></i> Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-danger">
+                                <i class="bi bi-trash"></i> Sí, Eliminar Proyecto
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
