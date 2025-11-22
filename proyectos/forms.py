@@ -504,7 +504,7 @@ class ProyectoForm(forms.ModelForm):
 # =====================================================
 
 class ActividadForm(forms.ModelForm):
-    """Formulario para gestión de actividades"""
+    """Formulario para gestión de actividades con soporte de jerarquía padre-hijo"""
     
     proyecto = forms.ModelChoiceField(
         label='Proyecto',
@@ -514,25 +514,26 @@ class ActividadForm(forms.ModelForm):
     )
     
     actividad_padre = forms.ModelChoiceField(
-        label='Actividad Padre',
+        label='Actividad Padre (Opcional)',
         queryset=Actividad.objects.filter(activo=True),
         required=False,
         widget=SELECT,
-        empty_label='-- Sin actividad padre (es una actividad principal) --',
-        help_text='Si es una subactividad, seleccione la actividad padre'
+        empty_label='-- Sin actividad padre (es actividad principal) --',
+        help_text='Si esta es una etapa/subdivisión, seleccione la actividad general'
     )
     
     numero_actividad = forms.CharField(
         label='Número de Actividad',
         max_length=20,
         widget=TEXT_INPUT,
-        help_text='Ej: 4.1, 4.1.1, 4.1.2'
+        help_text='Ej: 4 (padre), 4.1 (hijo), 4.2 (hijo)'
     )
     
     nombre_actividad = forms.CharField(
         label='Nombre de la Actividad',
         max_length=200,
-        widget=TEXT_INPUT
+        widget=TEXT_INPUT,
+        help_text='Ej: "Instalación de bordillo" (padre) o "Bordillo etapa 1" (hijo)'
     )
     
     descripcion = forms.CharField(
@@ -541,7 +542,6 @@ class ActividadForm(forms.ModelForm):
         widget=TEXTAREA
     )
     
-    # NUEVO: unidad de medida
     unidad_medida = forms.ChoiceField(
         label='Unidad de Medida',
         choices=[
@@ -549,25 +549,25 @@ class ActividadForm(forms.ModelForm):
             ('M2', 'Metro cuadrado (m²)'),
             ('M3', 'Metro cúbico (m³)'),
             ('UND', 'Unidad'),
+            ('GLB', 'Global'),
+            ('pto', 'Punto'),
             ('KG', 'Kilogramo'),
             ('L', 'Litro'),
+            ('H', 'Hora'),
             ('OTRO', 'Otro'),
         ],
         widget=SELECT
     )
 
-    # NUEVO: cantidad programada
     cantidad_programada = forms.DecimalField(
         label='Cantidad Programada',
         max_digits=12,
         decimal_places=2,
         initial=0,
         widget=NUMBER_INPUT,
-        help_text='Cantidad total prevista para esta actividad'
+        help_text='Solo para actividades hijas. Las actividades padre suman automáticamente'
     )
     
-    # Porcentaje de avance: queremos que no se edite directamente
-
     porcentaje_avance = forms.DecimalField(
         label='Porcentaje de Avance',
         max_digits=5,
@@ -575,7 +575,7 @@ class ActividadForm(forms.ModelForm):
         required=False,
         widget=NUMBER_INPUT,
         help_text='Se actualiza automáticamente según los avances registrados',
-        disabled=True  # <-- lo mostramos pero no editable
+        disabled=True
     )
     
     peso_actividad = forms.DecimalField(
@@ -640,21 +640,57 @@ class ActividadForm(forms.ModelForm):
         ]
     
     def __init__(self, *args, **kwargs):
+        # ✅ CORRECCIÓN: Extraer el proyecto si viene como parámetro
+        proyecto = kwargs.pop('proyecto', None)
         super().__init__(*args, **kwargs)
-        # Si estamos editando, filtrar actividades padre del mismo proyecto
-        if self.instance and self.instance.pk and self.instance.proyecto:
+        
+        # Configurar el queryset de actividad_padre
+        if proyecto:
+            # Si se pasa el proyecto como parámetro (creación)
+            self.fields['proyecto'].initial = proyecto
+            self.fields['proyecto'].widget = forms.HiddenInput()
+            # Filtrar actividades padre del mismo proyecto
             self.fields['actividad_padre'].queryset = Actividad.objects.filter(
-                proyecto=self.instance.proyecto,
-                activo=True
-            ).exclude(pk=self.instance.pk)
+                proyecto=proyecto,
+                activo=True,
+                actividad_padre__isnull=True  # Solo actividades principales pueden ser padre
+            )
+        elif self.instance and self.instance.pk:
+            # Si estamos editando
+            if self.instance.proyecto:
+                # Solo mostrar actividades del mismo proyecto que NO tengan padre
+                self.fields['actividad_padre'].queryset = Actividad.objects.filter(
+                    proyecto=self.instance.proyecto,
+                    activo=True,
+                    actividad_padre__isnull=True
+                ).exclude(pk=self.instance.pk)  # No puede ser padre de sí misma
+        else:
+            # Si no hay proyecto, dejar vacío
+            self.fields['actividad_padre'].queryset = Actividad.objects.none()
     
-    #def clean_porcentaje_avance(self):
-    #   """Validar que el porcentaje esté entre 0 y 100"""
-    #   porcentaje = self.cleaned_data.get('porcentaje_avance')
-    #   if porcentaje is not None:
-    #        if porcentaje < 0 or porcentaje > 100:
-    #            raise ValidationError('El porcentaje debe estar entre 0 y 100.')
-    #    return porcentaje
+    def clean(self):
+        """Validaciones personalizadas"""
+        cleaned_data = super().clean()
+        
+        # Validar fechas estimadas
+        fecha_inicio = cleaned_data.get('fecha_inicio_estimada')
+        fecha_fin = cleaned_data.get('fecha_fin_estimada')
+        if fecha_inicio and fecha_fin:
+            if fecha_fin < fecha_inicio:
+                raise ValidationError(
+                    'La fecha de fin estimada no puede ser anterior a la fecha de inicio.'
+                )
+        
+        # Validar fechas reales
+        fecha_inicio_real = cleaned_data.get('fecha_inicio_real')
+        fecha_fin_real = cleaned_data.get('fecha_fin_real')
+        if fecha_inicio_real and fecha_fin_real:
+            if fecha_fin_real < fecha_inicio_real:
+                raise ValidationError(
+                    'La fecha de fin real no puede ser anterior a la fecha de inicio real.'
+                )
+        
+        return cleaned_data
 
 # ====
 # FASE 4.1: FORMULARIO DE AVANCE DE ACTIVIDAD

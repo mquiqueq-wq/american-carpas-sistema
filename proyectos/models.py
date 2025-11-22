@@ -748,6 +748,66 @@ class Actividad(models.Model):
             return False
         return dias <= umbral_dias and (self.porcentaje_avance or 0) < 100
     
+    # ===============================================
+    # MÉTODOS PARA JERARQUÍA PADRE-HIJO
+    # ===============================================
+    
+    def es_actividad_padre(self):
+        """Retorna True si esta actividad tiene subactividades"""
+        return self.subactividades.filter(activo=True).exists()
+    
+    def get_actividades_hijas(self):
+        """Retorna todas las actividades hijas (subactividades)"""
+        return self.subactividades.filter(activo=True).order_by('numero_actividad')
+    
+    def get_cantidad_programada_total(self):
+        """
+        Si es actividad padre: suma las cantidades programadas de todas las hijas
+        Si es actividad hija o simple: retorna su propia cantidad programada
+        """
+        if self.es_actividad_padre():
+            total = self.subactividades.filter(activo=True).aggregate(
+                total=models.Sum('cantidad_programada')
+            )['total'] or 0
+            return total
+        return self.cantidad_programada
+    
+    def get_cantidad_ejecutada_total_con_hijas(self):
+        """
+        Si es actividad padre: suma las cantidades ejecutadas de todas las hijas
+        Si es actividad hija o simple: retorna su propia cantidad ejecutada
+        """
+        if self.es_actividad_padre():
+            total = self.subactividades.filter(activo=True).aggregate(
+                total=models.Sum('cantidad_ejecutada_total')
+            )['total'] or 0
+            return total
+        return self.cantidad_ejecutada_total
+    
+    def get_porcentaje_avance_con_hijas(self):
+        """
+        Calcula el porcentaje de avance considerando jerarquía:
+        - Si es actividad padre: promedio ponderado por cantidad programada de las hijas
+        - Si es actividad hija o simple: su propio porcentaje
+        """
+        if self.es_actividad_padre():
+            hijas = self.get_actividades_hijas()
+            if not hijas:
+                return 0
+            
+            total_programado = sum(h.cantidad_programada for h in hijas)
+            if total_programado == 0:
+                # Si no hay cantidades programadas, hacer promedio simple
+                return round(sum(h.porcentaje_avance or 0 for h in hijas) / hijas.count(), 2)
+            
+            # Promedio ponderado por cantidad programada
+            suma_ponderada = sum(
+                (h.porcentaje_avance or 0) * h.cantidad_programada 
+                for h in hijas
+            )
+            return round(suma_ponderada / total_programado, 2)
+        
+        return self.porcentaje_avance or 0
 
 class AvanceActividad(models.Model):
     """

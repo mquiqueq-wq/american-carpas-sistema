@@ -2,6 +2,120 @@
 
 {% block title %}Diagrama de Gantt - {{ proyecto.codigo_proyecto }}{% endblock %}
 
+{% block extra_css %}
+    {{ block.super }}
+    <!-- CSS de dhtmlxGantt -->
+    <link rel="stylesheet" href="https://cdn.dhtmlx.com/gantt/edge/dhtmlxgantt.css">
+    
+    <style>
+        /* Estilos personalizados para el Gantt */
+        
+        /* Mejora de visualización de columnas */
+        .gantt_grid_head_cell {
+            padding: 8px 5px;
+            font-weight: 600;
+            font-size: 13px;
+        }
+        
+        .gantt_cell {
+            padding: 6px 8px;
+            font-size: 13px;
+            overflow: visible;
+        }
+        
+        .gantt_tree_content {
+            overflow: visible;
+            white-space: normal;
+            word-wrap: break-word;
+        }
+        
+        /* Altura de filas */
+        .gantt_row, .gantt_task_row {
+            height: 35px !important;
+        }
+        
+        .gantt_task_line {
+            margin-top: 8px;
+        }
+        
+        /* Días no laborales (domingos y festivos) */
+        .gantt_task_line.weekend {
+            background-color: #f5f5f5 !important;
+        }
+        
+        .gantt_task_cell.weekend {
+            background-color: #fff4f4 !important;
+        }
+        
+        /* Escala de tiempo - días no laborales */
+        .gantt_scale_cell.weekend {
+            background-color: #ffe6e6 !important;
+            color: #d32f2f !important;
+            font-weight: 600;
+        }
+        
+        /* Escala de tiempo - días laborales */
+        .gantt_scale_cell {
+            border-right: 1px solid #ddd;
+        }
+        
+        /* Nivel superior - Mes */
+        .gantt_scale_line:first-child .gantt_scale_cell {
+            background-color: #1565c0 !important;
+            color: white !important;
+            font-weight: bold;
+            font-size: 13px;
+            text-align: center;
+            border-right: 1px solid #0d47a1;
+        }
+        
+        /* Nivel medio - Inicial día de la semana */
+        .gantt_scale_line:nth-child(2) .gantt_scale_cell {
+            background-color: #42a5f5 !important;
+            color: white !important;
+            font-weight: 600;
+            font-size: 12px;
+            text-align: center;
+        }
+        
+        .gantt_scale_line:nth-child(2) .gantt_scale_cell.weekend {
+            background-color: #ef5350 !important;
+        }
+        
+        /* Nivel inferior - Número del día */
+        .gantt_scale_line:nth-child(3) .gantt_scale_cell {
+            background-color: #e3f2fd !important;
+            color: #1565c0 !important;
+            font-weight: 500;
+            font-size: 11px;
+        }
+        
+        .gantt_scale_line:nth-child(3) .gantt_scale_cell.weekend {
+            background-color: #ffcdd2 !important;
+            color: #c62828 !important;
+        }
+        
+        /* Líneas verticales del grid */
+        .gantt_task_bg .gantt_task_row .gantt_task_cell.weekend {
+            background-color: #fff9f9;
+        }
+        
+        /* Hoy */
+        .gantt_task .gantt_task_scale .gantt_scale_cell.gantt_scale_cell_0 {
+            border-left: 2px solid #4caf50;
+        }
+        
+        /* Resaltado de tareas */
+        .gantt_task_line {
+            border-radius: 4px;
+        }
+        
+        .gantt_task_line:hover {
+            opacity: 0.9;
+        }
+    </style>
+{% endblock %}
+
 {% block content %}
 <div class="container-fluid">
     <div class="d-flex justify-content-between align-items-center mb-3">
@@ -17,7 +131,7 @@
         </div>
         <div class="card-body p-0">
             <!-- Contenedor del Gantt -->
-            <div id="gantt_here" style="width: 100%; height: 600px;"></div>
+            <div id="gantt_here" style="width: 100%; height: 700px;"></div>
         </div>
     </div>
 </div>
@@ -27,49 +141,257 @@
 {% block extra_js %}
     {{ block.super }}
 
-    {# EJEMPLO con dhtmlxGantt (puedes cambiar de librería) #}
-    <!-- CSS y JS de la librería (ajusta las URLs a tu setup) -->
-    <link rel="stylesheet" href="https://cdn.dhtmlx.com/gantt/edge/dhtmlxgantt.css">
+    <!-- JS de dhtmlxGantt -->
     <script src="https://cdn.dhtmlx.com/gantt/edge/dhtmlxgantt.js"></script>
 
     <script>
         (function() {
-            // Configuración básica del gantt
+            
+            // ========================================================
+            // FESTIVOS COLOMBIA 2025
+            // ========================================================
+            const festivosColombia2025 = [
+                // Festivos de ley (fijos)
+                "2025-01-01", // Año Nuevo
+                "2025-05-01", // Día del Trabajo
+                "2025-07-20", // Día de la Independencia
+                "2025-08-07", // Batalla de Boyacá
+                "2025-12-08", // Inmaculada Concepción
+                "2025-12-25", // Navidad
+                
+                // Festivos que se trasladan al lunes siguiente
+                "2025-01-06", // Reyes Magos (Epifanía)
+                "2025-03-24", // San José
+                "2025-06-23", // San Pedro y San Pablo
+                "2025-06-30", // Sagrado Corazón
+                "2025-08-18", // Asunción de la Virgen
+                "2025-10-13", // Día de la Raza
+                "2025-11-03", // Todos los Santos
+                "2025-11-17", // Independencia de Cartagena
+                
+                // Semana Santa (variables - 2025)
+                "2025-04-17", // Jueves Santo
+                "2025-04-18", // Viernes Santo
+                
+                // Festivos adicionales comunes
+                "2025-04-21", // Lunes festivo después de Semana Santa (puede variar)
+                "2025-06-16", // Corpus Christi (puede variar)
+            ];
+            
+            // ========================================================
+            // FUNCIÓN PARA VERIFICAR SI ES DÍA NO LABORAL
+            // ========================================================
+            function esDiaNoLaboral(fecha) {
+                // Convertir a objeto Date si es string
+                const date = typeof fecha === 'string' ? new Date(fecha + 'T12:00:00') : fecha;
+                
+                // Verificar si es domingo (0 = domingo en JS)
+                if (date.getDay() === 0) {
+                    return true;
+                }
+                
+                // Verificar si es festivo
+                const fechaStr = gantt.date.date_to_str("%Y-%m-%d")(date);
+                return festivosColombia2025.includes(fechaStr);
+            }
+            
+            // ========================================================
+            // CONFIGURACIÓN DEL GANTT
+            // ========================================================
+            
+            // Formato de fecha XML
             gantt.config.xml_date = "%Y-%m-%d";
-
+            
+            // Configuración de columnas
             gantt.config.columns = [
-                {name:"text",       label:"Actividad",  width:"*", tree:true },
-                {name:"start_date", label:"Inicio",     align:"center" },
-                {name:"end_date",   label:"Fin",        align:"center" },
-                {name:"add",        label:"",           width:44 }
+                {
+                    name:"text", 
+                    label:"Actividad", 
+                    width:300, 
+                    tree:true,
+                    resize:true,
+                    template: function(obj) {
+                        // Si el texto es muy largo, se corta y se muestra tooltip
+                        return "<span title='" + obj.text + "'>" + obj.text + "</span>";
+                    }
+                },
+                {
+                    name:"start_date", 
+                    label:"Inicio", 
+                    align:"center", 
+                    width:95,
+                    resize:true,
+                    template: function(obj) {
+                        // Formato: DD/MM/YYYY
+                        return gantt.templates.date_grid(obj.start_date);
+                    }
+                },
+                {
+                    name:"end_date", 
+                    label:"Fin", 
+                    align:"center", 
+                    width:95,
+                    resize:true,
+                    template: function(obj) {
+                        // Formato: DD/MM/YYYY
+                        const endDate = gantt.calculateEndDate({
+                            start_date: obj.start_date,
+                            duration: obj.duration
+                        });
+                        return gantt.templates.date_grid(endDate);
+                    }
+                },
+                {
+                    name:"add", 
+                    label:"", 
+                    width:44
+                }
             ];
-
-            gantt.config.scale_unit = "day";
-            gantt.config.date_scale = "%d %M";
-            gantt.config.subscales = [
-                {unit:"month", step:1, date:"%F %Y"}
+            
+            // Formato de fecha para las columnas (DD/MM/YYYY)
+            gantt.templates.date_grid = function(date) {
+                if (!date) return "";
+                const day = String(date.getDate()).padStart(2, '0');
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const year = date.getFullYear();
+                return day + "/" + month + "/" + year;
+            };
+            
+            // ========================================================
+            // CONFIGURACIÓN DE ESCALAS DE TIEMPO (3 NIVELES)
+            // ========================================================
+            
+            gantt.config.scales = [
+                // Nivel 1: MES (superior)
+                {
+                    unit: "month", 
+                    step: 1, 
+                    format: function(date) {
+                        const meses = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+                                     "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+                        return meses[date.getMonth()] + " " + date.getFullYear();
+                    }
+                },
+                // Nivel 2: INICIAL DÍA DE LA SEMANA (medio)
+                {
+                    unit: "day", 
+                    step: 1, 
+                    format: function(date) {
+                        const dias = ["D", "L", "M", "M", "J", "V", "S"];
+                        return dias[date.getDay()];
+                    }
+                },
+                // Nivel 3: NÚMERO DEL DÍA (inferior)
+                {
+                    unit: "day", 
+                    step: 1, 
+                    format: "%d"
+                }
             ];
-
+            
+            // ========================================================
+            // TEMPLATES PARA COLOREAR DÍAS NO LABORALES
+            // ========================================================
+            
+            // Template para las celdas de la escala de tiempo
+            gantt.templates.scale_cell_class = function(date) {
+                if (esDiaNoLaboral(date)) {
+                    return "weekend";
+                }
+                return "";
+            };
+            
+            // Template para las celdas de la línea de tiempo (fondo)
+            gantt.templates.timeline_cell_class = function(task, date) {
+                if (esDiaNoLaboral(date)) {
+                    return "weekend";
+                }
+                return "";
+            };
+            
+            // Template para tooltip de tareas (información detallada)
+            gantt.templates.tooltip_text = function(start, end, task) {
+                const formatFecha = gantt.date.date_to_str("%d/%m/%Y");
+                return "<b>Actividad:</b> " + task.text + "<br/>" +
+                       "<b>Inicio:</b> " + formatFecha(start) + "<br/>" +
+                       "<b>Fin:</b> " + formatFecha(end) + "<br/>" +
+                       "<b>Progreso:</b> " + Math.round(task.progress * 100) + "%";
+            };
+            
+            // ========================================================
+            // CONFIGURACIONES ADICIONALES
+            // ========================================================
+            
+            // Permitir redimensionar columnas
+            gantt.config.grid_resize = true;
+            
+            // Altura de filas
+            gantt.config.row_height = 35;
+            gantt.config.scale_height = 90; // Altura total de la escala (3 niveles)
+            
+            // Scroll horizontal suave
+            gantt.config.scroll_size = 20;
+            
+            // Autoajuste de fechas
+            gantt.config.fit_tasks = true;
+            
+            // Duración mínima de tarea (1 día)
+            gantt.config.duration_unit = "day";
+            
+            // Mostrar enlaces entre tareas
+            gantt.config.show_links = true;
+            
+            // Mostrar grid
+            gantt.config.show_grid = true;
+            
+            // Ancho mínimo de columnas
+            gantt.config.min_column_width = 70;
+            
+            // Habilitar tooltips
+            gantt.plugins({
+                tooltip: true
+            });
+            
+            // Readonly (solo lectura) - opcional, descomenta si quieres evitar edición
+            // gantt.config.readonly = true;
+            
+            // ========================================================
+            // INICIALIZACIÓN
+            // ========================================================
+            
             gantt.init("gantt_here");
-
-            // Cargar datos desde nuestro endpoint JSON
+            
+            // ========================================================
+            // CARGAR DATOS DESDE EL ENDPOINT
+            // ========================================================
+            
             const urlData = "{% url 'proyectos:proyecto_gantt_data' proyecto.id_proyecto %}";
-
+            
             fetch(urlData)
-                .then(response => response.json())
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Error al cargar datos del servidor');
+                    }
+                    return response.json();
+                })
                 .then(json => {
                     /*
-                    Nuestro endpoint devuelve:
+                    El endpoint devuelve:
                     {
-                        "data": [ {id, text, start_date, end_date, progress, parent, open}, ... ]
+                        "data": [ 
+                            {id, text, start_date, end_date, progress, parent, open}, 
+                            ... 
+                        ]
                     }
-                    dhtmlxGantt acepta directamente un objeto con {data: [...]}.
                     */
                     gantt.parse(json);
+                    
+                    // Ajustar vista para mostrar todas las tareas
+                    gantt.showDate(new Date());
                 })
                 .catch(err => {
                     console.error("Error al cargar datos del Gantt:", err);
-                    alert("No se pudieron cargar los datos del diagrama de Gantt.");
+                    alert("No se pudieron cargar los datos del diagrama de Gantt. Verifique que existan actividades en el proyecto.");
                 });
 
         })();

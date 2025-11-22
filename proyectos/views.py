@@ -605,37 +605,64 @@ def proyecto_delete(request, id_proyecto):
     }
     return render(request, 'proyectos/proyectos/proyecto_confirm_delete.html', context)
 
-
 # =====================================================
 # FASE 4: VISTAS DE ACTIVIDADES
 # =====================================================
 
 def actividad_list(request, id_proyecto):
-    """Listado de actividades de un proyecto"""
+    """
+    Listado de actividades de un proyecto con soporte de jerarquía padre-hijo.
+    Solo muestra actividades padre (las que no tienen actividad_padre) y sus hijas.
+    """
     proyecto = get_object_or_404(Proyecto, id_proyecto=id_proyecto)
-    actividades = proyecto.actividades.filter(activo=True).order_by('orden_visualizacion', 'numero_actividad')
+    
+    # Obtener solo las actividades padre (las que no tienen padre)
+    actividades_padre = proyecto.actividades.filter(
+        activo=True,
+        actividad_padre__isnull=True
+    ).order_by('orden_visualizacion', 'numero_actividad')
+    
+    # Construir lista jerárquica
+    actividades_jerarquicas = []
+    for padre in actividades_padre:
+        actividades_jerarquicas.append({
+            'actividad': padre,
+            'es_padre': padre.es_actividad_padre(),
+            'nivel': 0,
+        })
+        
+        # Agregar hijas si existen
+        if padre.es_actividad_padre():
+            hijas = padre.get_actividades_hijas()
+            for hija in hijas:
+                actividades_jerarquicas.append({
+                    'actividad': hija,
+                    'es_padre': False,
+                    'nivel': 1,
+                })
     
     context = {
         'proyecto': proyecto,
-        'actividades': actividades,
+        'actividades': actividades_jerarquicas,  # Lista jerárquica
         'show_module_nav': True,
         'active_module': 'proyectos',
     }
     return render(request, 'proyectos/actividades/actividad_list.html', context)
-
 
 def actividad_create(request, id_proyecto):
     """Crear nueva actividad"""
     proyecto = get_object_or_404(Proyecto, id_proyecto=id_proyecto)
     
     if request.method == 'POST':
-        form = ActividadForm(request.POST)
+        # ✅ CORRECCIÓN: Pasar proyecto=proyecto al formulario
+        form = ActividadForm(request.POST, proyecto=proyecto)
         if form.is_valid():
             actividad = form.save()
             messages.success(request, f'✅ Actividad "{actividad.numero_actividad}" creada.')
             return redirect('proyectos:actividad_list', id_proyecto=proyecto.id_proyecto)
     else:
-        form = ActividadForm(initial={'proyecto': proyecto})
+        # ✅ CORRECCIÓN: Pasar proyecto=proyecto al formulario
+        form = ActividadForm(initial={'proyecto': proyecto}, proyecto=proyecto)
     
     context = {
         'form': form,
@@ -647,19 +674,25 @@ def actividad_create(request, id_proyecto):
     return render(request, 'proyectos/actividades/actividad_form.html', context)
 
 
+# =====================================================
+# ACTIVIDAD UPDATE - CORREGIDA
+# =====================================================
+
 def actividad_update(request, id_actividad):
     """Editar actividad"""
     actividad = get_object_or_404(Actividad, id_actividad=id_actividad)
     proyecto = actividad.proyecto
     
     if request.method == 'POST':
-        form = ActividadForm(request.POST, instance=actividad)
+        # ✅ CORRECCIÓN: Pasar proyecto=proyecto al formulario
+        form = ActividadForm(request.POST, instance=actividad, proyecto=proyecto)
         if form.is_valid():
             actividad = form.save()
             messages.success(request, f'✅ Actividad "{actividad.numero_actividad}" actualizada.')
             return redirect('proyectos:actividad_list', id_proyecto=proyecto.id_proyecto)
     else:
-        form = ActividadForm(instance=actividad)
+        # ✅ CORRECCIÓN: Pasar proyecto=proyecto al formulario
+        form = ActividadForm(instance=actividad, proyecto=proyecto)
     
     context = {
         'form': form,
@@ -670,6 +703,7 @@ def actividad_update(request, id_actividad):
         'active_module': 'proyectos',
     }
     return render(request, 'proyectos/actividades/actividad_form.html', context)
+
 
 
 def actividad_delete(request, id_actividad):
@@ -743,7 +777,6 @@ def avance_create(request, id_actividad):
         'active_module': 'proyectos',
     }
     return render(request, 'proyectos/actividades/avance_form.html', context)
-
 
 def avance_update(request, id_avance):
     """Editar un avance de actividad"""
