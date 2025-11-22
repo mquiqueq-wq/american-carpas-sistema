@@ -11,6 +11,12 @@ from django.core.paginator import Paginator
 from django.db.models import Q
 from django.http import HttpResponse
 from datetime import date
+from django.views.decorators.http import require_http_methods
+from django.contrib.auth.decorators import login_required
+from django.views.decorators.csrf import csrf_exempt
+import json
+from datetime import datetime, timedelta
+from .models import Proyecto, Actividad
 
 from trabajadores.models import TrabajadorPersonal
 from .models import (
@@ -1196,3 +1202,241 @@ def evidencia_delete(request, id_evidencia):
         'active_module': 'proyectos',
     }
     return render(request, 'proyectos/evidencias/evidencia_confirm_delete.html', context)
+
+@login_required
+def proyecto_gantt_view(request, proyecto_id):
+    """
+    Vista principal del diagrama de Gantt
+    Renderiza el template con el proyecto y permisos
+    """
+    proyecto = get_object_or_404(Proyecto, id_proyecto=proyecto_id)
+    
+    # Determinar si el usuario puede editar
+    # Ajusta esta lógica según tus reglas de negocio
+    puede_editar = request.user.is_staff or request.user.is_superuser
+    # O si tienes un sistema de permisos más específico:
+    # puede_editar = request.user.has_perm('proyectos.change_actividad')
+    
+    context = {
+        'proyecto': proyecto,
+        'puede_editar': puede_editar,
+    }
+    
+    return render(request, 'proyectos/proyecto_gantt_completo.html', context)
+
+
+@login_required
+def proyecto_gantt_data(request, proyecto_id):
+    """
+    Endpoint JSON que devuelve los datos del proyecto en formato dhtmlxGantt
+    """
+    proyecto = get_object_or_404(Proyecto, id_proyecto=proyecto_id)
+    
+    # Obtener todas las actividades del proyecto
+    actividades = Actividad.objects.filter(
+        proyecto=proyecto
+    ).select_related('actividad_padre').order_by('fecha_inicio')
+    
+    # Construir estructura de datos para dhtmlxGantt
+    data = []
+    
+    for actividad in actividades:
+        # Determinar estado
+        estado = determinar_estado_actividad(actividad)
+        
+        # Calcular progreso (asumiendo que tienes un campo de avance)
+        # Si no tienes este campo, ajusta según tu modelo
+        progreso = getattr(actividad, 'porcentaje_avance', 0) / 100.0
+        
+        task_data = {
+            'id': actividad.id_actividad,
+            'text': actividad.nombre_actividad,
+            'start_date': actividad.fecha_inicio.strftime('%Y-%m-%d'),
+            'duration': calcular_duracion_dias(actividad.fecha_inicio, actividad.fecha_fin),
+            'progress': progreso,
+            'open': True,  # Expandir por defecto
+            'estado': estado,  # Para los colores
+        }
+        
+        # Si tiene actividad padre
+        if actividad.actividad_padre:
+            task_data['parent'] = actividad.actividad_padre.id_actividad
+        
+        data.append(task_data)
+    
+    # dhtmlxGantt espera un objeto con 'data'
+    response_data = {
+        'data': data
+    }
+    
+    return JsonResponse(response_data, safe=False)
+
+def proyecto_gantt_view(request, proyecto_id):
+    """Vista principal del diagrama de Gantt"""
+    proyecto = get_object_or_404(Proyecto, id_proyecto=proyecto_id)
+    
+    # Sin login: todos pueden editar (temporal)
+    puede_editar = True
+    
+    context = {
+        'proyecto': proyecto,
+        'puede_editar': puede_editar,
+    }
+    
+    return render(request, 'proyectos/proyecto_gantt_completo.html', context)
+
+
+def proyecto_gantt_data(request, proyecto_id):
+    """Endpoint JSON con datos del Gantt"""
+    proyecto = get_object_or_404(Proyecto, id_proyecto=proyecto_id)
+    
+    actividades = Actividad.objects.filter(
+        proyecto=proyecto,
+        activo=True
+    ).select_related('actividad_padre').order_by('orden_visualizacion', 'numero_actividad')
+    
+    data = []
+    
+    for actividad in actividades:
+        # Determinar estado automáticamente
+        estado = determinar_estado_actividad(actividad)
+        
+        # Convertir porcentaje a decimal (0.0 a 1.0)
+        progreso = float(actividad.porcentaje_avance) / 100.0 if actividad.porcentaje_avance else 0.0
+        
+        # Usar fechas estimadas
+        fecha_inicio = actividad.fecha_inicio_estimada
+        fecha_fin = actividad.fecha_fin_estimada
+        
+        # Fallback a fechas reales si no hay estimadas
+        if not fecha_inicio:
+            fecha_inicio = actividad.fecha_inicio_real
+        if not fecha_fin:
+            fecha_fin = actividad.fecha_fin_real
+            
+        # Fallback a fecha del proyecto
+        if not fecha_inicio and proyecto.fecha_inicio:
+            fecha_inicio = proyecto.fecha_inicio
+        if not fecha_fin and fecha_inicio:
+            fecha_fin = fecha_inicio + timedelta(days=7)
+        
+        # Último fallback: hoy
+        if not fecha_inicio:
+            fecha_inicio = datetime.now().date()
+            fecha_fin = fecha_inicio + timedelta(days=7)
+        
+        # Calcular duración
+        duracion = calcular_duracion_dias(fecha_inicio, fecha_fin)
+        
+        task_data = {
+            'id': actividad.id_actividad,
+            'text': f"{actividad.numero_actividad} - {actividad.nombre_actividad}",
+            'start_date': fecha_inicio.strftime('%Y-%m-%d'),
+            'duration': duracion,
+            'progress': progreso,
+            'open': True,
+            'estado': estado,
+        }
+        
+        # Agregar padre si existe
+        if actividad.actividad_padre:
+            task_data['parent'] = actividad.actividad_padre.id_actividad
+        
+        data.append(task_data)
+    
+    return JsonResponse({'data': data}, safe=False)
+
+
+@require_http_methods(["POST"])
+@csrf_exempt  # Temporal: sin CSRF hasta implementar login
+def proyecto_gantt_save(request, proyecto_id):
+    """Endpoint para guardar cambios del Gantt"""
+    proyecto = get_object_or_404(Proyecto, id_proyecto=proyecto_id)
+    
+    try:
+        data = json.loads(request.body)
+        
+        actividad_id = data.get('id')
+        actividad = get_object_or_404(
+            Actividad, 
+            id_actividad=actividad_id, 
+            proyecto=proyecto
+        )
+        
+        # Actualizar nombre si cambió
+        if 'text' in data:
+            text = data['text']
+            if ' - ' in text:
+                _, nombre = text.split(' - ', 1)
+                actividad.nombre_actividad = nombre
+        
+        # Guardar en fechas estimadas
+        if 'start_date' in data:
+            actividad.fecha_inicio_estimada = datetime.strptime(
+                data['start_date'], 
+                '%Y-%m-%d'
+            ).date()
+        
+        if 'duration' in data and 'start_date' in data:
+            fecha_inicio = datetime.strptime(data['start_date'], '%Y-%m-%d').date()
+            duracion_dias = int(data['duration'])
+            actividad.fecha_fin_estimada = fecha_inicio + timedelta(days=duracion_dias)
+        
+        # Actualizar progreso si cambió
+        if 'progress' in data:
+            actividad.porcentaje_avance = data['progress'] * 100
+        
+        actividad.save()
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'Actividad actualizada correctamente'
+        })
+        
+    except json.JSONDecodeError:
+        return JsonResponse({
+            'success': False,
+            'error': 'Datos JSON inválidos'
+        }, status=400)
+    
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'error': str(e)
+        }, status=500)
+
+
+def determinar_estado_actividad(actividad):
+    """Determina el estado automáticamente"""
+    hoy = datetime.now().date()
+    
+    fecha_inicio = actividad.fecha_inicio_estimada or actividad.fecha_inicio_real
+    fecha_fin = actividad.fecha_fin_estimada or actividad.fecha_fin_real
+    
+    if not fecha_inicio or not fecha_fin:
+        return 'planificado'
+    
+    porcentaje = float(actividad.porcentaje_avance or 0)
+    
+    if porcentaje >= 100:
+        return 'completado'
+    
+    if fecha_fin < hoy and porcentaje < 100:
+        return 'retrasado'
+    
+    if fecha_inicio <= hoy <= fecha_fin:
+        return 'en-curso'
+    
+    if fecha_inicio > hoy:
+        return 'planificado'
+    
+    return 'planificado'
+
+
+def calcular_duracion_dias(fecha_inicio, fecha_fin):
+    """Calcula la duración en días entre dos fechas"""
+    if not fecha_inicio or not fecha_fin:
+        return 1
+    
+    delta = fecha_fin - fecha_inicio
+    return max(delta.days, 1)

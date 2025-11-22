@@ -1,0 +1,645 @@
+{% extends "base.html" %}
+
+{% block title %}Diagrama de Gantt - {{ proyecto.codigo_proyecto }}{% endblock %}
+
+{% block extra_css %}
+    {{ block.super }}
+    <link rel="stylesheet" href="https://cdn.dhtmlx.com/gantt/edge/dhtmlxgantt.css">
+    
+    <style>
+        .gantt_grid_head_cell {
+            padding: 8px 5px;
+            font-weight: 600;
+            font-size: 13px;
+        }
+        
+        .gantt_cell {
+            padding: 6px 8px;
+            font-size: 13px;
+        }
+        
+        .gantt_row, .gantt_task_row {
+            height: 35px !important;
+        }
+        
+        .gantt_task_line {
+            margin-top: 8px;
+            border-radius: 4px;
+        }
+        
+        /* Días no laborales */
+        .gantt_task_cell.weekend {
+            background-color: #fff4f4 !important;
+        }
+        
+        .gantt_scale_cell.weekend {
+            background-color: #ffe6e6 !important;
+            color: #d32f2f !important;
+            font-weight: 600;
+        }
+        
+        .gantt_scale_cell {
+            border-right: 1px solid #ddd;
+        }
+        
+        /* Nivel 1: Mes */
+        .gantt_scale_line:first-child .gantt_scale_cell {
+            background-color: #1565c0 !important;
+            color: white !important;
+            font-weight: bold;
+            font-size: 13px;
+            text-align: center;
+            border-right: 1px solid #0d47a1;
+        }
+        
+        /* Nivel 2: Día de la semana */
+        .gantt_scale_line:nth-child(2) .gantt_scale_cell {
+            background-color: #42a5f5 !important;
+            color: white !important;
+            font-weight: 600;
+            font-size: 12px;
+            text-align: center;
+        }
+        
+        .gantt_scale_line:nth-child(2) .gantt_scale_cell.weekend {
+            background-color: #ef5350 !important;
+        }
+        
+        /* Nivel 3: Número del día */
+        .gantt_scale_line:nth-child(3) .gantt_scale_cell {
+            background-color: #e3f2fd !important;
+            color: #1565c0 !important;
+            font-weight: 500;
+            font-size: 11px;
+        }
+        
+        .gantt_scale_line:nth-child(3) .gantt_scale_cell.weekend {
+            background-color: #ffcdd2 !important;
+            color: #c62828 !important;
+        }
+        
+        /* Colores por estado */
+        .gantt_task_line.estado-planificado {
+            background-color: #2196F3;
+            border: 1px solid #1976D2;
+        }
+        
+        .gantt_task_line.estado-en-curso {
+            background-color: #FF9800;
+            border: 1px solid #F57C00;
+        }
+        
+        .gantt_task_line.estado-completado {
+            background-color: #4CAF50;
+            border: 1px solid #388E3C;
+        }
+        
+        .gantt_task_line.estado-retrasado {
+            background-color: #F44336;
+            border: 1px solid #D32F2F;
+        }
+        
+        .gantt_task_line.estado-pausado {
+            background-color: #9E9E9E;
+            border: 1px solid #757575;
+        }
+        
+        .gantt_task_line.gantt_critical_task {
+            background-color: #E91E63 !important;
+            border: 2px solid #C2185B !important;
+        }
+        
+        .gantt-toolbar {
+            background-color: #f8f9fa;
+            padding: 10px 15px;
+            border-bottom: 1px solid #dee2e6;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .gantt-toolbar .btn-group {
+            display: flex;
+            gap: 5px;
+        }
+        
+        .gantt-toolbar .btn {
+            font-size: 12px;
+            padding: 5px 12px;
+        }
+        
+        .gantt-toolbar .separator {
+            width: 1px;
+            height: 30px;
+            background-color: #dee2e6;
+            margin: 0 5px;
+        }
+        
+        .save-indicator {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-weight: 600;
+            z-index: 10000;
+            display: none;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+        
+        .save-indicator.saving {
+            background-color: #FFF3CD;
+            color: #856404;
+            display: block;
+        }
+        
+        .save-indicator.saved {
+            background-color: #D4EDDA;
+            color: #155724;
+            display: block;
+        }
+        
+        .save-indicator.error {
+            background-color: #F8D7DA;
+            color: #721C24;
+            display: block;
+        }
+        
+        .gantt-legend {
+            background-color: #f8f9fa;
+            padding: 10px 15px;
+            border-top: 1px solid #dee2e6;
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            flex-wrap: wrap;
+            font-size: 12px;
+        }
+        
+        .gantt-legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .gantt-legend-color {
+            width: 30px;
+            height: 15px;
+            border-radius: 3px;
+            border: 1px solid #999;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div id="saveIndicator" class="save-indicator">
+        <span id="saveMessage"></span>
+    </div>
+    
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2>Diagrama de Gantt</h2>
+        <a href="{% url 'proyectos:proyecto_detail' proyecto.id_proyecto %}" class="btn btn-secondary btn-sm">
+            <i class="bi bi-arrow-left"></i> Volver al proyecto
+        </a>
+    </div>
+
+    <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <strong>{{ proyecto.codigo_proyecto }} - {{ proyecto.nombre_proyecto }}</strong>
+            <span class="badge bg-info">Modo Edición</span>
+        </div>
+        
+        <div class="gantt-toolbar">
+            <div class="btn-group" role="group">
+                <button type="button" class="btn btn-sm btn-outline-primary" onclick="setZoom('day')">
+                    <i class="bi bi-calendar-day"></i> Día
+                </button>
+                <button type="button" class="btn btn-sm btn-primary" onclick="setZoom('week')">
+                    <i class="bi bi-calendar-week"></i> Semana
+                </button>
+                <button type="button" class="btn btn-sm btn-outline-primary" onclick="setZoom('month')">
+                    <i class="bi bi-calendar-month"></i> Mes
+                </button>
+                <button type="button" class="btn btn-sm btn-outline-primary" onclick="setZoom('year')">
+                    <i class="bi bi-calendar"></i> Año
+                </button>
+            </div>
+            
+            <div class="separator"></div>
+            
+            <div class="btn-group" role="group">
+                <button type="button" class="btn btn-sm btn-outline-danger" id="btnCriticalPath" onclick="toggleCriticalPath()">
+                    <i class="bi bi-lightning"></i> Ruta Crítica
+                </button>
+            </div>
+            
+            <div class="separator"></div>
+            
+            <div class="btn-group" role="group">
+                <button type="button" class="btn btn-sm btn-outline-success" onclick="exportToExcel()">
+                    <i class="bi bi-file-excel"></i> Exportar Excel
+                </button>
+            </div>
+        </div>
+        
+        <div class="card-body p-0">
+            <div id="gantt_here" style="width: 100%; height: 700px;"></div>
+        </div>
+        
+        <div class="gantt-legend">
+            <strong>Estados:</strong>
+            <div class="gantt-legend-item">
+                <div class="gantt-legend-color" style="background-color: #2196F3;"></div>
+                <span>Planificado</span>
+            </div>
+            <div class="gantt-legend-item">
+                <div class="gantt-legend-color" style="background-color: #FF9800;"></div>
+                <span>En Curso</span>
+            </div>
+            <div class="gantt-legend-item">
+                <div class="gantt-legend-color" style="background-color: #4CAF50;"></div>
+                <span>Completado</span>
+            </div>
+            <div class="gantt-legend-item">
+                <div class="gantt-legend-color" style="background-color: #F44336;"></div>
+                <span>Retrasado</span>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+    {{ block.super }}
+    <script src="https://cdn.dhtmlx.com/gantt/edge/dhtmlxgantt.js"></script>
+
+    <script>
+        (function() {
+            const PROYECTO_ID = {{ proyecto.id_proyecto }};
+            const URL_SAVE = "{% url 'proyectos:proyecto_gantt_save' proyecto.id_proyecto %}";
+            const URL_DATA = "{% url 'proyectos:proyecto_gantt_data' proyecto.id_proyecto %}";
+            
+            let autoSaveTimer = null;
+            let criticalPathEnabled = false;
+            
+            const festivosColombia2025 = [
+                "2025-01-01", "2025-01-06", "2025-03-24", "2025-04-17", 
+                "2025-04-18", "2025-04-21", "2025-05-01", "2025-06-16",
+                "2025-06-23", "2025-06-30", "2025-07-20", "2025-08-07",
+                "2025-08-18", "2025-10-13", "2025-11-03", "2025-11-17",
+                "2025-12-08", "2025-12-25"
+            ];
+            
+            function esDiaNoLaboral(fecha) {
+                const date = typeof fecha === 'string' ? new Date(fecha + 'T12:00:00') : fecha;
+                if (date.getDay() === 0) return true;
+                const fechaStr = gantt.date.date_to_str("%Y-%m-%d")(date);
+                return festivosColombia2025.includes(fechaStr);
+            }
+            
+            gantt.config.xml_date = "%Y-%m-%d";
+            gantt.config.date_format = "%Y-%m-%d";
+            gantt.config.grid_resize = true;
+            gantt.config.row_height = 35;
+            gantt.config.scale_height = 90;
+            gantt.config.duration_unit = "day";
+            gantt.config.work_time = true;
+            gantt.config.show_links = true;
+            gantt.config.scroll_size = 20;
+            gantt.config.fit_tasks = true;
+            gantt.config.show_grid = true;
+            gantt.config.min_column_width = 70;
+            gantt.config.today_marker = true;
+            
+            gantt.config.columns = [
+                {
+                    name: "text", 
+                    label: "Actividad", 
+                    width: 300, 
+                    tree: true,
+                    resize: true
+                },
+                {
+                    name: "start_date", 
+                    label: "Inicio", 
+                    align: "center", 
+                    width: 95,
+                    resize: true,
+                    template: function(obj) {
+                        if (!obj.start_date) return "";
+                        const day = String(obj.start_date.getDate()).padStart(2, '0');
+                        const month = String(obj.start_date.getMonth() + 1).padStart(2, '0');
+                        const year = obj.start_date.getFullYear();
+                        return day + "/" + month + "/" + year;
+                    }
+                },
+                {
+                    name: "end_date", 
+                    label: "Fin", 
+                    align: "center", 
+                    width: 95,
+                    resize: true,
+                    template: function(obj) {
+                        const endDate = gantt.calculateEndDate({
+                            start_date: obj.start_date,
+                            duration: obj.duration
+                        });
+                        if (!endDate) return "";
+                        const day = String(endDate.getDate()).padStart(2, '0');
+                        const month = String(endDate.getMonth() + 1).padStart(2, '0');
+                        const year = endDate.getFullYear();
+                        return day + "/" + month + "/" + year;
+                    }
+                },
+                {
+                    name: "duration", 
+                    label: "Días", 
+                    align: "center", 
+                    width: 60,
+                    resize: true
+                }
+            ];
+            
+            function setScaleConfig(level) {
+                if (level === "day") {
+                    gantt.config.scales = [
+                        {unit: "month", step: 1, format: function(date) {
+                            const meses = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+                                         "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+                            return meses[date.getMonth()] + " " + date.getFullYear();
+                        }},
+                        {unit: "day", step: 1, format: function(date) {
+                            const dias = ["D", "L", "M", "M", "J", "V", "S"];
+                            return dias[date.getDay()];
+                        }},
+                        {unit: "day", step: 1, format: "%d"}
+                    ];
+                    gantt.config.scale_height = 90;
+                    gantt.config.min_column_width = 40;
+                    gantt.config.scale_unit = "day";
+                    gantt.config.date_scale = "%d";
+                    gantt.config.subscales = [];
+                } else if (level === "week") {
+                    gantt.config.scales = [
+                        {unit: "month", step: 1, format: "%F %Y"},
+                        {unit: "week", step: 1, format: "Semana #%W"}
+                    ];
+                    gantt.config.scale_height = 60;
+                    gantt.config.min_column_width = 70;
+                    gantt.config.scale_unit = "week";
+                    gantt.config.date_scale = "Semana #%W";
+                    gantt.config.subscales = [];
+                } else if (level === "month") {
+                    gantt.config.scales = [
+                        {unit: "year", step: 1, format: "%Y"},
+                        {unit: "month", step: 1, format: "%M"}
+                    ];
+                    gantt.config.scale_height = 60;
+                    gantt.config.min_column_width = 60;
+                    gantt.config.scale_unit = "month";
+                    gantt.config.date_scale = "%M";
+                    gantt.config.subscales = [];
+                } else if (level === "year") {
+                    gantt.config.scales = [
+                        {unit: "year", step: 1, format: "%Y"},
+                        {unit: "quarter", step: 1, format: function(date) {
+                            const month = date.getMonth();
+                            const quarter = Math.floor(month / 3) + 1;
+                            return "Q" + quarter;
+                        }}
+                    ];
+                    gantt.config.scale_height = 60;
+                    gantt.config.min_column_width = 100;
+                    gantt.config.scale_unit = "year";
+                    gantt.config.date_scale = "%Y";
+                    gantt.config.subscales = [];
+                }
+            }
+            
+            setScaleConfig("week");
+            
+            gantt.templates.scale_cell_class = function(date) {
+                return esDiaNoLaboral(date) ? "weekend" : "";
+            };
+            
+            gantt.templates.timeline_cell_class = function(task, date) {
+                return esDiaNoLaboral(date) ? "weekend" : "";
+            };
+            
+            gantt.templates.task_class = function(start, end, task) {
+                let classes = [];
+                if (task.estado) {
+                    classes.push('estado-' + task.estado.toLowerCase().replace(/\s+/g, '-'));
+                }
+                if (criticalPathEnabled && task.critical) {
+                    classes.push('gantt_critical_task');
+                }
+                return classes.join(' ');
+            };
+            
+            gantt.templates.tooltip_text = function(start, end, task) {
+                const formatFecha = function(date) {
+                    const day = String(date.getDate()).padStart(2, '0');
+                    const month = String(date.getMonth() + 1).padStart(2, '0');
+                    const year = date.getFullYear();
+                    return day + "/" + month + "/" + year;
+                };
+                return "<b>Actividad:</b> " + task.text + "<br/>" +
+                       "<b>Inicio:</b> " + formatFecha(start) + "<br/>" +
+                       "<b>Fin:</b> " + formatFecha(end) + "<br/>" +
+                       "<b>Duración:</b> " + task.duration + " días<br/>" +
+                       "<b>Progreso:</b> " + Math.round(task.progress * 100) + "%";
+            };
+            
+            gantt.plugins({
+                tooltip: true
+            });
+            
+            gantt.setWorkTime({hours: [8, 17]});
+            gantt.setWorkTime({day: 0, hours: false});
+            festivosColombia2025.forEach(function(festivo) {
+                gantt.setWorkTime({
+                    date: new Date(festivo + 'T12:00:00'),
+                    hours: false
+                });
+            });
+            
+            function showSaveIndicator(status, message) {
+                const indicator = document.getElementById('saveIndicator');
+                const messageSpan = document.getElementById('saveMessage');
+                indicator.className = 'save-indicator ' + status;
+                messageSpan.textContent = message;
+                if (status !== 'saving') {
+                    setTimeout(function() {
+                        indicator.style.display = 'none';
+                    }, 3000);
+                }
+            }
+            
+            function saveChanges(taskId) {
+                showSaveIndicator('saving', 'Guardando cambios...');
+                const task = gantt.getTask(taskId);
+                const data = {
+                    id: task.id,
+                    text: task.text,
+                    start_date: gantt.date.date_to_str("%Y-%m-%d")(task.start_date),
+                    duration: task.duration,
+                    progress: task.progress,
+                    parent: task.parent || null
+                };
+                
+                fetch(URL_SAVE, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken')
+                    },
+                    body: JSON.stringify(data)
+                })
+                .then(response => response.json())
+                .then(result => {
+                    if (result.success) {
+                        showSaveIndicator('saved', '✓ Cambios guardados');
+                    } else {
+                        showSaveIndicator('error', '✗ Error: ' + result.error);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showSaveIndicator('error', '✗ Error de conexión');
+                });
+            }
+            
+            gantt.attachEvent("onAfterTaskUpdate", function(id, task){
+                clearTimeout(autoSaveTimer);
+                autoSaveTimer = setTimeout(function() {
+                    saveChanges(id);
+                }, 2000);
+            });
+            
+            gantt.attachEvent("onAfterTaskDrag", function(id, mode, e){
+                saveChanges(id);
+            });
+            
+            window.toggleCriticalPath = function() {
+                criticalPathEnabled = !criticalPathEnabled;
+                const btn = document.getElementById('btnCriticalPath');
+                if (criticalPathEnabled) {
+                    gantt.config.highlight_critical_path = true;
+                    gantt.eachTask(function(task) {
+                        task.critical = gantt.isCriticalTask(task);
+                    });
+                    btn.classList.remove('btn-outline-danger');
+                    btn.classList.add('btn-danger');
+                } else {
+                    gantt.config.highlight_critical_path = false;
+                    btn.classList.remove('btn-danger');
+                    btn.classList.add('btn-outline-danger');
+                }
+                gantt.render();
+            };
+            
+            window.setZoom = function(level) {
+                setScaleConfig(level);
+                gantt.render();
+                document.querySelectorAll('.gantt-toolbar .btn-group button').forEach(function(btn) {
+                    btn.classList.remove('btn-primary');
+                    btn.classList.add('btn-outline-primary');
+                });
+                event.target.classList.remove('btn-outline-primary');
+                event.target.classList.add('btn-primary');
+            };
+            
+            window.exportToExcel = function() {
+                const data = [];
+                gantt.eachTask(function(task) {
+                    const endDate = gantt.calculateEndDate({
+                        start_date: task.start_date,
+                        duration: task.duration
+                    });
+                    const formatFecha = function(date) {
+                        const day = String(date.getDate()).padStart(2, '0');
+                        const month = String(date.getMonth() + 1).padStart(2, '0');
+                        const year = date.getFullYear();
+                        return day + "/" + month + "/" + year;
+                    };
+                    
+                    // Crear barra visual de progreso
+                    const progreso = Math.round(task.progress * 100);
+                    const barraLongitud = 20; // 20 caracteres de ancho
+                    const caracteresLlenos = Math.round((progreso / 100) * barraLongitud);
+                    const caracteresVacios = barraLongitud - caracteresLlenos;
+                    const barraVisual = '█'.repeat(caracteresLlenos) + '░'.repeat(caracteresVacios);
+                    
+                    data.push({
+                        'Actividad': task.text,
+                        'Fecha Inicio': formatFecha(task.start_date),
+                        'Fecha Fin': formatFecha(endDate),
+                        'Duración (días)': task.duration,
+                        'Progreso (%)': progreso,
+                        'Barra': barraVisual,
+                        'Estado': task.estado || 'N/A'
+                    });
+                });
+                
+                let csv = '\uFEFF';
+                csv += Object.keys(data[0]).join(',') + '\n';
+                data.forEach(function(row) {
+                    csv += Object.values(row).map(val => {
+                        const strVal = String(val);
+                        if (strVal.includes(',') || strVal.includes('"') || strVal.includes('\n')) {
+                            return '"' + strVal.replace(/"/g, '""') + '"';
+                        }
+                        return strVal;
+                    }).join(',') + '\n';
+                });
+                
+                const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+                const link = document.createElement("a");
+                const url = URL.createObjectURL(blob);
+                link.setAttribute("href", url);
+                link.setAttribute("download", "gantt_proyecto_" + PROYECTO_ID + ".csv");
+                link.style.visibility = 'hidden';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                
+                alert('✓ Excel descargado\n\nIncluye:\n- Fechas y duraciones\n- Barra visual de progreso (columna "Barra")\n- Estados por actividad\n\nLos acentos se ven correctamente.');
+            };
+            
+            function getCookie(name) {
+                let cookieValue = null;
+                if (document.cookie && document.cookie !== '') {
+                    const cookies = document.cookie.split(';');
+                    for (let i = 0; i < cookies.length; i++) {
+                        const cookie = cookies[i].trim();
+                        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                            break;
+                        }
+                    }
+                }
+                return cookieValue;
+            }
+            
+            gantt.init("gantt_here");
+            
+            fetch(URL_DATA)
+                .then(response => {
+                    if (!response.ok) throw new Error('Error al cargar');
+                    return response.json();
+                })
+                .then(json => {
+                    gantt.parse(json);
+                    gantt.showDate(new Date());
+                })
+                .catch(err => {
+                    console.error("Error:", err);
+                    alert("Error al cargar el Gantt");
+                });
+
+        })();
+    </script>
+{% endblock %}

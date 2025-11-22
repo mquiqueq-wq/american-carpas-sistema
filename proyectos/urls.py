@@ -72,8 +72,13 @@ urlpatterns = [
 
     # GANTT
     
-    path('proyectos/<int:proyecto_id>/gantt-data/', views.proyecto_gantt_data, name='proyecto_gantt_data'),
-    path('proyectos/<int:proyecto_id>/gantt/', views.proyecto_gantt_view, name='proyecto_gantt_view'),
+    #path('proyectos/<int:proyecto_id>/gantt-data/', views.proyecto_gantt_data, name='proyecto_gantt_data'),
+    #path('proyectos/<int:proyecto_id>/gantt/', views.proyecto_gantt_view, name='proyecto_gantt_view'),
+    #path('proyectos/<int:proyecto_id>/gantt-save/', views.proyecto_gantt_save, name='proyecto_gantt_save'),
+
+    path('<int:proyecto_id>/gantt/', views.proyecto_gantt_view, name='proyecto_gantt_view'),
+    path('<int:proyecto_id>/gantt-data/', views.proyecto_gantt_data, name='proyecto_gantt_data'),
+    path('<int:proyecto_id>/gantt-save/', views.proyecto_gantt_save, name='proyecto_gantt_save'),
 
     # =====================================================
     # FASE 5: ASIGNACIONES DE TRABAJADORES
