@@ -11,7 +11,8 @@ de proyectos de ingeniería civil, incluyendo:
 - Control de documentos
 - Evidencias fotográficas
 """
-from datetime import date
+from PIL import Image, ExifTags
+from datetime import date, datetime
 from django.db import models
 from django.core.validators import MinValueValidator, MaxValueValidator
 from trabajadores.models import TrabajadorPersonal
@@ -1103,7 +1104,9 @@ class EvidenciaFotografica(models.Model):
     
     # Metadatos
     fecha_captura = models.DateField(
-        verbose_name="Fecha de Captura"
+        verbose_name="Fecha de Captura",
+        blank=True,
+        null=True,
     )
     ubicacion_descripcion = models.CharField(
         max_length=200,
@@ -1131,6 +1134,44 @@ class EvidenciaFotografica(models.Model):
     
     def __str__(self):
         return f"{self.titulo} - {self.proyecto.codigo_proyecto}"
+    
+    def _extraer_fecha_exif(self):
+        """
+        Intenta leer la fecha de captura desde los metadatos EXIF.
+        Devuelve date o None.
+        """
+        try:
+            img = Image.open(self.imagen)
+            exif_data = img._getexif()
+            if not exif_data:
+                return None
+
+            exif = {
+                ExifTags.TAGS.get(k, k): v
+                for k, v in exif_data.items()
+            }
+
+            for key in ('DateTimeOriginal', 'DateTimeDigitized', 'DateTime'):
+                if key in exif:
+                    valor = exif[key]  # suele ser 'YYYY:MM:DD HH:MM:SS'
+                    try:
+                        dt = datetime.strptime(valor, '%Y:%m:%d %H:%M:%S')
+                        return dt.date()
+                    except ValueError:
+                        continue
+            return None
+        except Exception:
+            return None
+
+    def save(self, *args, **kwargs):
+        # Si no viene fecha_captura pero sí hay imagen, intentar leer EXIF
+        if not self.fecha_captura and self.imagen:
+            fecha = self._extraer_fecha_exif()
+            if fecha:
+                self.fecha_captura = fecha
+
+        super().save(*args, **kwargs)
+
 class EnlaceActividad(models.Model):
     """
     Modelo para enlaces/dependencias entre actividades.
