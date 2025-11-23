@@ -97,3 +97,11 @@ class EvidenciaFotograficaAdmin(admin.ModelAdmin):
     ordering = ['-fecha_captura', '-fecha_carga']
     readonly_fields = ['fecha_carga']
     date_hierarchy = 'fecha_captura'
+
+from .models import EnlaceActividad
+
+@admin.register(EnlaceActividad)
+class EnlaceActividadAdmin(admin.ModelAdmin):
+    list_display = ['actividad_origen', 'tipo_enlace', 'actividad_destino', 'lag', 'activo']
+    list_filter = ['tipo_enlace', 'activo']
+    search_fields = ['actividad_origen__nombre_actividad', 'actividad_destino__nombre_actividad']

@@ -1131,3 +1131,55 @@ class EvidenciaFotografica(models.Model):
     
     def __str__(self):
         return f"{self.titulo} - {self.proyecto.codigo_proyecto}"
+class EnlaceActividad(models.Model):
+    """
+    Modelo para enlaces/dependencias entre actividades.
+    Define relaciones de precedencia (predecesora → sucesora)
+    """
+    
+    TIPO_ENLACE_CHOICES = [
+        (0, 'FC - Fin-Comienzo (Finish-to-Start)'),
+        (1, 'CC - Comienzo-Comienzo (Start-to-Start)'),
+        (2, 'FF - Fin-Fin (Finish-to-Finish)'),
+        (3, 'CF - Comienzo-Fin (Start-to-Finish)'),
+    ]
+    
+    id_enlace = models.AutoField(primary_key=True)
+    
+    actividad_origen = models.ForeignKey(
+        'Actividad',
+        on_delete=models.CASCADE,
+        related_name='enlaces_como_origen',
+        verbose_name="Actividad Predecesora"
+    )
+    
+    actividad_destino = models.ForeignKey(
+        'Actividad',
+        on_delete=models.CASCADE,
+        related_name='enlaces_como_destino',
+        verbose_name="Actividad Sucesora"
+    )
+    
+    tipo_enlace = models.IntegerField(
+        choices=TIPO_ENLACE_CHOICES,
+        default=0,
+        verbose_name="Tipo de Enlace"
+    )
+    
+    lag = models.IntegerField(
+        default=0,
+        verbose_name="Retraso (días)"
+    )
+    
+    fecha_registro = models.DateTimeField(auto_now_add=True)
+    activo = models.BooleanField(default=True)
+    
+    class Meta:
+        db_table = 'proyectos_enlaces_actividades'
+        verbose_name = 'Enlace entre Actividades'
+        verbose_name_plural = 'Enlaces entre Actividades'
+        unique_together = ['actividad_origen', 'actividad_destino']
+    
+    def __str__(self):
+        tipos = {0: 'FC', 1: 'CC', 2: 'FF', 3: 'CF'}
+        return f"{self.actividad_origen.numero_actividad} → {self.actividad_destino.numero_actividad} ({tipos[self.tipo_enlace]})"

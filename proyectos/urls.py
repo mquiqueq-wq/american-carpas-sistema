@@ -79,6 +79,12 @@ urlpatterns = [
     path('<int:proyecto_id>/gantt/', views.proyecto_gantt_view, name='proyecto_gantt_view'),
     path('<int:proyecto_id>/gantt-data/', views.proyecto_gantt_data, name='proyecto_gantt_data'),
     path('<int:proyecto_id>/gantt-save/', views.proyecto_gantt_save, name='proyecto_gantt_save'),
+    path('<int:proyecto_id>/gantt/link/save/', views.proyecto_gantt_link_save, name='proyecto_gantt_link_save'),
+    path('<int:proyecto_id>/gantt/link/delete/', views.proyecto_gantt_link_delete, name='proyecto_gantt_link_delete'),
+
+    # Formulario de enlace (opcional, para edición manual)
+    #path('proyecto/<int:proyecto_id>/enlace/crear/', views.proyecto_enlace_form, name='proyecto_enlace_crear'),
+    #path('proyecto/<int:proyecto_id>/enlace/<int:enlace_id>/editar/', views.proyecto_enlace_form, name='proyecto_enlace_editar'),
 
     # =====================================================
     # FASE 5: ASIGNACIONES DE TRABAJADORES

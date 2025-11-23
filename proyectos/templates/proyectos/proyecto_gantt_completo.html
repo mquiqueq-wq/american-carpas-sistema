@@ -109,6 +109,89 @@
             border: 2px solid #C2185B !important;
         }
         
+        /* Estilos para tipos de enlaces/dependencias */
+        /* FC - Fin-Comienzo (tipo 0) - Azul - MÁS COMÚN */
+        .gantt_link_line.gantt_link_0,
+        .gantt_line_wrapper.gantt_link_0 .gantt_link_line,
+        .gantt_line_wrapper[link_id] .gantt_link_line {
+            stroke: #2196F3 !important;
+            stroke-width: 2px !important;
+        }
+        
+        .gantt_link_arrow.gantt_link_0,
+        .gantt_line_wrapper.gantt_link_0 .gantt_link_arrow {
+            fill: #2196F3 !important;
+            stroke: #2196F3 !important;
+        }
+        
+        /* CC - Comienzo-Comienzo (tipo 1) - Verde */
+        .gantt_link_line.gantt_link_1,
+        .gantt_line_wrapper.gantt_link_1 .gantt_link_line {
+            stroke: #4CAF50 !important;
+            stroke-width: 2px !important;
+        }
+        
+        .gantt_link_arrow.gantt_link_1,
+        .gantt_line_wrapper.gantt_link_1 .gantt_link_arrow {
+            fill: #4CAF50 !important;
+            stroke: #4CAF50 !important;
+        }
+        
+        /* FF - Fin-Fin (tipo 2) - Naranja */
+        .gantt_link_line.gantt_link_2,
+        .gantt_line_wrapper.gantt_link_2 .gantt_link_line {
+            stroke: #FF9800 !important;
+            stroke-width: 2px !important;
+        }
+        
+        .gantt_link_arrow.gantt_link_2,
+        .gantt_line_wrapper.gantt_link_2 .gantt_link_arrow {
+            fill: #FF9800 !important;
+            stroke: #FF9800 !important;
+        }
+        
+        /* CF - Comienzo-Fin (tipo 3) - Rojo */
+        .gantt_link_line.gantt_link_3,
+        .gantt_line_wrapper.gantt_link_3 .gantt_link_line {
+            stroke: #F44336 !important;
+            stroke-width: 2px !important;
+        }
+        
+        .gantt_link_arrow.gantt_link_3,
+        .gantt_line_wrapper.gantt_link_3 .gantt_link_arrow {
+            fill: #F44336 !important;
+            stroke: #F44336 !important;
+        }
+        
+        /* Forzar estilos generales para todos los enlaces */
+        .gantt_task_link .gantt_link_line {
+            stroke-width: 2px !important;
+        }
+        
+        .gantt_task_link .gantt_link_arrow {
+            stroke-width: 1px !important;
+        }
+        
+        /* Sobrescribir color por defecto */
+        .gantt_task_link path {
+            stroke: inherit !important;
+        }
+        
+        .gantt_task_link polygon {
+            fill: inherit !important;
+            stroke: inherit !important;
+        }
+        
+        /* Ruta crítica para enlaces */
+        .gantt_link_line.gantt_critical_link {
+            stroke: #E91E63 !important;
+            stroke-width: 3px !important;
+        }
+        
+        .gantt_link_arrow.gantt_critical_link {
+            fill: #E91E63 !important;
+        }
+        
         .gantt-toolbar {
             background-color: #f8f9fa;
             padding: 10px 15px;
@@ -266,6 +349,10 @@
                 <div class="gantt-legend-color" style="background-color: #F44336;"></div>
                 <span>Retrasado</span>
             </div>
+            
+            <div class="separator" style="width: 2px; height: 20px; background-color: #dee2e6; margin: 0 10px;"></div>
+
+            </div>
         </div>
     </div>
 </div>
@@ -280,6 +367,8 @@
             const PROYECTO_ID = {{ proyecto.id_proyecto }};
             const URL_SAVE = "{% url 'proyectos:proyecto_gantt_save' proyecto.id_proyecto %}";
             const URL_DATA = "{% url 'proyectos:proyecto_gantt_data' proyecto.id_proyecto %}";
+            const URL_LINK_SAVE = "{% url 'proyectos:proyecto_gantt_link_save' proyecto.id_proyecto %}";
+            const URL_LINK_DELETE = "{% url 'proyectos:proyecto_gantt_link_delete' proyecto.id_proyecto %}";
             
             let autoSaveTimer = null;
             let criticalPathEnabled = false;
@@ -312,6 +401,26 @@
             gantt.config.show_grid = true;
             gantt.config.min_column_width = 70;
             gantt.config.today_marker = true;
+            
+            // Configuración de dependencias
+            gantt.config.drag_links = true;
+            gantt.config.auto_scheduling = false; // Usaremos manual
+            
+            // ========================================================
+            // CONFIGURAR COLORES DE ENLACES POR TIPO
+            // ========================================================
+            gantt.config.link_line_width = 2;
+            gantt.config.link_arrow_size = 8;
+            
+            // Forzar colores usando eventos de renderizado
+            gantt.attachEvent("onLinkDblClick", function(id, e){
+                return true; // Permitir doble click
+            });
+            
+            // Aplicar estilo directo al SVG cuando se dibuja
+            gantt.attachEvent("onBeforeLinkDisplay", function(id, link){
+                return true;
+            });
             
             gantt.config.columns = [
                 {
@@ -378,9 +487,6 @@
                     ];
                     gantt.config.scale_height = 90;
                     gantt.config.min_column_width = 40;
-                    gantt.config.scale_unit = "day";
-                    gantt.config.date_scale = "%d";
-                    gantt.config.subscales = [];
                 } else if (level === "week") {
                     gantt.config.scales = [
                         {unit: "month", step: 1, format: "%F %Y"},
@@ -388,9 +494,6 @@
                     ];
                     gantt.config.scale_height = 60;
                     gantt.config.min_column_width = 70;
-                    gantt.config.scale_unit = "week";
-                    gantt.config.date_scale = "Semana #%W";
-                    gantt.config.subscales = [];
                 } else if (level === "month") {
                     gantt.config.scales = [
                         {unit: "year", step: 1, format: "%Y"},
@@ -398,9 +501,6 @@
                     ];
                     gantt.config.scale_height = 60;
                     gantt.config.min_column_width = 60;
-                    gantt.config.scale_unit = "month";
-                    gantt.config.date_scale = "%M";
-                    gantt.config.subscales = [];
                 } else if (level === "year") {
                     gantt.config.scales = [
                         {unit: "year", step: 1, format: "%Y"},
@@ -412,13 +512,10 @@
                     ];
                     gantt.config.scale_height = 60;
                     gantt.config.min_column_width = 100;
-                    gantt.config.scale_unit = "year";
-                    gantt.config.date_scale = "%Y";
-                    gantt.config.subscales = [];
                 }
             }
             
-            setScaleConfig("week");
+            setScaleConfig("day");
             
             gantt.templates.scale_cell_class = function(date) {
                 return esDiaNoLaboral(date) ? "weekend" : "";
@@ -452,6 +549,157 @@
                        "<b>Duración:</b> " + task.duration + " días<br/>" +
                        "<b>Progreso:</b> " + Math.round(task.progress * 100) + "%";
             };
+            
+            // Template para tooltip de enlaces
+            gantt.templates.link_description = function(link) {
+                const tipos = {
+                    "0": "FC (Fin-Comienzo)",
+                    "1": "CC (Comienzo-Comienzo)",
+                    "2": "FF (Fin-Fin)",
+                    "3": "CF (Comienzo-Fin)"
+                };
+                
+                const origen = gantt.getTask(link.source);
+                const destino = gantt.getTask(link.target);
+                const tipoTexto = tipos[link.type] || "FC (Fin-Comienzo)";
+                const lagTexto = link.lag ? (link.lag > 0 ? " +" + link.lag + " días" : " " + link.lag + " días") : "";
+                
+                return "<b>Dependencia:</b> " + tipoTexto + lagTexto + "<br/>" +
+                       "<b>Predecesora:</b> " + origen.text + "<br/>" +
+                       "<b>Sucesora:</b> " + destino.text;
+            };
+            
+            // Template para clase CSS de enlaces según tipo
+            gantt.templates.link_class = function(link) {
+                return "gantt_link_" + link.type;
+            };
+            
+            // ========================================================
+            // COLOREAR ENLACES SEGÚN TIPO (JAVASCRIPT)
+            // ========================================================
+            
+            // Función para aplicar colores a los enlaces
+            function aplicarColoresEnlaces() {
+                const colores = {
+                    "0": "#2196F3", // FC - Azul
+                    "1": "#4CAF50", // CC - Verde
+                    "2": "#FF9800", // FF - Naranja
+                    "3": "#F44336"  // CF - Rojo
+                };
+                
+                try {
+                    console.log('🎨 Iniciando aplicación de colores...');
+                    
+                    // MÉTODO PRINCIPAL: Colorear TODOS los SVG de enlaces directamente
+                    colorearTodosLosSVG();
+                    
+                } catch (error) {
+                    console.error('Error al colorear enlaces:', error);
+                }
+            }
+            
+            // Método directo: buscar todos los SVG y colorearlos
+            function colorearTodosLosSVG() {
+                const colores = {
+                    "0": "#2196F3",
+                    "1": "#4CAF50",
+                    "2": "#FF9800",
+                    "3": "#F44336"
+                };
+                
+                // Obtener enlaces del API de Gantt
+                const linksObj = gantt.getLinks();
+                console.log('📊 Enlaces del API:', linksObj);
+                
+                // Convertir a array si es necesario
+                let linksArray = [];
+                if (Array.isArray(linksObj)) {
+                    linksArray = linksObj;
+                } else if (typeof linksObj === 'object') {
+                    // Es un objeto, convertir a array
+                    linksArray = Object.values(linksObj);
+                }
+                
+                console.log(`📊 Total enlaces en API: ${linksArray.length}`);
+                
+                // Buscar todos los contenedores de enlaces en el DOM
+                const linkWrappers = document.querySelectorAll('.gantt_line_wrapper');
+                console.log(`🔍 Total wrappers en DOM: ${linkWrappers.length}`);
+                
+                let contadorColoreados = 0;
+                
+                // MÉTODO 1: Iterar por los enlaces del API y buscar sus SVG
+                linksArray.forEach(link => {
+                    if (!link || typeof link.id === 'undefined') {
+                        return;
+                    }
+                    
+                    const linkId = link.id;
+                    const tipo = link.type || "0";
+                    const color = colores[String(tipo)] || "#2196F3";
+                    
+                    console.log(`\n🔗 Procesando enlace ID ${linkId}, tipo ${tipo}, color ${color}`);
+                    
+                    // Buscar wrapper por posición relativa o aplicar a todos
+                    // Como no tienen link_id, aplicaremos color a TODOS los paths/polygons
+                    // de cada wrapper en orden
+                });
+                
+                // MÉTODO 2: Aplicar colores por índice
+                linkWrappers.forEach((wrapper, index) => {
+                    if (index < linksArray.length) {
+                        const link = linksArray[index];
+                        if (link && typeof link.type !== 'undefined') {
+                            const color = colores[String(link.type)] || "#2196F3";
+                            
+                            console.log(`\n📍 Wrapper ${index}: Enlace ID ${link.id}, tipo ${link.type}, color ${color}`);
+                            
+                            // Colorear todos los paths
+                            const paths = wrapper.querySelectorAll('path');
+                            paths.forEach(path => {
+                                path.style.stroke = color;
+                                path.setAttribute('stroke', color);
+                                path.setAttribute('stroke-width', '2');
+                            });
+                            
+                            // Colorear todos los polygons (flechas)
+                            const polygons = wrapper.querySelectorAll('polygon');
+                            polygons.forEach(polygon => {
+                                polygon.style.fill = color;
+                                polygon.style.stroke = color;
+                                polygon.setAttribute('fill', color);
+                                polygon.setAttribute('stroke', color);
+                            });
+                            
+                            contadorColoreados++;
+                            console.log(`   ✓ Coloreado: ${paths.length} paths, ${polygons.length} polygons`);
+                        }
+                    }
+                });
+                
+                console.log(`\n✅ Total enlaces coloreados: ${contadorColoreados}`);
+            }
+            
+            // Aplicar colores después de renderizar el Gantt
+            gantt.attachEvent("onGanttRender", function() {
+                setTimeout(aplicarColoresEnlaces, 300);
+            });
+            
+            // Aplicar colores después de crear enlace
+            gantt.attachEvent("onAfterLinkAdd", function(id, link){
+                setTimeout(aplicarColoresEnlaces, 300);
+                saveLinkChanges(id, link);
+                setTimeout(() => recalcularFechasPorDependencias(link.target), 200);
+                return true;
+            });
+            
+            // Aplicar colores después de actualizar enlace
+            gantt.attachEvent("onAfterLinkUpdate", function(id, link){
+                setTimeout(aplicarColoresEnlaces, 300);
+                saveLinkChanges(id, link);
+                setTimeout(() => recalcularFechasPorDependencias(link.target), 200);
+                return true;
+            });
             
             gantt.plugins({
                 tooltip: true
@@ -513,15 +761,309 @@
             }
             
             gantt.attachEvent("onAfterTaskUpdate", function(id, task){
-                clearTimeout(autoSaveTimer);
-                autoSaveTimer = setTimeout(function() {
-                    saveChanges(id);
-                }, 2000);
+                // NO guardar automáticamente durante auto-scheduling
+                // Solo guardar cambios manuales del usuario
+                if (!gantt._auto_scheduling_in_progress) {
+                    clearTimeout(autoSaveTimer);
+                    autoSaveTimer = setTimeout(function() {
+                        saveChanges(id);
+                    }, 2000);
+                }
+                return true;
             });
             
             gantt.attachEvent("onAfterTaskDrag", function(id, mode, e){
+                // Guardar inmediatamente después de arrastrar
                 saveChanges(id);
+                return true;
             });
+            
+            // ========================================================
+            // AUTO-SCHEDULING MANUAL (MEJORADO)
+            // ========================================================
+            
+            function recalcularFechasPorDependencias(taskId) {
+                // Marcar que estamos en auto-scheduling
+                gantt._auto_scheduling_in_progress = true;
+                
+                const task = gantt.getTask(taskId);
+                
+                // CRÍTICO: Guardar duración original ANTES de cualquier cálculo
+                const duracionOriginal = task.duration;
+                const fechaInicioOriginal = task.start_date;
+                
+                console.log('🔍 Recalculando:', task.text);
+                console.log('   Duración original:', duracionOriginal, 'días');
+                console.log('   Fecha inicio original:', gantt.date.date_to_str("%Y-%m-%d")(fechaInicioOriginal));
+                
+                const todosLosEnlaces = gantt.getLinks();
+                
+                // Buscar enlaces donde esta tarea es destino (sucesora)
+                const enlacesPredecesores = todosLosEnlaces.filter(link => link.target == taskId);
+                
+                if (enlacesPredecesores.length === 0) {
+                    console.log('   ✓ Sin predecesores, no se modifica');
+                    return;
+                }
+                
+                let nuevaFechaInicio = null;
+                
+                enlacesPredecesores.forEach(link => {
+                    const predecesora = gantt.getTask(link.source);
+                    const lag = link.lag || 0;
+                    const tipos = {0: 'FC', 1: 'CC', 2: 'FF', 3: 'CF'};
+                    
+                    console.log('   Dependencia:', tipos[link.type], 'de', predecesora.text);
+                    
+                    let fechaCalculada;
+                    
+                    switch(link.type) {
+                        case "0": // FC - Fin-Comienzo
+                            const finA_FC = gantt.calculateEndDate({
+                                start_date: predecesora.start_date,
+                                duration: predecesora.duration,
+                                unit: 'day'
+                            });
+                            fechaCalculada = gantt.calculateEndDate({
+                                start_date: finA_FC,
+                                duration: lag,
+                                unit: 'day'
+                            });
+                            break;
+                            
+                        case "1": // CC - Comienzo-Comienzo
+                            fechaCalculada = gantt.calculateEndDate({
+                                start_date: predecesora.start_date,
+                                duration: lag,
+                                unit: 'day'
+                            });
+                            break;
+                            
+                        case "2": // FF - Fin-Fin
+                            const finA_FF = gantt.calculateEndDate({
+                                start_date: predecesora.start_date,
+                                duration: predecesora.duration,
+                                unit: 'day'
+                            });
+                            const finB = gantt.calculateEndDate({
+                                start_date: finA_FF,
+                                duration: lag,
+                                unit: 'day'
+                            });
+                            fechaCalculada = gantt.calculateEndDate({
+                                start_date: finB,
+                                duration: -duracionOriginal,
+                                unit: 'day'
+                            });
+                            break;
+                            
+                        case "3": // CF - Comienzo-Fin
+                            const finB_CF = gantt.calculateEndDate({
+                                start_date: predecesora.start_date,
+                                duration: lag,
+                                unit: 'day'
+                            });
+                            fechaCalculada = gantt.calculateEndDate({
+                                start_date: finB_CF,
+                                duration: -duracionOriginal,
+                                unit: 'day'
+                            });
+                            break;
+                            
+                        default:
+                            fechaCalculada = predecesora.start_date;
+                    }
+                    
+                    console.log('   Fecha calculada:', gantt.date.date_to_str("%Y-%m-%d")(fechaCalculada));
+                    
+                    if (!nuevaFechaInicio || fechaCalculada > nuevaFechaInicio) {
+                        nuevaFechaInicio = fechaCalculada;
+                    }
+                });
+                
+                // Solo actualizar si cambió la fecha
+                if (nuevaFechaInicio && nuevaFechaInicio.getTime() !== fechaInicioOriginal.getTime()) {
+                    console.log('   📅 Nueva fecha inicio:', gantt.date.date_to_str("%Y-%m-%d")(nuevaFechaInicio));
+                    console.log('   ⏱️  Duración a mantener:', duracionOriginal, 'días');
+                    
+                    // MÉTODO 1: Actualizar directamente sin eventos
+                    // Desactivar eventos temporalmente
+                    gantt.config.auto_scheduling = false;
+                    
+                    // Actualizar propiedades directamente
+                    task.start_date = nuevaFechaInicio;
+                    task.duration = duracionOriginal;
+                    task.end_date = gantt.calculateEndDate({
+                        start_date: nuevaFechaInicio,
+                        duration: duracionOriginal,
+                        unit: 'day'
+                    });
+                    
+                    // Forzar renderizado visual SIN disparar eventos
+                    gantt.refreshTask(task.id);
+                    
+                    console.log('   ✓ Actualizado en memoria');
+                    console.log('   📊 Verificación - Duración después:', task.duration);
+                    
+                    // Preparar datos para guardar EXPLÍCITAMENTE
+                    const datosAGuardar = {
+                        id: task.id,
+                        text: task.text,
+                        start_date: gantt.date.date_to_str("%Y-%m-%d")(nuevaFechaInicio),
+                        duration: duracionOriginal,  // ← FORZAR duración original
+                        progress: task.progress,
+                        parent: task.parent || null
+                    };
+                    
+                    console.log('   💾 Guardando:', datosAGuardar);
+                    
+                    // Guardar con datos explícitos
+                    saveChangesExplicit(datosAGuardar);
+                    
+                    // Mostrar mensaje
+                    gantt.message({
+                        text: "📅 Inicio ajustado. Duración: " + duracionOriginal + " días",
+                        type: "info"
+                    });
+                    
+                    // Reactivar auto-scheduling
+                    setTimeout(() => {
+                        gantt.config.auto_scheduling = false; // Mantener en false
+                        
+                        // Recalcular sucesores
+                        const enlacesSuccesores = todosLosEnlaces.filter(link => link.source == taskId);
+                        enlacesSuccesores.forEach(link => {
+                            setTimeout(() => recalcularFechasPorDependencias(link.target), 150);
+                        });
+                    }, 100);
+                } else {
+                    console.log('   ✓ Fecha no cambió, no se actualiza');
+                }
+            }
+            
+            // Nueva función para guardar con datos explícitos
+            function saveChangesExplicit(data) {
+                showSaveIndicator('saving', 'Guardando cambios...');
+                
+                console.log('📤 Enviando a servidor:', data);
+                
+                fetch(URL_SAVE, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken')
+                    },
+                    body: JSON.stringify(data)
+                })
+                .then(response => response.json())
+                .then(result => {
+                    console.log('📥 Respuesta servidor:', result);
+                    if (result.success) {
+                        showSaveIndicator('saved', '✓ Guardado (duración: ' + data.duration + 'd)');
+                    } else {
+                        showSaveIndicator('error', '✗ Error: ' + result.error);
+                    }
+                })
+                .catch(error => {
+                    console.error('❌ Error:', error);
+                    showSaveIndicator('error', '✗ Error de conexión');
+                });
+            }
+            
+            // ========================================================
+            // EVENTOS PARA ENLACES (DEPENDENCIAS)
+            // ========================================================
+            
+            // Validar antes de crear enlace
+            gantt.attachEvent("onBeforeLinkAdd", function(id, link){
+                if (link.source == link.target) {
+                    gantt.message({
+                        text: "❌ Una actividad no puede enlazarse consigo misma",
+                        type: "error"
+                    });
+                    return false;
+                }
+                return true;
+            });
+            
+            // Los eventos onAfterLinkAdd y onAfterLinkUpdate ya están definidos arriba
+            // con la función aplicarColoresEnlaces
+            
+            // Eliminar enlace
+            gantt.attachEvent("onAfterLinkDelete", function(id, link){
+                deleteLinkChanges(id);
+                return true;
+            });
+            
+            // Función para guardar enlaces
+            function saveLinkChanges(linkId, link) {
+                showSaveIndicator('saving', 'Guardando dependencia...');
+                
+                const linkData = link || gantt.getLink(linkId);
+                
+                const data = {
+                    id: linkData.id,
+                    source: linkData.source,
+                    target: linkData.target,
+                    type: linkData.type,
+                    lag: linkData.lag || 0
+                };
+                
+                fetch(URL_LINK_SAVE, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken')
+                    },
+                    body: JSON.stringify(data)
+                })
+                .then(response => response.json())
+                .then(result => {
+                    if (result.success) {
+                        // Actualizar ID temporal con ID real de la base de datos
+                        if (String(linkData.id).startsWith('t')) {
+                            linkData.id = result.id;
+                        }
+                        showSaveIndicator('saved', '✓ Dependencia guardada');
+                    } else {
+                        showSaveIndicator('error', '✗ Error: ' + result.error);
+                        gantt.deleteLink(linkId);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showSaveIndicator('error', '✗ Error al guardar dependencia');
+                    gantt.deleteLink(linkId);
+                });
+            }
+            
+            // Función para eliminar enlaces
+            function deleteLinkChanges(linkId) {
+                showSaveIndicator('saving', 'Eliminando dependencia...');
+                
+                const data = { id: linkId };
+                
+                fetch(URL_LINK_DELETE, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken')
+                    },
+                    body: JSON.stringify(data)
+                })
+                .then(response => response.json())
+                .then(result => {
+                    if (result.success) {
+                        showSaveIndicator('saved', '✓ Dependencia eliminada');
+                    } else {
+                        showSaveIndicator('error', '✗ Error: ' + result.error);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showSaveIndicator('error', '✗ Error al eliminar dependencia');
+                });
+            }
             
             window.toggleCriticalPath = function() {
                 criticalPathEnabled = !criticalPathEnabled;
@@ -568,7 +1110,7 @@
                     
                     // Crear barra visual de progreso
                     const progreso = Math.round(task.progress * 100);
-                    const barraLongitud = 20; // 20 caracteres de ancho
+                    const barraLongitud = 20;
                     const caracteresLlenos = Math.round((progreso / 100) * barraLongitud);
                     const caracteresVacios = barraLongitud - caracteresLlenos;
                     const barraVisual = '█'.repeat(caracteresLlenos) + '░'.repeat(caracteresVacios);
@@ -606,7 +1148,7 @@
                 link.click();
                 document.body.removeChild(link);
                 
-                alert('✓ Excel descargado\n\nIncluye:\n- Fechas y duraciones\n- Barra visual de progreso (columna "Barra")\n- Estados por actividad\n\nLos acentos se ven correctamente.');
+                alert('✓ Excel descargado\n\nIncluye:\n- Fechas y duraciones\n- Barra visual de progreso\n- Estados\n\nLos acentos se ven correctamente.');
             };
             
             function getCookie(name) {
@@ -634,6 +1176,10 @@
                 .then(json => {
                     gantt.parse(json);
                     gantt.showDate(new Date());
+                    
+                    // Aplicar colores a enlaces existentes después de cargar
+                    console.log('🎨 Aplicando colores a enlaces...');
+                    setTimeout(aplicarColoresEnlaces, 800);
                 })
                 .catch(err => {
                     console.error("Error:", err);

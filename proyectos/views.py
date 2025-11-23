@@ -30,6 +30,7 @@ from .models import (
     DocumentoProyecto,
     EvidenciaFotografica,
     AvanceActividad,
+    EnlaceActividad,
 )
 
 from .forms import (
@@ -840,38 +841,70 @@ def avance_delete(request, id_avance):
     }
     return render(request, 'proyectos/actividades/avance_confirm_delete.html', context)
 
+from .models import Proyecto, Actividad, EnlaceActividad
+from django.http import JsonResponse
+
+#@login_required
+@require_http_methods(["GET"])
 def proyecto_gantt_data(request, proyecto_id):
     """
-    Devuelve los datos de las actividades de un proyecto
-    en formato JSON para consumir desde un diagrama de Gantt.
+    Retorna datos del Gantt incluyendo actividades Y enlaces
     """
-    proyecto = get_object_or_404(Proyecto, pk=proyecto_id)
-
-    actividades = proyecto.actividades.filter(activo=True).order_by(
-        'actividad_padre__id_actividad', 'orden_visualizacion', 'numero_actividad'
-    )
-
-    tasks = []
-    for act in actividades:
-        # Fechas: usa las estimadas como base. Si falta alguna, la dejamos en None.
-        start = act.fecha_inicio_estimada
-        end = act.fecha_fin_estimada
-
-        # Algunas librerías de Gantt requieren end_date inclusive o exclusiva.
-        # Por ahora devolvemos tal cual el campo de la BD.
-        tasks.append({
-            "id": act.id_actividad,
-            "text": f"{act.numero_actividad} - {act.nombre_actividad}",
-            "start_date": start.isoformat() if start else None,
-            "end_date": end.isoformat() if end else None,
-            "progress": float(act.porcentaje_avance or 0) / 100.0,
-            "parent": act.actividad_padre.id_actividad if act.actividad_padre else 0,
-            "open": True,  # para que las ramas aparezcan abiertas
+    try:
+        proyecto = Proyecto.objects.get(id_proyecto=proyecto_id)
+        actividades = Actividad.objects.filter(
+            proyecto=proyecto, 
+            activo=True
+        ).order_by('numero_actividad')
+        
+        # Preparar actividades
+        data = []
+        for actividad in actividades:
+            parent_id = 0
+            if actividad.actividad_padre:
+                parent_id = actividad.actividad_padre.id_actividad
+            
+            task_data = {
+                'id': actividad.id_actividad,
+                'text': f"{actividad.numero_actividad} - {actividad.nombre_actividad}",
+                'start_date': actividad.fecha_inicio_estimada.strftime("%Y-%m-%d") if actividad.fecha_inicio_estimada else None,
+                'duration': actividad.duracion_dias or 1,
+                'progress': actividad.porcentaje_avance / 100.0 if actividad.porcentaje_avance else 0,
+                'parent': parent_id,
+                'open': True,
+                'estado': actividad.estado,
+                'numero_actividad': actividad.numero_actividad,
+            }
+            data.append(task_data)
+        
+        # Preparar enlaces (NUEVO)
+        enlaces = EnlaceActividad.objects.filter(
+            actividad_origen__proyecto=proyecto,
+            actividad_origen__activo=True,
+            actividad_destino__activo=True,
+            activo=True
+        )
+        
+        links = []
+        for enlace in enlaces:
+            link_data = {
+                'id': enlace.id_enlace,
+                'source': enlace.actividad_origen.id_actividad,
+                'target': enlace.actividad_destino.id_actividad,
+                'type': str(enlace.tipo_enlace),
+                'lag': enlace.lag if enlace.lag else 0
+            }
+            links.append(link_data)
+        
+        return JsonResponse({
+            'data': data,
+            'links': links  # NUEVO
         })
-
-    return JsonResponse({
-        "data": tasks,
-    }, safe=False)
+        
+    except Proyecto.DoesNotExist:
+        return JsonResponse({'error': 'Proyecto no encontrado'}, status=404)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
 
 def proyecto_gantt_view(request, proyecto_id):
     """
@@ -1203,7 +1236,7 @@ def evidencia_delete(request, id_evidencia):
     }
     return render(request, 'proyectos/evidencias/evidencia_confirm_delete.html', context)
 
-@login_required
+#@login_required
 def proyecto_gantt_view(request, proyecto_id):
     """
     Vista principal del diagrama de Gantt
@@ -1225,7 +1258,7 @@ def proyecto_gantt_view(request, proyecto_id):
     return render(request, 'proyectos/proyecto_gantt_completo.html', context)
 
 
-@login_required
+#@login_required
 def proyecto_gantt_data(request, proyecto_id):
     """
     Endpoint JSON que devuelve los datos del proyecto en formato dhtmlxGantt
@@ -1287,7 +1320,7 @@ def proyecto_gantt_view(request, proyecto_id):
 
 
 def proyecto_gantt_data(request, proyecto_id):
-    """Endpoint JSON con datos del Gantt"""
+    """Endpoint JSON con datos del Gantt incluyendo enlaces"""
     proyecto = get_object_or_404(Proyecto, id_proyecto=proyecto_id)
     
     actividades = Actividad.objects.filter(
@@ -1344,8 +1377,34 @@ def proyecto_gantt_data(request, proyecto_id):
         
         data.append(task_data)
     
-    return JsonResponse({'data': data}, safe=False)
-
+    # ============================================
+    # AGREGAR ENLACES (NUEVO)
+    # ============================================
+    enlaces = EnlaceActividad.objects.filter(
+        actividad_origen__proyecto=proyecto,
+        actividad_origen__activo=True,
+        actividad_destino__activo=True,
+        activo=True
+    )
+    
+    links = []
+    for enlace in enlaces:
+        link_data = {
+            'id': enlace.id_enlace,
+            'source': enlace.actividad_origen.id_actividad,
+            'target': enlace.actividad_destino.id_actividad,
+            'type': str(enlace.tipo_enlace),
+            'lag': enlace.lag if enlace.lag else 0
+        }
+        links.append(link_data)
+    
+    # ============================================
+    # RETORNAR DATA Y LINKS (MODIFICADO)
+    # ============================================
+    return JsonResponse({
+        'data': data,
+        'links': links  # ← AGREGAR ESTO
+    })
 
 @require_http_methods(["POST"])
 @csrf_exempt  # Temporal: sin CSRF hasta implementar login
@@ -1440,3 +1499,134 @@ def calcular_duracion_dias(fecha_inicio, fecha_fin):
     
     delta = fecha_fin - fecha_inicio
     return max(delta.days, 1)
+
+#@login_required
+@csrf_exempt
+@require_http_methods(["POST"])
+def proyecto_gantt_link_save(request, proyecto_id):
+    """Guarda o actualiza un enlace entre actividades"""
+    try:
+        proyecto = Proyecto.objects.get(id_proyecto=proyecto_id)
+        data = json.loads(request.body)
+        
+        link_id = data.get('id')
+        source_id = data.get('source')
+        target_id = data.get('target')
+        link_type = data.get('type', '0')
+        lag = data.get('lag', 0)
+        
+        # Validar que no sea el mismo
+        if source_id == target_id:
+            return JsonResponse({
+                'success': False,
+                'error': 'Una actividad no puede enlazarse consigo misma'
+            }, status=400)
+        
+        # Validar actividades
+        actividad_origen = Actividad.objects.get(
+            id_actividad=source_id,
+            proyecto=proyecto,
+            activo=True
+        )
+        actividad_destino = Actividad.objects.get(
+            id_actividad=target_id,
+            proyecto=proyecto,
+            activo=True
+        )
+        
+        # Buscar enlace existente (activo o inactivo)
+        enlace_existente = EnlaceActividad.objects.filter(
+            actividad_origen=actividad_origen,
+            actividad_destino=actividad_destino
+        ).first()
+        
+        if enlace_existente:
+            # Ya existe, actualizar y reactivar
+            enlace = enlace_existente
+            enlace.tipo_enlace = int(link_type)
+            enlace.lag = int(lag)
+            enlace.activo = True
+        else:
+            # No existe, crear nuevo
+            enlace = EnlaceActividad(
+                actividad_origen=actividad_origen,
+                actividad_destino=actividad_destino,
+                tipo_enlace=int(link_type),
+                lag=int(lag),
+                activo=True
+            )
+        
+        enlace.save()
+        
+        return JsonResponse({
+            'success': True,
+            'id': enlace.id_enlace
+        })
+        
+    except Proyecto.DoesNotExist:
+        return JsonResponse({
+            'success': False,
+            'error': 'Proyecto no encontrado'
+        }, status=404)
+    except Actividad.DoesNotExist:
+        return JsonResponse({
+            'success': False,
+            'error': 'Una o ambas actividades no existen'
+        }, status=400)
+    except json.JSONDecodeError:
+        return JsonResponse({
+            'success': False,
+            'error': 'Datos JSON inválidos'
+        }, status=400)
+    except Exception as e:
+        import traceback
+        print("\n" + "="*50)
+        print("ERROR en proyecto_gantt_link_save:")
+        print("Data recibida:", data if 'data' in locals() else 'N/A')
+        print(traceback.format_exc())
+        print("="*50 + "\n")
+        return JsonResponse({
+            'success': False,
+            'error': str(e)
+        }, status=400)
+
+
+#@login_required
+@csrf_exempt
+@require_http_methods(["POST"])
+def proyecto_gantt_link_delete(request, proyecto_id):
+    """Elimina un enlace entre actividades"""
+    try:
+        data = json.loads(request.body)
+        link_id = data.get('id')
+        
+        if not link_id:
+            # Si no hay ID, igual retornar éxito (ya está "eliminado")
+            return JsonResponse({'success': True})
+        
+        try:
+            # Intentar obtener el enlace
+            enlace = EnlaceActividad.objects.get(id_enlace=link_id)
+            # Marcar como inactivo (soft delete)
+            enlace.activo = False
+            enlace.save()
+            
+            return JsonResponse({'success': True})
+            
+        except EnlaceActividad.DoesNotExist:
+            # Si no existe, igual retornar éxito (ya está "eliminado")
+            return JsonResponse({'success': True})
+        
+    except json.JSONDecodeError:
+        return JsonResponse({
+            'success': False,
+            'error': 'JSON inválido'
+        }, status=400)
+    except Exception as e:
+        import traceback
+        print("\n" + "="*50)
+        print("ERROR en proyecto_gantt_link_delete:")
+        print(traceback.format_exc())
+        print("="*50 + "\n")
+        # Incluso con error, retornar success para no bloquear el UI
+        return JsonResponse({'success': True})
