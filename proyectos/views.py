@@ -17,6 +17,7 @@ from django.views.decorators.csrf import csrf_exempt
 import json
 from datetime import datetime, timedelta
 from .models import Proyecto, Actividad
+from django.utils import timezone
 
 from trabajadores.models import TrabajadorPersonal
 from .models import (
@@ -213,6 +214,7 @@ def estado_proyecto_create(request):
     context = {
         'form': form,
         'titulo': 'Nuevo Estado de Proyecto',
+        'action': 'Crear',
         'show_module_nav': True,
         'active_module': 'proyectos',
     }
@@ -269,11 +271,23 @@ def estado_proyecto_delete(request, id_estado_proyecto):
 # =====================================================
 
 def tipo_documento_list(request):
-    """Listado de tipos de documentos"""
-    tipos = TipoDocumentoProyecto.objects.all().order_by('orden_visualizacion', 'nombre_tipo_documento')
-    
+    """Listado de tipos de documentos con búsqueda y paginación"""
+    query = request.GET.get('q', '')
+
+    if query:
+        tipos = TipoDocumentoProyecto.objects.filter(
+            nombre_tipo_documento__icontains=query
+        ).order_by('orden_visualizacion', 'nombre_tipo_documento')
+    else:
+        tipos = TipoDocumentoProyecto.objects.all().order_by('orden_visualizacion', 'nombre_tipo_documento')
+
+    paginator = Paginator(tipos, 10)  # 10 por página
+    page_number = request.GET.get('page', 1)
+    page_obj = paginator.get_page(page_number)
+
     context = {
-        'tipos': tipos,
+        'page_obj': page_obj,
+        'query': query,
         'show_module_nav': True,
         'active_module': 'proyectos',
     }
@@ -294,6 +308,7 @@ def tipo_documento_create(request):
     context = {
         'form': form,
         'titulo': 'Nuevo Tipo de Documento',
+        'action': 'Guardar',
         'show_module_nav': True,
         'active_module': 'proyectos',
     }
@@ -1630,3 +1645,133 @@ def proyecto_gantt_link_delete(request, proyecto_id):
         print("="*50 + "\n")
         # Incluso con error, retornar success para no bloquear el UI
         return JsonResponse({'success': True})
+
+# Asignaciones vista global
+
+def asignacion_global_list(request):
+    proyecto_id = request.GET.get('proyecto')
+    q = request.GET.get('q', '').strip()
+    solo_activos = request.GET.get('solo_activos', '1')
+    estado_asignacion = request.GET.get('estado_asignacion', '').strip()
+
+    # ----------------------------
+    # 1) Asignaciones
+    # ----------------------------
+    asignaciones_qs = AsignacionTrabajador.objects.select_related(
+        'proyecto', 'trabajador'
+    )
+
+    if proyecto_id:
+        asignaciones_qs = asignaciones_qs.filter(proyecto_id=proyecto_id)
+
+    if q:
+        asignaciones_qs = asignaciones_qs.filter(
+            Q(trabajador__id_trabajador__icontains=q) |
+            Q(trabajador__nombres__icontains=q) |
+            Q(trabajador__apellidos__icontains=q)
+        )
+
+    if solo_activos != '0':
+        asignaciones = [a for a in asignaciones_qs if a.esta_actualmente_asignado()]
+    else:
+        asignaciones = list(asignaciones_qs)
+
+    paginator = Paginator(asignaciones, 20)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    # ----------------------------
+    # 2) Trabajadores (incluyendo no asignados)
+    # ----------------------------
+    trabajadores_qs = TrabajadorPersonal.objects.all()
+
+    if q:
+        trabajadores_qs = trabajadores_qs.filter(
+            Q(id_trabajador__icontains=q) |
+            Q(nombres__icontains=q) |
+            Q(apellidos__icontains=q)
+        )
+
+    # Precalcular asignación activa por trabajador (una consulta)
+    asignaciones_activas = (
+        AsignacionTrabajador.objects
+        .select_related('proyecto', 'trabajador')
+        .filter(activo=True, fecha_desasignacion__isnull=True)
+    )
+
+    asignacion_por_trabajador = {
+        a.trabajador_id: a for a in asignaciones_activas
+    }
+
+    trabajadores = []
+    for t in trabajadores_qs:
+        asignacion_activa = asignacion_por_trabajador.get(t.id_trabajador)
+        # filtro por estado de asignación
+        if estado_asignacion == 'sin' and asignacion_activa:
+            continue
+        if estado_asignacion == 'con' and not asignacion_activa:
+            continue
+        # inyectamos atributo dinámico para el template
+        t.asignacion_activa = asignacion_activa
+        trabajadores.append(t)
+
+    context = {
+        'asignaciones': page_obj.object_list,
+        'page_obj': page_obj,
+        'is_paginated': page_obj.paginator.num_pages > 1,
+        'proyectos': Proyecto.objects.all().order_by('codigo_proyecto'),
+        'trabajadores': trabajadores,
+        'show_module_nav': True,
+        'active_module': 'proyectos',
+    }
+    return render(request, 'proyectos/asignaciones/asignacion_global_list.html', context)
+
+def asignacion_create_desde_trabajador(request):
+    """
+    Crear una asignación partiendo de un trabajador:
+    - trabajador_id llega por GET
+    - proyecto se selecciona en el formulario
+    """
+    trabajador_id = request.GET.get('trabajador_id')
+    trabajador = get_object_or_404(TrabajadorPersonal, pk=trabajador_id)
+
+    # No tenemos proyecto fijo en este flujo
+    proyecto = None
+
+    # Para compatibilidad con el form actual: permitimos todos los trabajadores,
+    # pero en la instancia lo fijamos al trabajador dado.
+    trabajadores_qs = TrabajadorPersonal.objects.all()
+
+    if request.method == 'POST':
+        form = AsignacionTrabajadorForm(
+            request.POST,
+            trabajadores_qs=trabajadores_qs
+        )
+        if form.is_valid():
+            asignacion = form.save(commit=False)
+            # forzamos el trabajador que vino por la URL, por seguridad
+            asignacion.trabajador = trabajador
+            asignacion.save()
+            messages.success(request, '✅ Trabajador asignado al proyecto.')
+            return redirect('proyectos:asignacion_global_list')
+    else:
+        initial = {
+            'trabajador': trabajador,
+            'fecha_asignacion': timezone.now().date(),
+        }
+        form = AsignacionTrabajadorForm(
+            initial=initial,
+            trabajadores_qs=trabajadores_qs
+        )
+
+    context = {
+        'form': form,
+        'proyecto': proyecto,            # None: el template sabrá que no hay proyecto fijo
+        'trabajador': trabajador,        # para mostrar info en cabecera y modo lectura
+        'titulo': 'Asignar trabajador a proyecto',
+        'query': '',                     # para que el template no se rompa
+        'total_trabajadores': 0,
+        'show_module_nav': True,
+        'active_module': 'proyectos',
+    }
+    return render(request, 'proyectos/asignaciones/asignacion_form.html', context)

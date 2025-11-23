@@ -1,0 +1,265 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Trabajadores en Proyectos{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Encabezado -->
+    <div class="row mb-3">
+        <div class="col-12 d-flex justify-content-between align-items-center">
+            <div>
+                <h2 class="mb-1">Trabajadores en Proyectos</h2>
+                <p class="text-muted mb-0">
+                    Vista global de trabajadores asignados y no asignados.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filtros de asignaciones -->
+    <form method="get" class="card border-0 shadow-sm mb-3">
+        <div class="card-body">
+            <div class="row g-3 align-items-end">
+                <!-- Filtro por proyecto -->
+                <div class="col-md-4">
+                    <label for="proyecto" class="form-label">Proyecto</label>
+                    <select name="proyecto" id="proyecto" class="form-select">
+                        <option value="">Todos</option>
+                        {% for p in proyectos %}
+                            <option value="{{ p.id_proyecto }}"
+                                {% if request.GET.proyecto == p.id_proyecto|stringformat:"s" %}selected{% endif %}>
+                                {{ p.codigo_proyecto }} - {{ p.nombre_proyecto }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Búsqueda por trabajador (se usa para ambas secciones) -->
+                <div class="col-md-4">
+                    <label for="q" class="form-label">Buscar trabajador</label>
+                    <input type="text"
+                           id="q"
+                           name="q"
+                           value="{{ request.GET.q }}"
+                           class="form-control"
+                           placeholder="Documento, nombres o apellidos">
+                </div>
+
+                <!-- Solo activos / todos (para asignaciones) -->
+                <div class="col-md-2">
+                    <label for="solo_activos" class="form-label">Estado asignación</label>
+                    <select name="solo_activos" id="solo_activos" class="form-select">
+                        <option value="1" {% if request.GET.solo_activos != '0' %}selected{% endif %}>Solo activos</option>
+                        <option value="0" {% if request.GET.solo_activos == '0' %}selected{% endif %}>Todos</option>
+                    </select>
+                </div>
+
+                <!-- Botones -->
+                <div class="col-md-2 text-md-end">
+                    <button type="submit" class="btn btn-primary mb-1 w-100">
+                        <i class="bi bi-search"></i> Filtrar
+                    </button>
+                    <a href="{% url 'proyectos:asignacion_global_list' %}"
+                       class="btn btn-outline-secondary mb-1 w-100">
+                        <i class="bi bi-x-circle"></i> Limpiar
+                    </a>
+                </div>
+            </div>
+        </div>
+    </form>
+
+    <!-- SECCION 1: Asignaciones existentes -->
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-light">
+            <strong>Asignaciones actuales</strong>
+        </div>
+        <div class="card-body">
+            {% if asignaciones %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Trabajador</th>
+                                <th>Proyecto</th>
+                                <th>Rol</th>
+                                <th>Fecha Asignación</th>
+                                <th>Fecha Desasignación</th>
+                                <th>Estado</th>
+                                <th class="text-end">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for asignacion in asignaciones %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ asignacion.trabajador.nombres }} {{ asignacion.trabajador.apellidos }}</strong><br>
+                                        <small class="text-muted">{{ asignacion.trabajador.id_trabajador }}</small>
+                                    </td>
+                                    <td>
+                                        <a href="{% url 'proyectos:proyecto_detail' asignacion.proyecto.id_proyecto %}">
+                                            {{ asignacion.proyecto.codigo_proyecto }} - {{ asignacion.proyecto.nombre_proyecto }}
+                                        </a>
+                                    </td>
+                                    <td>{{ asignacion.rol_en_proyecto|default:"-" }}</td>
+                                    <td>{{ asignacion.fecha_asignacion|date:"d/m/Y" }}</td>
+                                    <td>
+                                        {% if asignacion.fecha_desasignacion %}
+                                            {{ asignacion.fecha_desasignacion|date:"d/m/Y" }}
+                                        {% else %}
+                                            <span class="text-muted">—</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if asignacion.esta_actualmente_asignado %}
+                                            <span class="badge bg-success">Activo</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">Inactivo</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-end">
+                                        <a href="{% url 'proyectos:asignacion_update' asignacion.id_asignacion %}"
+                                           class="btn btn-sm btn-outline-primary">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                        <a href="{% url 'proyectos:asignacion_delete' asignacion.id_asignacion %}"
+                                           class="btn btn-sm btn-outline-danger">
+                                            <i class="bi bi-trash"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                {% if is_paginated %}
+                    <nav aria-label="Paginación asignaciones">
+                        <ul class="pagination justify-content-center mb-0">
+                            {% if page_obj.has_previous %}
+                                <li class="page-item">
+                                    <a class="page-link"
+                                       href="?page={{ page_obj.previous_page_number }}{% if request.GET.proyecto %}&proyecto={{ request.GET.proyecto }}{% endif %}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if request.GET.solo_activos %}&solo_activos={{ request.GET.solo_activos }}{% endif %}">
+                                        Anterior
+                                    </a>
+                                </li>
+                            {% endif %}
+
+                            {% for num in page_obj.paginator.page_range %}
+                                <li class="page-item {% if page_obj.number == num %}active{% endif %}">
+                                    <a class="page-link"
+                                       href="?page={{ num }}{% if request.GET.proyecto %}&proyecto={{ request.GET.proyecto }}{% endif %}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if request.GET.solo_activos %}&solo_activos={{ request.GET.solo_activos }}{% endif %}">
+                                        {{ num }}
+                                    </a>
+                                </li>
+                            {% endfor %}
+
+                            {% if page_obj.has_next %}
+                                <li class="page-item">
+                                    <a class="page-link"
+                                       href="?page={{ page_obj.next_page_number }}{% if request.GET.proyecto %}&proyecto={{ request.GET.proyecto }}{% endif %}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if request.GET.solo_activos %}&solo_activos={{ request.GET.solo_activos }}{% endif %}">
+                                        Siguiente
+                                    </a>
+                                </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                {% endif %}
+            {% else %}
+                <div class="text-center py-4">
+                    <p class="text-muted mt-3">No hay asignaciones que coincidan con los filtros.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- SECCION 2: Trabajadores (incluyendo no asignados) -->
+    <div class="card border-0 shadow-sm">
+        <div class="card-header bg-light d-flex justify-content-between align-items-center">
+            <strong>Trabajadores (asignados y no asignados)</strong>
+            <small class="text-muted">
+                Usa este listado para localizar trabajadores y asignarlos rápidamente a un proyecto.
+            </small>
+        </div>
+        <div class="card-body">
+            <!-- Filtro extra solo para trabajadores -->
+            <form method="get" class="row g-3 mb-3">
+                <!-- reutilizamos q; agregamos filtro de estado de asignación -->
+                <div class="col-md-4">
+                    <label for="estado_asignacion" class="form-label">Estado de asignación del trabajador</label>
+                    <select name="estado_asignacion" id="estado_asignacion" class="form-select">
+                        <option value="">Todos</option>
+                        <option value="sin" {% if request.GET.estado_asignacion == 'sin' %}selected{% endif %}>
+                            Sin asignación activa
+                        </option>
+                        <option value="con" {% if request.GET.estado_asignacion == 'con' %}selected{% endif %}>
+                            Con asignación activa
+                        </option>
+                    </select>
+                </div>
+
+                <div class="col-md-2 align-self-end">
+                    <button type="submit" class="btn btn-outline-primary w-100">
+                        <i class="bi bi-filter"></i> Filtrar trabajadores
+                    </button>
+                </div>
+            </form>
+
+            {% if trabajadores %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Trabajador</th>
+                                <th>Cédula</th>
+                                <th>Asignación activa</th>
+                                <th class="text-end">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for t in trabajadores %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ t.nombres }} {{ t.apellidos }}</strong>
+                                    </td>
+                                    <td>
+                                        <span class="text-monospace">{{ t.id_trabajador }}</span>
+                                    </td>
+                                    <td>
+                                        {% with a=t.asignacion_activa %}
+                                            {% if a %}
+                                                <span class="badge bg-success">
+                                                    {{ a.proyecto.codigo_proyecto }} - {{ a.proyecto.nombre_proyecto }}
+                                                </span>
+                                            {% else %}
+                                                <span class="badge bg-secondary">Sin asignación activa</span>
+                                            {% endif %}
+                                        {% endwith %}
+                                    </td>
+                                    <td class="text-end">
+                                        {% if t.asignacion_activa %}
+                                            <a href="{% url 'proyectos:proyecto_detail' t.asignacion_activa.proyecto.id_proyecto %}"
+                                               class="btn btn-sm btn-outline-secondary">
+                                                <i class="bi bi-kanban"></i> Ver proyecto
+                                            </a>
+                                        {% else %}
+                                            <a href="{% url 'proyectos:asignacion_create_desde_trabajador' %}?trabajador_id={{ t.id_trabajador }}"
+                                                class="btn btn-sm btn-primary">
+                                                <i class="bi bi-plus-lg"></i> Asignar a proyecto
+                                        </a>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="text-center py-4">
+                    <p class="text-muted mt-3">No se encontraron trabajadores con esos filtros.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

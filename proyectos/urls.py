@@ -93,7 +93,9 @@ urlpatterns = [
     path('<int:id_proyecto>/trabajadores/asignar/', views.asignacion_create, name='asignacion_create'),
     path('trabajadores/<int:id_asignacion>/editar/', views.asignacion_update, name='asignacion_update'),
     path('trabajadores/<int:id_asignacion>/eliminar/', views.asignacion_delete, name='asignacion_delete'),
-    
+    path('asignaciones/', views.asignacion_global_list, name='asignacion_global_list'),
+    path('asignaciones/nueva/', views.asignacion_create_desde_trabajador, name='asignacion_create_desde_trabajador'),
+
     # =====================================================
     # FASE 6: DOCUMENTOS
     # =====================================================
