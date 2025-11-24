@@ -1,0 +1,776 @@
+[
+  {
+    "model": "inventario.tipomovimiento",
+    "pk": 1,
+    "fields": {
+      "codigo": "ENT",
+      "nombre": "Entrada",
+      "descripcion": "Entrada de inventario por compra o recepción",
+      "afecta_stock": 1,
+      "requiere_ubicacion_destino": false,
+      "requiere_proyecto": false,
+      "requiere_trabajador": false,
+      "icono": "bi-box-arrow-in-down",
+      "color": "success",
+      "activo": true
+    }
+  },
+  {
+    "model": "inventario.tipomovimiento",
+    "pk": 2,
+    "fields": {
+      "codigo": "SAL",
+      "nombre": "Salida",
+      "descripcion": "Salida de inventario para uso en proyecto",
+      "afecta_stock": -1,
+      "requiere_ubicacion_destino": false,
+      "requiere_proyecto": true,
+      "requiere_trabajador": true,
+      "icono": "bi-box-arrow-up",
+      "color": "danger",
+      "activo": true
+    }
+  },
+  {
+    "model": "inventario.tipomovimiento",
+    "pk": 3,
+    "fields": {
+      "codigo": "TRA",
+      "nombre": "Transferencia",
+      "descripcion": "Transferencia entre ubicaciones",
+      "afecta_stock": 0,
+      "requiere_ubicacion_destino": true,
+      "requiere_proyecto": false,
+      "requiere_trabajador": false,
+      "icono": "bi-arrow-left-right",
+      "color": "info",
+      "activo": true
+    }
+  },
+  {
+    "model": "inventario.tipomovimiento",
+    "pk": 4,
+    "fields": {
+      "codigo": "AJU+",
+      "nombre": "Ajuste Positivo",
+      "descripcion": "Ajuste de inventario por conteo físico (incremento)",
+      "afecta_stock": 1,
+      "requiere_ubicacion_destino": false,
+      "requiere_proyecto": false,
+      "requiere_trabajador": false,
+      "icono": "bi-plus-circle",
+      "color": "primary",
+      "activo": true
+    }
+  },
+  {
+    "model": "inventario.tipomovimiento",
+    "pk": 5,
+    "fields": {
+      "codigo": "AJU-",
+      "nombre": "Ajuste Negativo",
+      "descripcion": "Ajuste de inventario por conteo físico (decremento)",
+      "afecta_stock": -1,
+      "requiere_ubicacion_destino": false,
+      "requiere_proyecto": false,
+      "requiere_trabajador": false,
+      "icono": "bi-dash-circle",
+      "color": "warning",
+      "activo": true
+    }
+  },
+  {
+    "model": "inventario.tipomovimiento",
+    "pk": 6,
+    "fields": {
+      "codigo": "DEV",
+      "nombre": "Devolución",
+      "descripcion": "Devolución de inventario desde proyecto",
+      "afecta_stock": 1,
+      "requiere_ubicacion_destino": false,
+      "requiere_proyecto": true,
+      "requiere_trabajador": true,
+      "icono": "bi-arrow-return-left",
+      "color": "secondary",
+      "activo": true
+    }
+  },
+  {
+    "model": "inventario.tipomovimiento",
+    "pk": 7,
+    "fields": {
+      "codigo": "BAJ",
+      "nombre": "Baja",
+      "descripcion": "Baja de inventario por daño, obsolescencia o pérdida",
+      "afecta_stock": -1,
+      "requiere_ubicacion_destino": false,
+      "requiere_proyecto": false,
+      "requiere_trabajador": false,
+      "icono": "bi-trash",
+      "color": "dark",
+      "activo": true
+    }
+  },
+  {
+    "model": "inventario.tipoubicacion",
+    "pk": 1,
+    "fields": {
+      "nombre": "Bodega",
+      "descripcion": "Bodega de almacenamiento fija",
+      "es_temporal": false,
+      "icono": "bi-building",
+      "color": "primary",
+      "activo": true
+    }
+  },
+  {
+    "model": "inventario.tipoubicacion",
+    "pk": 2,
+    "fields": {
+      "nombre": "Proyecto",
+      "descripcion": "Ubicación temporal en proyecto de obra",
+      "es_temporal": true,
+      "icono": "bi-geo-alt",
+      "color": "success",
+      "activo": true
+    }
+  },
+  {
+    "model": "inventario.tipoubicacion",
+    "pk": 3,
+    "fields": {
+      "nombre": "Vehículo",
+      "descripcion": "Inventario en vehículo de transporte",
+      "es_temporal": true,
+      "icono": "bi-truck",
+      "color": "info",
+      "activo": true
+    }
+  },
+  {
+    "model": "inventario.tipoubicacion",
+    "pk": 4,
+    "fields": {
+      "nombre": "Taller",
+      "descripcion": "Taller de reparación o mantenimiento",
+      "es_temporal": false,
+      "icono": "bi-tools",
+      "color": "warning",
+      "activo": true
+    }
+  },
+  {
+    "model": "inventario.unidadmedida",
+    "pk": 1,
+    "fields": {
+      "nombre": "Unidad",
+      "abreviatura": "ud",
+      "descripcion": "Unidad individual",
+      "activo": true
+    }
+  },
+  {
+    "model": "inventario.unidadmedida",
+    "pk": 2,
+    "fields": {
+      "nombre": "Metro",
+      "abreviatura": "m",
+      "descripcion": "Metro lineal",
+      "activo": true
+    }
+  },
+  {
+    "model": "inventario.unidadmedida",
+    "pk": 3,
+    "fields": {
+      "nombre": "Metro cuadrado",
+      "abreviatura": "m²",
+      "descripcion": "Metro cuadrado",
+      "activo": true
+    }
+  },
+  {
+    "model": "inventario.unidadmedida",
+    "pk": 4,
+    "fields": {
+      "nombre": "Kilogramo",
+      "abreviatura": "kg",
+      "descripcion": "Kilogramo",
+      "activo": true
+    }
+  },
+  {
+    "model": "inventario.unidadmedida",
+    "pk": 5,
+    "fields": {
+      "nombre": "Litro",
+      "abreviatura": "L",
+      "descripcion": "Litro",
+      "activo": true
+    }
+  },
+  {
+    "model": "inventario.unidadmedida",
+    "pk": 6,
+    "fields": {
+      "nombre": "Galón",
+      "abreviatura": "gal",
+      "descripcion": "Galón",
+      "activo": true
+    }
+  },
+  {
+    "model": "inventario.unidadmedida",
+    "pk": 7,
+    "fields": {
+      "nombre": "Rollo",
+      "abreviatura": "rollo",
+      "descripcion": "Rollo de material",
+      "activo": true
+    }
+  },
+  {
+    "model": "inventario.unidadmedida",
+    "pk": 8,
+    "fields": {
+      "nombre": "Juego",
+      "abreviatura": "jgo",
+      "descripcion": "Juego o conjunto",
+      "activo": true
+    }
+  },
+  {
+    "model": "inventario.unidadmedida",
+    "pk": 9,
+    "fields": {
+      "nombre": "Par",
+      "abreviatura": "par",
+      "descripcion": "Par de elementos",
+      "activo": true
+    }
+  },
+  {
+    "model": "inventario.estadoarticulo",
+    "pk": 1,
+    "fields": {
+      "nombre": "Disponible",
+      "descripcion": "Artículo disponible para uso",
+      "color_badge": "success",
+      "permite_uso": true,
+      "orden": 1,
+      "activo": true
+    }
+  },
+  {
+    "model": "inventario.estadoarticulo",
+    "pk": 2,
+    "fields": {
+      "nombre": "En Uso",
+      "descripcion": "Artículo actualmente en uso en proyecto",
+      "color_badge": "primary",
+      "permite_uso": false,
+      "orden": 2,
+      "activo": true
+    }
+  },
+  {
+    "model": "inventario.estadoarticulo",
+    "pk": 3,
+    "fields": {
+      "nombre": "En Mantenimiento",
+      "descripcion": "Artículo en proceso de mantenimiento",
+      "color_badge": "warning",
+      "permite_uso": false,
+      "orden": 3,
+      "activo": true
+    }
+  },
+  {
+    "model": "inventario.estadoarticulo",
+    "pk": 4,
+    "fields": {
+      "nombre": "Dañado",
+      "descripcion": "Artículo dañado, requiere reparación",
+      "color_badge": "danger",
+      "permite_uso": false,
+      "orden": 4,
+      "activo": true
+    }
+  },
+  {
+    "model": "inventario.estadoarticulo",
+    "pk": 5,
+    "fields": {
+      "nombre": "Dado de Baja",
+      "descripcion": "Artículo dado de baja definitivamente",
+      "color_badge": "dark",
+      "permite_uso": false,
+      "orden": 5,
+      "activo": true
+    }
+  },
+  {
+    "model": "inventario.estadoarticulo",
+    "pk": 6,
+    "fields": {
+      "nombre": "Reservado",
+      "descripcion": "Artículo reservado para un proyecto",
+      "color_badge": "info",
+      "permite_uso": false,
+      "orden": 6,
+      "activo": true
+    }
+  },
+  {
+    "model": "inventario.categoriainventario",
+    "pk": 1,
+    "fields": {
+      "codigo": "EQM",
+      "nombre": "Equipos Mayores",
+      "descripcion": "Equipos de construcción como pulidoras, apisonadores, taladros industriales, etc.",
+      "icono": "bi-gear-wide-connected",
+      "color": "#0d6efd",
+      "maneja_individual": true,
+      "requiere_mantenimiento": true,
+      "control_vencimiento": false,
+      "control_horometro": false,
+      "control_combustible": false,
+      "orden": 1,
+      "activo": true
+    }
+  },
+  {
+    "model": "inventario.categoriainventario",
+    "pk": 2,
+    "fields": {
+      "codigo": "MPE",
+      "nombre": "Maquinaria Pesada",
+      "descripcion": "Maquinaria pesada como retroexcavadoras, minicargadores, volquetas, etc.",
+      "icono": "bi-truck",
+      "color": "#fd7e14",
+      "maneja_individual": true,
+      "requiere_mantenimiento": true,
+      "control_vencimiento": false,
+      "control_horometro": true,
+      "control_combustible": true,
+      "orden": 2,
+      "activo": true
+    }
+  },
+  {
+    "model": "inventario.categoriainventario",
+    "pk": 3,
+    "fields": {
+      "codigo": "HME",
+      "nombre": "Herramienta Menor",
+      "descripcion": "Herramientas manuales como palas, picas, barras, hoyadoras, etc.",
+      "icono": "bi-hammer",
+      "color": "#6c757d",
+      "maneja_individual": false,
+      "requiere_mantenimiento": false,
+      "control_vencimiento": false,
+      "control_horometro": false,
+      "control_combustible": false,
+      "orden": 3,
+      "activo": true
+    }
+  },
+  {
+    "model": "inventario.categoriainventario",
+    "pk": 4,
+    "fields": {
+      "codigo": "SEG",
+      "nombre": "Equipos de Seguridad",
+      "descripcion": "EPP y equipos de seguridad como cascos, arneses, líneas de vida, etc.",
+      "icono": "bi-shield-check",
+      "color": "#dc3545",
+      "maneja_individual": true,
+      "requiere_mantenimiento": true,
+      "control_vencimiento": true,
+      "control_horometro": false,
+      "control_combustible": false,
+      "orden": 4,
+      "activo": true
+    }
+  },
+  {
+    "model": "inventario.categoriainventario",
+    "pk": 5,
+    "fields": {
+      "codigo": "CON",
+      "nombre": "Consumibles y Materiales",
+      "descripcion": "Materiales de consumo como tornillos, clavos, pegamentos, etc.",
+      "icono": "bi-boxes",
+      "color": "#198754",
+      "maneja_individual": false,
+      "requiere_mantenimiento": false,
+      "control_vencimiento": false,
+      "control_horometro": false,
+      "control_combustible": false,
+      "orden": 5,
+      "activo": true
+    }
+  },
+  {
+    "model": "inventario.categoriainventario",
+    "pk": 6,
+    "fields": {
+      "codigo": "MOB",
+      "nombre": "Mobiliario y Oficina",
+      "descripcion": "Equipos de oficina como computadores, impresoras, escritorios, etc.",
+      "icono": "bi-pc-display",
+      "color": "#0dcaf0",
+      "maneja_individual": true,
+      "requiere_mantenimiento": false,
+      "control_vencimiento": false,
+      "control_horometro": false,
+      "control_combustible": false,
+      "orden": 6,
+      "activo": true
+    }
+  },
+  {
+    "model": "inventario.subcategoriainventario",
+    "pk": 1,
+    "fields": {
+      "categoria": 1,
+      "codigo": "EQM-COMP",
+      "nombre": "Equipos de Compactación",
+      "descripcion": "Apisonadores, vibro compactadores, planchas vibratorias",
+      "activo": true
+    }
+  },
+  {
+    "model": "inventario.subcategoriainventario",
+    "pk": 2,
+    "fields": {
+      "categoria": 1,
+      "codigo": "EQM-CORTE",
+      "nombre": "Equipos de Corte",
+      "descripcion": "Cortadoras, tronzadoras, sierras",
+      "activo": true
+    }
+  },
+  {
+    "model": "inventario.subcategoriainventario",
+    "pk": 3,
+    "fields": {
+      "categoria": 1,
+      "codigo": "EQM-SOLD",
+      "nombre": "Equipos de Soldadura",
+      "descripcion": "Soldadores, equipos de oxicorte",
+      "activo": true
+    }
+  },
+  {
+    "model": "inventario.subcategoriainventario",
+    "pk": 4,
+    "fields": {
+      "categoria": 1,
+      "codigo": "EQM-PERF",
+      "nombre": "Equipos de Perforación",
+      "descripcion": "Taladros, rotomartillos, perforadoras",
+      "activo": true
+    }
+  },
+  {
+    "model": "inventario.subcategoriainventario",
+    "pk": 5,
+    "fields": {
+      "categoria": 1,
+      "codigo": "EQM-ELEC",
+      "nombre": "Equipos Eléctricos",
+      "descripcion": "Pulidoras, esmeriles, motores",
+      "activo": true
+    }
+  },
+  {
+    "model": "inventario.subcategoriainventario",
+    "pk": 6,
+    "fields": {
+      "categoria": 2,
+      "codigo": "MPE-EXC",
+      "nombre": "Excavadoras",
+      "descripcion": "Retroexcavadoras, miniexcavadoras",
+      "activo": true
+    }
+  },
+  {
+    "model": "inventario.subcategoriainventario",
+    "pk": 7,
+    "fields": {
+      "categoria": 2,
+      "codigo": "MPE-CARG",
+      "nombre": "Cargadores",
+      "descripcion": "Minicargadores, cargadores frontales",
+      "activo": true
+    }
+  },
+  {
+    "model": "inventario.subcategoriainventario",
+    "pk": 8,
+    "fields": {
+      "categoria": 2,
+      "codigo": "MPE-VOLQ",
+      "nombre": "Volquetas",
+      "descripcion": "Volquetas y camiones de carga",
+      "activo": true
+    }
+  },
+  {
+    "model": "inventario.subcategoriainventario",
+    "pk": 9,
+    "fields": {
+      "categoria": 3,
+      "codigo": "HME-EXC",
+      "nombre": "Herramientas de Excavación",
+      "descripcion": "Palas, picas, barras, hoyadoras",
+      "activo": true
+    }
+  },
+  {
+    "model": "inventario.subcategoriainventario",
+    "pk": 10,
+    "fields": {
+      "categoria": 3,
+      "codigo": "HME-ALB",
+      "nombre": "Herramientas de Albañilería",
+      "descripcion": "Palustres, llanas, niveles, plomadas",
+      "activo": true
+    }
+  },
+  {
+    "model": "inventario.subcategoriainventario",
+    "pk": 11,
+    "fields": {
+      "categoria": 3,
+      "codigo": "HME-MED",
+      "nombre": "Herramientas de Medición",
+      "descripcion": "Flexómetros, niveles láser, cintas métricas",
+      "activo": true
+    }
+  },
+  {
+    "model": "inventario.subcategoriainventario",
+    "pk": 12,
+    "fields": {
+      "categoria": 4,
+      "codigo": "SEG-ALT",
+      "nombre": "Equipos Trabajo en Alturas",
+      "descripcion": "Arneses, líneas de vida, conectores, cascos",
+      "activo": true
+    }
+  },
+  {
+    "model": "inventario.subcategoriainventario",
+    "pk": 13,
+    "fields": {
+      "categoria": 4,
+      "codigo": "SEG-EPP",
+      "nombre": "EPP General",
+      "descripcion": "Guantes, gafas, protectores auditivos, botas",
+      "activo": true
+    }
+  },
+  {
+    "model": "inventario.subcategoriainventario",
+    "pk": 14,
+    "fields": {
+      "categoria": 4,
+      "codigo": "SEG-SEN",
+      "nombre": "Señalización",
+      "descripcion": "Conos, cinta de señalización, paletas",
+      "activo": true
+    }
+  },
+  {
+    "model": "inventario.subcategoriainventario",
+    "pk": 15,
+    "fields": {
+      "categoria": 5,
+      "codigo": "CON-FIJ",
+      "nombre": "Elementos de Fijación",
+      "descripcion": "Tornillos, clavos, puntillas, chazos",
+      "activo": true
+    }
+  },
+  {
+    "model": "inventario.subcategoriainventario",
+    "pk": 16,
+    "fields": {
+      "categoria": 5,
+      "codigo": "CON-ELEC",
+      "nombre": "Material Eléctrico",
+      "descripcion": "Cables, conectores, tomas, interruptores",
+      "activo": true
+    }
+  },
+  {
+    "model": "inventario.subcategoriainventario",
+    "pk": 17,
+    "fields": {
+      "categoria": 6,
+      "codigo": "MOB-COMP",
+      "nombre": "Equipos de Cómputo",
+      "descripcion": "Computadores, portátiles, tablets",
+      "activo": true
+    }
+  },
+  {
+    "model": "inventario.subcategoriainventario",
+    "pk": 18,
+    "fields": {
+      "categoria": 6,
+      "codigo": "MOB-IMPR",
+      "nombre": "Equipos de Impresión",
+      "descripcion": "Impresoras, plotters, escáneres",
+      "activo": true
+    }
+  },
+  {
+    "model": "inventario.subcategoriainventario",
+    "pk": 19,
+    "fields": {
+      "categoria": 6,
+      "codigo": "MOB-MUE",
+      "nombre": "Muebles",
+      "descripcion": "Escritorios, sillas, archivadores",
+      "activo": true
+    }
+  },
+  {
+    "model": "inventario.tipomantenimiento",
+    "pk": 1,
+    "fields": {
+      "nombre": "Preventivo",
+      "descripcion": "Mantenimiento programado para prevenir fallas",
+      "color": "info",
+      "activo": true
+    }
+  },
+  {
+    "model": "inventario.tipomantenimiento",
+    "pk": 2,
+    "fields": {
+      "nombre": "Correctivo",
+      "descripcion": "Mantenimiento para reparar fallas existentes",
+      "color": "danger",
+      "activo": true
+    }
+  },
+  {
+    "model": "inventario.tipomantenimiento",
+    "pk": 3,
+    "fields": {
+      "nombre": "Calibración",
+      "descripcion": "Calibración de equipos de medición",
+      "color": "warning",
+      "activo": true
+    }
+  },
+  {
+    "model": "inventario.tipomantenimiento",
+    "pk": 4,
+    "fields": {
+      "nombre": "Inspección",
+      "descripcion": "Inspección técnica de equipos",
+      "color": "primary",
+      "activo": true
+    }
+  },
+  {
+    "model": "inventario.tipoalerta",
+    "pk": 1,
+    "fields": {
+      "codigo": "STK",
+      "nombre": "Stock Mínimo",
+      "descripcion": "Alerta cuando el inventario alcanza el stock mínimo",
+      "icono": "bi-exclamation-triangle",
+      "color": "warning",
+      "dias_anticipacion": 0,
+      "activo": true
+    }
+  },
+  {
+    "model": "inventario.tipoalerta",
+    "pk": 2,
+    "fields": {
+      "codigo": "MNT",
+      "nombre": "Mantenimiento Próximo",
+      "descripcion": "Alerta de mantenimiento programado próximo a vencer",
+      "icono": "bi-tools",
+      "color": "info",
+      "dias_anticipacion": 15,
+      "activo": true
+    }
+  },
+  {
+    "model": "inventario.tipoalerta",
+    "pk": 3,
+    "fields": {
+      "codigo": "VEN",
+      "nombre": "Vencimiento EPP",
+      "descripcion": "Alerta de vencimiento de equipos de protección personal",
+      "icono": "bi-calendar-x",
+      "color": "danger",
+      "dias_anticipacion": 30,
+      "activo": true
+    }
+  },
+  {
+    "model": "inventario.tipoalerta",
+    "pk": 4,
+    "fields": {
+      "codigo": "DOC",
+      "nombre": "Documentos por Vencer",
+      "descripcion": "Alerta de documentos legales por vencer (SOAT, tecnicomecanica)",
+      "icono": "bi-file-earmark-x",
+      "color": "warning",
+      "dias_anticipacion": 30,
+      "activo": true
+    }
+  },
+  {
+    "model": "inventario.tipoalerta",
+    "pk": 5,
+    "fields": {
+      "codigo": "DEV",
+      "nombre": "Devolución Pendiente",
+      "descripcion": "Alerta de devolución de inventario vencida",
+      "icono": "bi-arrow-return-left",
+      "color": "danger",
+      "dias_anticipacion": 0,
+      "activo": true
+    }
+  },
+  {
+    "model": "inventario.calidadmaterial",
+    "pk": 1,
+    "fields": {
+      "codigo": "A",
+      "nombre": "Calidad A - Premium",
+      "descripcion": "Material de primera calidad, sin defectos",
+      "activo": true
+    }
+  },
+  {
+    "model": "inventario.calidadmaterial",
+    "pk": 2,
+    "fields": {
+      "codigo": "B",
+      "nombre": "Calidad B - Estándar",
+      "descripcion": "Material de calidad estándar, defectos menores aceptables",
+      "activo": true
+    }
+  },
+  {
+    "model": "inventario.calidadmaterial",
+    "pk": 3,
+    "fields": {
+      "codigo": "C",
+      "nombre": "Calidad C - Económica",
+      "descripcion": "Material económico, puede tener defectos visibles",
+      "activo": true
+    }
+  }
+]

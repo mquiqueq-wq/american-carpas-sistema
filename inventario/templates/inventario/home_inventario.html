@@ -1,0 +1,301 @@
+{% extends 'base.html' %}
+
+{% block title %}Módulo: Inventario de Carpas{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Encabezado del módulo -->
+    <div class="mb-4">
+        <h2><i class="bi bi-box-seam text-primary"></i> Módulo: Inventario de Carpas</h2>
+        <p class="text-muted">Gestión integral de lonas, estructuras, accesorios y órdenes de producción</p>
+    </div>
+    
+    <!-- Sección: Inventarios Principales -->
+    <h5 class="mb-3"><i class="bi bi-archive me-2"></i>Inventarios</h5>
+    <div class="row g-4 mb-5">
+        <!-- 1. Inventario de Lonas -->
+        <div class="col-6 col-md-4 col-lg-3">
+            <a href="/admin/inventario/inventariolona/" class="text-decoration-none">
+                <div class="card menu-card card-azul">
+                    <div class="card-body">
+                        <i class="bi bi-layers menu-icon-large"></i>
+                        <h6 class="fw-bold">Lonas</h6>
+                        <small class="text-muted">Rollos y metraje</small>
+                        <span class="badge bg-primary mt-2"></span>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <!-- 2. Inventario de Estructura -->
+        <div class="col-6 col-md-4 col-lg-3">
+            <a href="/admin/inventario/inventarioestructura/" class="text-decoration-none">
+                <div class="card menu-card card-verde">
+                    <div class="card-body">
+                        <i class="bi bi-building menu-icon-large"></i>
+                        <h6 class="fw-bold">Estructura</h6>
+                        <small class="text-muted">Tubería y perfiles</small>
+                        <span class="badge bg-success mt-2"></span>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <!-- 3. Inventario de Accesorios -->
+        <div class="col-6 col-md-4 col-lg-3">
+            <a href="/admin/inventario/inventarioaccesorio/" class="text-decoration-none">
+                <div class="card menu-card card-azul">
+                    <div class="card-body">
+                        <i class="bi bi-tools menu-icon-large"></i>
+                        <h6 class="fw-bold">Accesorios</h6>
+                        <small class="text-muted">Tensores, estacas</small>
+                        <span class="badge bg-primary mt-2"></span>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <!-- 4. Historial de Movimientos -->
+        <div class="col-6 col-md-4 col-lg-3">
+            <a href="/admin/inventario/historialinventario/" class="text-decoration-none">
+                <div class="card menu-card card-verde">
+                    <div class="card-body">
+                        <i class="bi bi-clock-history menu-icon-large"></i>
+                        <h6 class="fw-bold">Historial</h6>
+                        <small class="text-muted">Movimientos</small>
+                        <span class="badge bg-success mt-2"></span>
+                    </div>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    <!-- Sección: Órdenes de Producción -->
+    <h5 class="mb-3"><i class="bi bi-clipboard-check me-2"></i>Producción</h5>
+    <div class="row g-4 mb-5">
+        <!-- 5. Listado de Órdenes -->
+        <div class="col-6 col-md-4 col-lg-3">
+            <a href="/admin/inventario/ordenproduccion/" class="text-decoration-none">
+                <div class="card menu-card card-azul">
+                    <div class="card-body">
+                        <i class="bi bi-list-ul menu-icon-large"></i>
+                        <h6 class="fw-bold">Órdenes</h6>
+                        <small class="text-muted">Ver listado</small>
+                        <span class="badge bg-primary mt-2"></span>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <!-- 6. Nueva Orden -->
+        <div class="col-6 col-md-4 col-lg-3">
+            <a href="/admin/inventario/ordenproduccion/add/" class="text-decoration-none">
+                <div class="card menu-card card-verde">
+                    <div class="card-body">
+                        <i class="bi bi-plus-circle menu-icon-large"></i>
+                        <h6 class="fw-bold">Nueva Orden</h6>
+                        <small class="text-muted">Crear OP</small>
+                        <span class="badge bg-success mt-2"></span>
+                    </div>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    <!-- Sección: Catálogos de Lonas -->
+    <h5 class="mb-3"><i class="bi bi-tags me-2"></i>Catálogos de Lonas</h5>
+    <div class="row g-4 mb-5">
+        <!-- Tipos de Lona -->
+        <div class="col-6 col-md-4 col-lg-3">
+            <a href="{% url 'inventario:tipolona_list' %}" class="text-decoration-none">
+                <div class="card menu-card card-azul">
+                    <div class="card-body">
+                        <i class="bi bi-tag menu-icon-large"></i>
+                        <h6 class="fw-bold">Tipos Lona</h6>
+                        <small class="text-muted">Catálogo</small>
+                        <span class="badge bg-primary mt-2"></span>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <!-- Anchos -->
+        <div class="col-6 col-md-4 col-lg-3">
+            <a href="{% url 'inventario:ancholona_list' %}" class="text-decoration-none">
+                <div class="card menu-card card-verde">
+                    <div class="card-body">
+                        <i class="bi bi-arrows-expand menu-icon-large"></i>
+                        <h6 class="fw-bold">Anchos</h6>
+                        <small class="text-muted">Catálogo</small>
+                        <span class="badge bg-success mt-2"></span>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <!-- Colores -->
+        <div class="col-6 col-md-4 col-lg-3">
+            <a href="{% url 'inventario:colorlona_list' %}" class="text-decoration-none">
+                <div class="card menu-card card-azul">
+                    <div class="card-body">
+                        <i class="bi bi-palette menu-icon-large"></i>
+                        <h6 class="fw-bold">Colores</h6>
+                        <small class="text-muted">Catálogo</small>
+                        <span class="badge bg-primary mt-2"></span>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <!-- Tratamientos -->
+        <div class="col-6 col-md-4 col-lg-3">
+            <a href="{% url 'inventario:tratamientolona_list' %}" class="text-decoration-none">
+                <div class="card menu-card card-verde">
+                    <div class="card-body">
+                        <i class="bi bi-shield-check menu-icon-large"></i>
+                        <h6 class="fw-bold">Tratamientos</h6>
+                        <small class="text-muted">Catálogo</small>
+                        <span class="badge bg-success mt-2"></span>
+                    </div>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    <!-- Sección: Catálogos de Estructura -->
+    <h5 class="mb-3"><i class="bi bi-diagram-3 me-2"></i>Catálogos de Estructura</h5>
+    <div class="row g-4 mb-5">
+        <!-- Tipos de Estructura -->
+        <div class="col-6 col-md-4 col-lg-3">
+            <a href="{% url 'inventario:tipoestructura_list' %}" class="text-decoration-none">
+                <div class="card menu-card card-azul">
+                    <div class="card-body">
+                        <i class="bi bi-border-style menu-icon-large"></i>
+                        <h6 class="fw-bold">Tipos</h6>
+                        <small class="text-muted">Catálogo</small>
+                        <span class="badge bg-primary mt-2"></span>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <!-- Medidas de Tubo -->
+        <div class="col-6 col-md-4 col-lg-3">
+            <a href="{% url 'inventario:medidatubo_list' %}" class="text-decoration-none">
+                <div class="card menu-card card-verde">
+                    <div class="card-body">
+                        <i class="bi bi-rulers menu-icon-large"></i>
+                        <h6 class="fw-bold">Medidas Tubo</h6>
+                        <small class="text-muted">Catálogo</small>
+                        <span class="badge bg-success mt-2"></span>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <!-- Calibres -->
+        <div class="col-6 col-md-4 col-lg-3">
+            <a href="{% url 'inventario:calibre_list' %}" class="text-decoration-none">
+                <div class="card menu-card card-azul">
+                    <div class="card-body">
+                        <i class="bi bi-speedometer menu-icon-large"></i>
+                        <h6 class="fw-bold">Calibres</h6>
+                        <small class="text-muted">Catálogo</small>
+                        <span class="badge bg-primary mt-2"></span>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <!-- Materiales -->
+        <div class="col-6 col-md-4 col-lg-3">
+            <a href="{% url 'inventario:material_list' %}" class="text-decoration-none">
+                <div class="card menu-card card-verde">
+                    <div class="card-body">
+                        <i class="bi bi-gem menu-icon-large"></i>
+                        <h6 class="fw-bold">Materiales</h6>
+                        <small class="text-muted">Catálogo</small>
+                        <span class="badge bg-success mt-2"></span>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <!-- Acabados -->
+        <div class="col-6 col-md-4 col-lg-3">
+            <a href="{% url 'inventario:acabado_list' %}" class="text-decoration-none">
+                <div class="card menu-card card-azul">
+                    <div class="card-body">
+                        <i class="bi bi-brush menu-icon-large"></i>
+                        <h6 class="fw-bold">Acabados</h6>
+                        <small class="text-muted">Catálogo</small>
+                        <span class="badge bg-primary mt-2"></span>
+                    </div>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    <!-- Sección: Otros Catálogos -->
+    <h5 class="mb-3"><i class="bi bi-gear me-2"></i>Otros Catálogos</h5>
+    <div class="row g-4 mb-5">
+        <!-- Ubicaciones -->
+        <div class="col-6 col-md-4 col-lg-3">
+            <a href="{% url 'inventario:ubicacion_list' %}" class="text-decoration-none">
+                <div class="card menu-card card-azul">
+                    <div class="card-body">
+                        <i class="bi bi-geo-alt menu-icon-large"></i>
+                        <h6 class="fw-bold">Ubicaciones</h6>
+                        <small class="text-muted">Almacén</small>
+                        <span class="badge bg-primary mt-2"></span>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <!-- Tipos de Accesorio -->
+        <div class="col-6 col-md-4 col-lg-3">
+            <a href="{% url 'inventario:tipoaccesorio_list' %}" class="text-decoration-none">
+                <div class="card menu-card card-verde">
+                    <div class="card-body">
+                        <i class="bi bi-puzzle menu-icon-large"></i>
+                        <h6 class="fw-bold">Tipos Accesorio</h6>
+                        <small class="text-muted">Catálogo</small>
+                        <span class="badge bg-success mt-2"></span>
+                    </div>
+                </div>
+            </a>
+        </div>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Animación de entrada para las tarjetas */
+    .menu-card {
+        animation: fadeInUp 0.5s ease forwards;
+        opacity: 0;
+    }
+    
+    .menu-card:nth-child(1) { animation-delay: 0.1s; }
+    .menu-card:nth-child(2) { animation-delay: 0.2s; }
+    .menu-card:nth-child(3) { animation-delay: 0.3s; }
+    .menu-card:nth-child(4) { animation-delay: 0.4s; }
+    .menu-card:nth-child(5) { animation-delay: 0.5s; }
+    .menu-card:nth-child(6) { animation-delay: 0.6s; }
+    .menu-card:nth-child(7) { animation-delay: 0.7s; }
+    
+    @keyframes fadeInUp {
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+    }
+</style>
+{% endblock %}
