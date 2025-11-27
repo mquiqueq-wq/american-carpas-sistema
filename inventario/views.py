@@ -5,24 +5,29 @@ American Carpas 1 SAS
 Versión: 2.0 - Fase 2: Catálogos Básicos
 """
 
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from django.urls import reverse_lazy
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.views.generic import ListView, CreateView, UpdateView, DeleteView
+from django.views.generic import ListView, CreateView, UpdateView, DeleteView, DetailView
 from django.contrib import messages
+from django.db.models import Q
 
 from .models import (
     UbicacionAlmacen,
     TipoLona, AnchoLona, ColorLona, TratamientoLona,
     TipoEstructura, MedidaTubo, Calibre, MaterialEstructura, AcabadoEstructura,
     TipoAccesorio,
+    InventarioLona, InventarioEstructura, InventarioAccesorio,
+    OrdenProduccion, OrdenProduccionItem,
 )
 from .forms import (
     UbicacionAlmacenForm,
     TipoLonaForm, AnchoLonaForm, ColorLonaForm, TratamientoLonaForm,
     TipoEstructuraForm, MedidaTuboForm, CalibreForm, MaterialEstructuraForm, AcabadoEstructuraForm,
     TipoAccesorioForm,
+    InventarioLonaForm, InventarioEstructuraForm, InventarioAccesorioForm,
+    OrdenProduccionForm, OrdenProduccionItemForm,
 )
 
 
@@ -44,7 +49,7 @@ class InventarioContextMixin:
 # HOME
 # =============================================================================
 
-@login_required
+#@login_required
 def home_inventario(request):
     """Vista principal del módulo de inventario"""
     context = {
@@ -768,3 +773,305 @@ class TipoAccesorioDeleteView(LoginRequiredMixin, InventarioContextMixin, Delete
         context['titulo'] = 'Eliminar Tipo de Accesorio'
         context['list_url'] = 'inventario:tipoaccesorio_list'
         return context
+
+
+# =============================================================================
+# INVENTARIO DE LONAS
+# =============================================================================
+
+class InventarioLonaListView(LoginRequiredMixin, InventarioContextMixin, ListView):
+    model = InventarioLona
+    template_name = 'inventario/lona_list.html'
+    context_object_name = 'lonas'
+    paginate_by = 15
+    
+    def get_queryset(self):
+        queryset = super().get_queryset().select_related(
+            'tipo_lona', 'ancho_lona', 'color_lona', 'ubicacion'
+        )
+        search = self.request.GET.get('search', '')
+        if search:
+            queryset = queryset.filter(codigo_rollo__icontains=search)
+        return queryset
+
+
+class InventarioLonaDetailView(LoginRequiredMixin, InventarioContextMixin, DetailView):
+    model = InventarioLona
+    template_name = 'inventario/lona_detail.html'
+    context_object_name = 'lona'
+
+
+class InventarioLonaCreateView(LoginRequiredMixin, InventarioContextMixin, CreateView):
+    model = InventarioLona
+    form_class = InventarioLonaForm
+    template_name = 'inventario/lona_form.html'
+    success_url = reverse_lazy('inventario:lona_list')
+    
+    def form_valid(self, form):
+        messages.success(self.request, 'Rollo de lona registrado exitosamente.')
+        return super().form_valid(form)
+
+
+class InventarioLonaUpdateView(LoginRequiredMixin, InventarioContextMixin, UpdateView):
+    model = InventarioLona
+    form_class = InventarioLonaForm
+    template_name = 'inventario/lona_form.html'
+    success_url = reverse_lazy('inventario:lona_list')
+    
+    def form_valid(self, form):
+        messages.success(self.request, 'Rollo de lona actualizado exitosamente.')
+        return super().form_valid(form)
+
+
+class InventarioLonaDeleteView(LoginRequiredMixin, InventarioContextMixin, DeleteView):
+    model = InventarioLona
+    template_name = 'inventario/lona_confirm_delete.html'
+    success_url = reverse_lazy('inventario:lona_list')
+
+
+# =============================================================================
+# INVENTARIO DE ESTRUCTURA
+# =============================================================================
+
+class InventarioEstructuraListView(LoginRequiredMixin, InventarioContextMixin, ListView):
+    model = InventarioEstructura
+    template_name = 'inventario/estructura_list.html'
+    context_object_name = 'estructuras'
+    paginate_by = 15
+    
+    def get_queryset(self):
+        queryset = super().get_queryset().select_related(
+            'tipo_estructura', 'medida_tubo', 'calibre', 'material', 'ubicacion'
+        )
+        search = self.request.GET.get('search', '')
+        if search:
+            queryset = queryset.filter(codigo_lote__icontains=search)
+        return queryset
+
+
+class InventarioEstructuraDetailView(LoginRequiredMixin, InventarioContextMixin, DetailView):
+    model = InventarioEstructura
+    template_name = 'inventario/estructura_detail.html'
+    context_object_name = 'estructura'
+
+
+class InventarioEstructuraCreateView(LoginRequiredMixin, InventarioContextMixin, CreateView):
+    model = InventarioEstructura
+    form_class = InventarioEstructuraForm
+    template_name = 'inventario/estructura_form.html'
+    success_url = reverse_lazy('inventario:estructura_list')
+    
+    def form_valid(self, form):
+        messages.success(self.request, 'Lote de estructura registrado exitosamente.')
+        return super().form_valid(form)
+
+
+class InventarioEstructuraUpdateView(LoginRequiredMixin, InventarioContextMixin, UpdateView):
+    model = InventarioEstructura
+    form_class = InventarioEstructuraForm
+    template_name = 'inventario/estructura_form.html'
+    success_url = reverse_lazy('inventario:estructura_list')
+    
+    def form_valid(self, form):
+        messages.success(self.request, 'Lote de estructura actualizado exitosamente.')
+        return super().form_valid(form)
+
+
+class InventarioEstructuraDeleteView(LoginRequiredMixin, InventarioContextMixin, DeleteView):
+    model = InventarioEstructura
+    template_name = 'inventario/estructura_confirm_delete.html'
+    success_url = reverse_lazy('inventario:estructura_list')
+
+
+# =============================================================================
+# INVENTARIO DE ACCESORIOS
+# =============================================================================
+
+class InventarioAccesorioListView(LoginRequiredMixin, InventarioContextMixin, ListView):
+    model = InventarioAccesorio
+    template_name = 'inventario/accesorio_list.html'
+    context_object_name = 'accesorios'
+    paginate_by = 15
+    
+    def get_queryset(self):
+        queryset = super().get_queryset().select_related(
+            'tipo_accesorio', 'ubicacion'
+        )
+        search = self.request.GET.get('search', '')
+        if search:
+            queryset = queryset.filter(nombre__icontains=search)
+        return queryset
+
+
+class InventarioAccesorioDetailView(LoginRequiredMixin, InventarioContextMixin, DetailView):
+    model = InventarioAccesorio
+    template_name = 'inventario/accesorio_detail.html'
+    context_object_name = 'accesorio'
+
+
+class InventarioAccesorioCreateView(LoginRequiredMixin, InventarioContextMixin, CreateView):
+    model = InventarioAccesorio
+    form_class = InventarioAccesorioForm
+    template_name = 'inventario/accesorio_form.html'
+    success_url = reverse_lazy('inventario:accesorio_list')
+    
+    def form_valid(self, form):
+        messages.success(self.request, 'Accesorio registrado exitosamente.')
+        return super().form_valid(form)
+
+
+class InventarioAccesorioUpdateView(LoginRequiredMixin, InventarioContextMixin, UpdateView):
+    model = InventarioAccesorio
+    form_class = InventarioAccesorioForm
+    template_name = 'inventario/accesorio_form.html'
+    success_url = reverse_lazy('inventario:accesorio_list')
+    
+    def form_valid(self, form):
+        messages.success(self.request, 'Accesorio actualizado exitosamente.')
+        return super().form_valid(form)
+
+
+class InventarioAccesorioDeleteView(LoginRequiredMixin, InventarioContextMixin, DeleteView):
+    model = InventarioAccesorio
+    template_name = 'inventario/accesorio_confirm_delete.html'
+    success_url = reverse_lazy('inventario:accesorio_list')
+
+
+# =============================================================================
+# VISTAS - ÓRDENES DE PRODUCCIÓN
+# =============================================================================
+
+class OrdenProduccionListView(LoginRequiredMixin, InventarioContextMixin, ListView):
+    """Vista de lista de órdenes de producción"""
+    model = OrdenProduccion
+    template_name = 'inventario/orden_list.html'
+    context_object_name = 'ordenes'
+    paginate_by = 15
+    ordering = ['-fecha_orden', '-numero_orden']
+    
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        
+        # Filtro por estado
+        estado = self.request.GET.get('estado')
+        if estado:
+            queryset = queryset.filter(estado=estado)
+        
+        # Filtro por urgente
+        urgente = self.request.GET.get('urgente')
+        if urgente == '1':
+            queryset = queryset.filter(es_urgente=True)
+        
+        # Filtro por proyecto
+        proyecto = self.request.GET.get('proyecto')
+        if proyecto:
+            queryset = queryset.filter(proyecto_id=proyecto)
+        
+        # Búsqueda
+        q = self.request.GET.get('q')
+        if q:
+            queryset = queryset.filter(
+                Q(numero_orden__icontains=q) |
+                Q(cliente__icontains=q) |
+                Q(proyecto__nombre__icontains=q)
+            )
+        
+        return queryset
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        
+        # Estadísticas
+        from django.db.models import Count
+        context['stats'] = {
+            'total': OrdenProduccion.objects.count(),
+            'pendientes': OrdenProduccion.objects.filter(estado='PENDIENTE').count(),
+            'en_proceso': OrdenProduccion.objects.filter(estado='EN_PROCESO').count(),
+            'completadas': OrdenProduccion.objects.filter(estado='COMPLETADA').count(),
+            'urgentes': OrdenProduccion.objects.filter(es_urgente=True, estado__in=['PENDIENTE', 'EN_PROCESO']).count(),
+        }
+        
+        return context
+
+
+class OrdenProduccionDetailView(LoginRequiredMixin, InventarioContextMixin, DetailView):
+    """Vista de detalle de orden de producción"""
+    model = OrdenProduccion
+    template_name = 'inventario/orden_detail.html'
+    context_object_name = 'orden'
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        orden = self.get_object()
+        
+        # Obtener ítems relacionados
+        context['items'] = orden.items.all()
+        context['consumo_lonas'] = orden.lonas_consumidas.all()
+        context['consumo_estructura'] = orden.estructura_consumida.all()
+        context['consumo_accesorios'] = orden.accesorios_consumidos.all()
+        
+        return context
+
+
+class OrdenProduccionCreateView(LoginRequiredMixin, InventarioContextMixin, CreateView):
+    """Vista de creación de orden de producción"""
+    model = OrdenProduccion
+    form_class = OrdenProduccionForm
+    template_name = 'inventario/orden_form.html'
+    success_url = '/inventario/ordenes/'
+    
+    def form_valid(self, form):
+        form.instance.creado_por = self.request.user
+        messages.success(self.request, f'Orden de producción creada exitosamente')
+        return super().form_valid(form)
+
+
+class OrdenProduccionUpdateView(LoginRequiredMixin, InventarioContextMixin, UpdateView):
+    """Vista de edición de orden de producción"""
+    model = OrdenProduccion
+    form_class = OrdenProduccionForm
+    template_name = 'inventario/orden_form.html'
+    
+    def get_success_url(self):
+        return f'/inventario/ordenes/{self.object.pk}/'
+    
+    def form_valid(self, form):
+        messages.success(self.request, f'Orden {self.object.numero_orden} actualizada exitosamente')
+        return super().form_valid(form)
+
+
+class OrdenProduccionDeleteView(LoginRequiredMixin, InventarioContextMixin, DeleteView):
+    """Vista de eliminación de orden de producción"""
+    model = OrdenProduccion
+    template_name = 'inventario/orden_confirm_delete.html'
+    success_url = '/inventario/ordenes/'
+    
+    def delete(self, request, *args, **kwargs):
+        orden = self.get_object()
+        messages.success(request, f'Orden {orden.numero_orden} eliminada exitosamente')
+        return super().delete(request, *args, **kwargs)
+
+
+# Vista para agregar ítems a una orden
+class OrdenItemCreateView(LoginRequiredMixin, InventarioContextMixin, CreateView):
+    """Vista para agregar ítem a una orden"""
+    model = OrdenProduccionItem
+    form_class = OrdenProduccionItemForm
+    template_name = 'inventario/orden_item_form.html'
+    
+    def dispatch(self, request, *args, **kwargs):
+        self.orden = get_object_or_404(OrdenProduccion, pk=kwargs['orden_pk'])
+        return super().dispatch(request, *args, **kwargs)
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['orden'] = self.orden
+        return context
+    
+    def form_valid(self, form):
+        form.instance.orden = self.orden
+        messages.success(self.request, f'Ítem agregado a la orden {self.orden.numero_orden}')
+        return super().form_valid(form)
+    
+    def get_success_url(self):
+        return f'/inventario/ordenes/{self.orden.pk}/'

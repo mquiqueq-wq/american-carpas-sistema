@@ -1,0 +1,158 @@
+{% extends 'base.html' %}
+
+{% block title %}Agregar Ítem - Orden {{ orden.numero_orden }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-plus-circle"></i> Agregar Ítem a Orden {{ orden.numero_orden }}
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        {% if form.errors %}
+                        <div class="alert alert-danger">
+                            <strong>Error:</strong> Por favor corrija los errores a continuación.
+                        </div>
+                        {% endif %}
+
+                        <div class="row">
+                            <!-- Información Básica -->
+                            <div class="col-12 mb-3">
+                                <h6 class="text-primary"><i class="bi bi-info-circle"></i> Información Básica</h6>
+                                <hr>
+                            </div>
+                            
+                            <div class="col-md-3 mb-3">
+                                <label class="form-label">{{ form.cantidad.label }} <span class="text-danger">*</span></label>
+                                {{ form.cantidad }}
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label class="form-label">{{ form.tipo_producto.label }} <span class="text-danger">*</span></label>
+                                {{ form.tipo_producto }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">{{ form.dimensiones.label }} <span class="text-danger">*</span></label>
+                                {{ form.dimensiones }}
+                            </div>
+
+                            <!-- Colores -->
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">{{ form.color_estructura.label }}</label>
+                                {{ form.color_estructura }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">{{ form.color_lona.label }}</label>
+                                {{ form.color_lona }}
+                            </div>
+
+                            <!-- Cortinas -->
+                            <div class="col-12 mb-3 mt-3">
+                                <h6 class="text-primary"><i class="bi bi-grid"></i> Cortinas y Accesorios</h6>
+                                <hr>
+                            </div>
+                            
+                            <div class="col-md-3 mb-3">
+                                <div class="form-check">
+                                    {{ form.incluye_cortinas }}
+                                    <label class="form-check-label" for="{{ form.incluye_cortinas.id_for_label }}">
+                                        {{ form.incluye_cortinas.label }}
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label class="form-label">{{ form.cantidad_cortinas.label }}</label>
+                                {{ form.cantidad_cortinas }}
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <div class="form-check">
+                                    {{ form.incluye_faldon }}
+                                    <label class="form-check-label" for="{{ form.incluye_faldon.id_for_label }}">
+                                        {{ form.incluye_faldon.label }}
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <div class="form-check">
+                                    {{ form.incluye_entecho }}
+                                    <label class="form-check-label" for="{{ form.incluye_entecho.id_for_label }}">
+                                        {{ form.incluye_entecho.label }}
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- Logos -->
+                            <div class="col-12 mb-3 mt-3">
+                                <h6 class="text-primary"><i class="bi bi-tag"></i> Logos / Estampados</h6>
+                                <hr>
+                            </div>
+                            
+                            <div class="col-md-3 mb-3">
+                                <div class="form-check">
+                                    {{ form.incluye_logo_techo }}
+                                    <label class="form-check-label" for="{{ form.incluye_logo_techo.id_for_label }}">
+                                        {{ form.incluye_logo_techo.label }}
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label class="form-label">{{ form.cantidad_logos_techo.label }}</label>
+                                {{ form.cantidad_logos_techo }}
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <div class="form-check">
+                                    {{ form.incluye_logo_cortina }}
+                                    <label class="form-check-label" for="{{ form.incluye_logo_cortina.id_for_label }}">
+                                        {{ form.incluye_logo_cortina.label }}
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label class="form-label">{{ form.cantidad_logos_cortina.label }}</label>
+                                {{ form.cantidad_logos_cortina }}
+                            </div>
+
+                            <!-- Descripciones -->
+                            <div class="col-12 mb-3 mt-3">
+                                <h6 class="text-primary"><i class="bi bi-file-text"></i> Descripciones</h6>
+                                <hr>
+                            </div>
+                            
+                            <div class="col-md-12 mb-3">
+                                <label class="form-label">{{ form.descripcion_completa.label }} <span class="text-danger">*</span></label>
+                                {{ form.descripcion_completa }}
+                                <small class="text-muted">Descripción detallada del producto a fabricar</small>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">{{ form.otros_accesorios.label }}</label>
+                                {{ form.otros_accesorios }}
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">{{ form.especificaciones_cliente.label }}</label>
+                                {{ form.especificaciones_cliente }}
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-between mt-4">
+                            <a href="{% url 'inventario:orden_detail' orden.pk %}" class="btn btn-secondary">
+                                <i class="bi bi-x-circle"></i> Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-success">
+                                <i class="bi bi-check-circle"></i> Agregar Ítem
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

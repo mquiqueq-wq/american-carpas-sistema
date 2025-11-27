@@ -89,4 +89,43 @@ urlpatterns = [
     path('catalogos/tipos-accesorio/nuevo/', views.TipoAccesorioCreateView.as_view(), name='tipoaccesorio_create'),
     path('catalogos/tipos-accesorio/<int:pk>/editar/', views.TipoAccesorioUpdateView.as_view(), name='tipoaccesorio_update'),
     path('catalogos/tipos-accesorio/<int:pk>/eliminar/', views.TipoAccesorioDeleteView.as_view(), name='tipoaccesorio_delete'),
+    
+    # =========================================================================
+    # INVENTARIO DE LONAS
+    # =========================================================================
+    path('lonas/', views.InventarioLonaListView.as_view(), name='lona_list'),
+    path('lonas/nuevo/', views.InventarioLonaCreateView.as_view(), name='lona_create'),
+    path('lonas/<int:pk>/', views.InventarioLonaDetailView.as_view(), name='lona_detail'),
+    path('lonas/<int:pk>/editar/', views.InventarioLonaUpdateView.as_view(), name='lona_update'),
+    path('lonas/<int:pk>/eliminar/', views.InventarioLonaDeleteView.as_view(), name='lona_delete'),
+    
+    # =========================================================================
+    # INVENTARIO DE ESTRUCTURA
+    # =========================================================================
+    path('estructura/', views.InventarioEstructuraListView.as_view(), name='estructura_list'),
+    path('estructura/nuevo/', views.InventarioEstructuraCreateView.as_view(), name='estructura_create'),
+    path('estructura/<int:pk>/', views.InventarioEstructuraDetailView.as_view(), name='estructura_detail'),
+    path('estructura/<int:pk>/editar/', views.InventarioEstructuraUpdateView.as_view(), name='estructura_update'),
+    path('estructura/<int:pk>/eliminar/', views.InventarioEstructuraDeleteView.as_view(), name='estructura_delete'),
+    
+    # =========================================================================
+    # INVENTARIO DE ACCESORIOS
+    # =========================================================================
+    path('accesorios/', views.InventarioAccesorioListView.as_view(), name='accesorio_list'),
+    path('accesorios/nuevo/', views.InventarioAccesorioCreateView.as_view(), name='accesorio_create'),
+    path('accesorios/<int:pk>/', views.InventarioAccesorioDetailView.as_view(), name='accesorio_detail'),
+    path('accesorios/<int:pk>/editar/', views.InventarioAccesorioUpdateView.as_view(), name='accesorio_update'),
+    path('accesorios/<int:pk>/eliminar/', views.InventarioAccesorioDeleteView.as_view(), name='accesorio_delete'),
+
+    # =========================================================================
+    # ÓRDENES DE PRODUCCIÓN
+    # =========================================================================
+    path('ordenes/', views.OrdenProduccionListView.as_view(), name='orden_list'),
+    path('ordenes/nueva/', views.OrdenProduccionCreateView.as_view(), name='orden_create'),
+    path('ordenes/<int:pk>/', views.OrdenProduccionDetailView.as_view(), name='orden_detail'),
+    path('ordenes/<int:pk>/editar/', views.OrdenProduccionUpdateView.as_view(), name='orden_update'),
+    path('ordenes/<int:pk>/eliminar/', views.OrdenProduccionDeleteView.as_view(), name='orden_delete'),
+    
+    # Agregar ítems a orden
+    path('ordenes/<int:orden_pk>/items/nuevo/', views.OrdenItemCreateView.as_view(), name='orden_item_create'),
 ]

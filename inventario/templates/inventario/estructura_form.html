@@ -1,0 +1,193 @@
+{% extends 'base.html' %}
+
+{% block title %}{% if object %}Editar{% else %}Nuevo{% endif %} Lote de Estructura{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-{% if object %}pencil{% else %}plus-circle{% endif %}"></i>
+                        {% if object %}Editar Lote: {{ object.codigo_lote }}{% else %}Nuevo Lote de Estructura{% endif %}
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" novalidate>
+                        {% csrf_token %}
+                        
+                        <!-- Características -->
+                        <h6 class="text-muted border-bottom pb-2 mb-3">
+                            <i class="bi bi-building"></i> Características
+                        </h6>
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <label class="form-label">Tipo de Estructura <span class="text-danger">*</span></label>
+                                {{ form.tipo_estructura }}
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Medida de Tubo</label>
+                                {{ form.medida_tubo }}
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Calibre</label>
+                                {{ form.calibre }}
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <label class="form-label">Material</label>
+                                {{ form.material }}
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Acabado</label>
+                                {{ form.acabado }}
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Peso por Metro (kg)</label>
+                                {{ form.peso_por_metro }}
+                            </div>
+                        </div>
+
+                        <!-- Tipo de Control -->
+                        <h6 class="text-muted border-bottom pb-2 mb-3">
+                            <i class="bi bi-sliders"></i> Tipo de Control
+                        </h6>
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <label class="form-label">Tipo de Control <span class="text-danger">*</span></label>
+                                {{ form.tipo_control }}
+                                <small class="form-text text-muted">METROS para tubería, PIEZAS para elementos cortados</small>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Longitud por Pieza (m)</label>
+                                {{ form.longitud_pieza }}
+                            </div>
+                        </div>
+
+                        <!-- Control por Metros -->
+                        <h6 class="text-muted border-bottom pb-2 mb-3">
+                            <i class="bi bi-rulers"></i> Control por Metros
+                        </h6>
+                        <div class="row mb-3">
+                            <div class="col-md-3">
+                                <label class="form-label">Metros Iniciales</label>
+                                {{ form.metros_iniciales }}
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Metros Disponibles</label>
+                                {{ form.metros_disponibles }}
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Metros Reservados</label>
+                                {{ form.metros_reservados }}
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Mínimo Alerta</label>
+                                {{ form.metros_minimo_alerta }}
+                            </div>
+                        </div>
+
+                        <!-- Control por Piezas -->
+                        <h6 class="text-muted border-bottom pb-2 mb-3">
+                            <i class="bi bi-box"></i> Control por Piezas
+                        </h6>
+                        <div class="row mb-3">
+                            <div class="col-md-3">
+                                <label class="form-label">Piezas Iniciales</label>
+                                {{ form.piezas_iniciales }}
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Piezas Disponibles</label>
+                                {{ form.piezas_disponibles }}
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Piezas Reservadas</label>
+                                {{ form.piezas_reservadas }}
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Mínimo Alerta</label>
+                                {{ form.piezas_minimo_alerta }}
+                            </div>
+                        </div>
+
+                        <!-- Costos -->
+                        <h6 class="text-muted border-bottom pb-2 mb-3">
+                            <i class="bi bi-currency-dollar"></i> Costos y Ubicación
+                        </h6>
+                        <div class="row mb-3">
+                            <div class="col-md-3">
+                                <label class="form-label">Costo por Metro</label>
+                                {{ form.costo_por_metro }}
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Costo por Pieza</label>
+                                {{ form.costo_por_pieza }}
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Ubicación</label>
+                                {{ form.ubicacion }}
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Proveedor</label>
+                                {{ form.proveedor }}
+                            </div>
+                        </div>
+
+                        <!-- Trazabilidad -->
+                        <h6 class="text-muted border-bottom pb-2 mb-3">
+                            <i class="bi bi-card-list"></i> Trazabilidad
+                        </h6>
+                        <div class="row mb-3">
+                            <div class="col-md-3">
+                                <label class="form-label">Lote/Serial</label>
+                                {{ form.lote_serial }}
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Número Factura</label>
+                                {{ form.numero_factura }}
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Fecha Ingreso</label>
+                                {{ form.fecha_ingreso }}
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Estado</label>
+                                {{ form.estado }}
+                            </div>
+                        </div>
+
+                        <!-- Observaciones -->
+                        <div class="row mb-3">
+                            <div class="col-12">
+                                <label class="form-label">Observaciones</label>
+                                {{ form.observaciones }}
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <div class="form-check">
+                                {{ form.activo }}
+                                <label class="form-check-label">Registro Activo</label>
+                            </div>
+                        </div>
+                        
+                        <hr>
+                        
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'inventario:estructura_list' %}" class="btn btn-secondary">
+                                <i class="bi bi-x-circle"></i> Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-success">
+                                <i class="bi bi-check-circle"></i> 
+                                {% if object %}Actualizar{% else %}Guardar{% endif %}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

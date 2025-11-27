@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+
+{% block title %}Eliminar Accesorio{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card border-danger">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-exclamation-triangle-fill"></i>
+                        Confirmar Eliminación de Accesorio
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <p class="mb-3">¿Está seguro que desea eliminar este accesorio?</p>
+                    
+                    <div class="alert alert-warning">
+                        <h5><strong>{{ object.codigo }}</strong></h5>
+                        <p class="mb-0">{{ object.nombre }}</p>
+                        <small class="text-muted">Tipo: {{ object.tipo_accesorio.nombre }}</small>
+                    </div>
+
+                    <div class="card mb-3">
+                        <div class="card-body">
+                            <strong>Cantidad disponible:</strong> {{ object.cantidad_disponible }}<br>
+                            <strong>Ubicación:</strong> {{ object.ubicacion.nombre }}
+                        </div>
+                    </div>
+
+                    <p class="text-muted small">
+                        <i class="bi bi-info-circle"></i>
+                        <strong>Esta acción no se puede deshacer.</strong>
+                    </p>
+
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'inventario:accesorio_list' %}" class="btn btn-secondary">
+                                <i class="bi bi-x-circle"></i> Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-danger">
+                                <i class="bi bi-trash"></i> Sí, Eliminar
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

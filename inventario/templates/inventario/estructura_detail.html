@@ -1,0 +1,155 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ estructura.codigo_lote }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Encabezado -->
+    <div class="mb-4">
+        <div class="d-flex justify-content-between align-items-start">
+            <div>
+                <h3>
+                    <i class="bi bi-building text-success"></i> {{ estructura.codigo_lote }}
+                    {% if estructura.estado == 'DISPONIBLE' %}
+                        <span class="badge bg-success">Disponible</span>
+                    {% elif estructura.estado == 'EN_USO' %}
+                        <span class="badge bg-info">En Uso</span>
+                    {% elif estructura.estado == 'AGOTADO' %}
+                        <span class="badge bg-danger">Agotado</span>
+                    {% else %}
+                        <span class="badge bg-secondary">{{ estructura.estado }}</span>
+                    {% endif %}
+                </h3>
+                <p class="text-muted mb-0">
+                    <strong>Tipo:</strong> {{ estructura.tipo_estructura.nombre|default:"-" }} |
+                    <strong>Medida:</strong> {{ estructura.medida_tubo.valor_medida|default:"-" }}
+                </p>
+            </div>
+            <div class="btn-group">
+                <a href="{% url 'inventario:estructura_update' estructura.pk %}" class="btn btn-primary">
+                    <i class="bi bi-pencil"></i> Editar
+                </a>
+                <a href="{% url 'inventario:estructura_delete' estructura.pk %}" class="btn btn-outline-danger">
+                    <i class="bi bi-trash"></i> Eliminar
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <!-- Control de Stock -->
+            <div class="card mb-4">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="bi bi-box-seam"></i> Control de Stock</h5>
+                </div>
+                <div class="card-body">
+                    {% if estructura.tipo_control == 'METROS' %}
+                        <div class="row text-center">
+                            <div class="col-md-3">
+                                <h4 class="text-muted">{{ estructura.metros_iniciales }} m</h4>
+                                <small>Metros Iniciales</small>
+                            </div>
+                            <div class="col-md-3">
+                                <h4 class="text-success">{{ estructura.metros_disponibles }} m</h4>
+                                <small>Disponibles</small>
+                            </div>
+                            <div class="col-md-3">
+                                <h4 class="text-warning">{{ estructura.metros_reservados }} m</h4>
+                                <small>Reservados</small>
+                            </div>
+                            <div class="col-md-3">
+                                <h4 class="text-danger">{{ estructura.metros_minimo_alerta }} m</h4>
+                                <small>Alerta Mínimo</small>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="row text-center">
+                            <div class="col-md-3">
+                                <h4 class="text-muted">{{ estructura.piezas_iniciales }}</h4>
+                                <small>Piezas Iniciales</small>
+                            </div>
+                            <div class="col-md-3">
+                                <h4 class="text-success">{{ estructura.piezas_disponibles }}</h4>
+                                <small>Disponibles</small>
+                            </div>
+                            <div class="col-md-3">
+                                <h4 class="text-warning">{{ estructura.piezas_reservadas }}</h4>
+                                <small>Reservadas</small>
+                            </div>
+                            <div class="col-md-3">
+                                <h4 class="text-danger">{{ estructura.piezas_minimo_alerta }}</h4>
+                                <small>Alerta Mínimo</small>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Características -->
+            <div class="card mb-4">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="bi bi-card-list"></i> Características</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <strong>Tipo:</strong><br>{{ estructura.tipo_estructura.nombre|default:"-" }}
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <strong>Medida:</strong><br>{{ estructura.medida_tubo.valor_medida|default:"-" }}
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <strong>Calibre:</strong><br>{{ estructura.calibre.valor_calibre|default:"-" }}
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <strong>Material:</strong><br>{{ estructura.material.nombre|default:"-" }}
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <strong>Acabado:</strong><br>{{ estructura.acabado.nombre|default:"-" }}
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <strong>Peso por Metro:</strong><br>{{ estructura.peso_por_metro|default:"0" }} kg
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <!-- Ubicación -->
+            <div class="card mb-4">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0"><i class="bi bi-geo-alt"></i> Ubicación</h5>
+                </div>
+                <div class="card-body">
+                    {% if estructura.ubicacion %}
+                        <h6>{{ estructura.ubicacion.codigo }}</h6>
+                        <p class="mb-0">{{ estructura.ubicacion.nombre }}</p>
+                    {% else %}
+                        <span class="text-muted">Sin ubicación</span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Trazabilidad -->
+            <div class="card mb-4">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0"><i class="bi bi-qr-code"></i> Trazabilidad</h5>
+                </div>
+                <div class="card-body">
+                    <p><strong>Lote:</strong> {{ estructura.lote_serial|default:"-" }}</p>
+                    <p><strong>Factura:</strong> {{ estructura.numero_factura|default:"-" }}</p>
+                    <p class="mb-0"><strong>Ingreso:</strong> {{ estructura.fecha_ingreso|date:"d/m/Y"|default:"-" }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="mt-3">
+        <a href="{% url 'inventario:estructura_list' %}" class="btn btn-secondary">
+            <i class="bi bi-arrow-left"></i> Volver al Listado
+        </a>
+    </div>
+</div>
+{% endblock %}

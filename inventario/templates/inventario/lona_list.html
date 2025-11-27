@@ -1,0 +1,153 @@
+{% extends 'base.html' %}
+
+{% block title %}Inventario de Lonas{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Encabezado -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h3><i class="bi bi-layers text-primary"></i> Inventario de Lonas</h3>
+            <p class="text-muted mb-0">Control de rollos de lona con trazabilidad de metraje</p>
+        </div>
+        <a href="{% url 'inventario:lona_create' %}" class="btn btn-success">
+            <i class="bi bi-plus-circle"></i> Nuevo Rollo
+        </a>
+    </div>
+
+    <!-- Filtros -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-10">
+                    <input type="text" name="search" class="form-control" 
+                           placeholder="Buscar por código de rollo..." 
+                           value="{{ request.GET.search }}">
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-search"></i> Buscar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Tabla -->
+    <div class="card">
+        <div class="card-body">
+            {% if lonas %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Código</th>
+                                <th>Tipo</th>
+                                <th>Ancho</th>
+                                <th>Color</th>
+                                <th>Metros Disp.</th>
+                                <th>Ubicación</th>
+                                <th>Estado</th>
+                                <th class="text-center">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for lona in lonas %}
+                                <tr>
+                                    <td><strong>{{ lona.codigo_rollo }}</strong></td>
+                                    <td>{{ lona.tipo_lona.nombre|default:"-" }}</td>
+                                    <td>{{ lona.ancho_lona.valor_metros|default:"-" }} m</td>
+                                    <td>
+                                        {% if lona.color_lona %}
+                                            <span style="display:inline-block; width:20px; height:20px; background-color:{{ lona.color_lona.codigo_hex }}; border:1px solid #ccc; border-radius:3px; vertical-align:middle;"></span>
+                                            {{ lona.color_lona.nombre }}
+                                        {% else %}
+                                            -
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <strong>{{ lona.metros_disponibles }}</strong> m
+                                        {% if lona.metros_disponibles <= lona.metros_minimo_alerta %}
+                                            <span class="badge bg-warning text-dark">
+                                                <i class="bi bi-exclamation-triangle"></i> Bajo
+                                            </span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ lona.ubicacion.codigo|default:"-" }}</td>
+                                    <td>
+                                        {% if lona.estado == 'DISPONIBLE' %}
+                                            <span class="badge bg-success">Disponible</span>
+                                        {% elif lona.estado == 'EN_USO' %}
+                                            <span class="badge bg-info">En Uso</span>
+                                        {% elif lona.estado == 'RESERVADO' %}
+                                            <span class="badge bg-warning text-dark">Reservado</span>
+                                        {% elif lona.estado == 'AGOTADO' %}
+                                            <span class="badge bg-danger">Agotado</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">{{ lona.estado }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-center">
+                                        <a href="{% url 'inventario:lona_detail' lona.pk %}" 
+                                           class="btn btn-sm btn-outline-info" title="Ver detalle">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                        <a href="{% url 'inventario:lona_update' lona.pk %}" 
+                                           class="btn btn-sm btn-outline-primary" title="Editar">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                        <a href="{% url 'inventario:lona_delete' lona.pk %}" 
+                                           class="btn btn-sm btn-outline-danger" title="Eliminar">
+                                            <i class="bi bi-trash"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Paginación -->
+                {% if page_obj.has_other_pages %}
+                    <nav>
+                        <ul class="pagination justify-content-center mt-3">
+                            {% if page_obj.has_previous %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">
+                                        Anterior
+                                    </a>
+                                </li>
+                            {% endif %}
+                            <li class="page-item disabled">
+                                <span class="page-link">
+                                    Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
+                                </span>
+                            </li>
+                            {% if page_obj.has_next %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">
+                                        Siguiente
+                                    </a>
+                                </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                {% endif %}
+            {% else %}
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle"></i>
+                    No se encontraron rollos de lona. 
+                    <a href="{% url 'inventario:lona_create' %}">Registrar el primero</a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Botón volver -->
+    <div class="mt-3">
+        <a href="{% url 'inventario:home' %}" class="btn btn-secondary">
+            <i class="bi bi-arrow-left"></i> Volver al Módulo
+        </a>
+    </div>
+</div>
+{% endblock %}

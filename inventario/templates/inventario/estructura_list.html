@@ -1,0 +1,136 @@
+{% extends 'base.html' %}
+
+{% block title %}Inventario de Estructura{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Encabezado -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h3><i class="bi bi-building text-success"></i> Inventario de Estructura</h3>
+            <p class="text-muted mb-0">Control de tubería y perfiles metálicos</p>
+        </div>
+        <a href="{% url 'inventario:estructura_create' %}" class="btn btn-success">
+            <i class="bi bi-plus-circle"></i> Nuevo Lote
+        </a>
+    </div>
+
+    <!-- Filtros -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-10">
+                    <input type="text" name="search" class="form-control" 
+                           placeholder="Buscar por código de lote..." 
+                           value="{{ request.GET.search }}">
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-search"></i> Buscar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Tabla -->
+    <div class="card">
+        <div class="card-body">
+            {% if estructuras %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Código</th>
+                                <th>Tipo</th>
+                                <th>Medida</th>
+                                <th>Calibre</th>
+                                <th>Disponible</th>
+                                <th>Ubicación</th>
+                                <th>Estado</th>
+                                <th class="text-center">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for est in estructuras %}
+                                <tr>
+                                    <td><strong>{{ est.codigo_lote }}</strong></td>
+                                    <td>{{ est.tipo_estructura.nombre|default:"-" }}</td>
+                                    <td>{{ est.medida_tubo.valor_medida|default:"-" }}</td>
+                                    <td>{{ est.calibre.valor_calibre|default:"-" }}</td>
+                                    <td>
+                                        {% if est.tipo_control == 'METROS' %}
+                                            <strong>{{ est.metros_disponibles }}</strong> m
+                                        {% else %}
+                                            <strong>{{ est.piezas_disponibles }}</strong> pzas
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ est.ubicacion.codigo|default:"-" }}</td>
+                                    <td>
+                                        {% if est.estado == 'DISPONIBLE' %}
+                                            <span class="badge bg-success">Disponible</span>
+                                        {% elif est.estado == 'EN_USO' %}
+                                            <span class="badge bg-info">En Uso</span>
+                                        {% elif est.estado == 'AGOTADO' %}
+                                            <span class="badge bg-danger">Agotado</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">{{ est.estado }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-center">
+                                        <a href="{% url 'inventario:estructura_detail' est.pk %}" 
+                                           class="btn btn-sm btn-outline-info" title="Ver detalle">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                        <a href="{% url 'inventario:estructura_update' est.pk %}" 
+                                           class="btn btn-sm btn-outline-primary" title="Editar">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                        <a href="{% url 'inventario:estructura_delete' est.pk %}" 
+                                           class="btn btn-sm btn-outline-danger" title="Eliminar">
+                                            <i class="bi bi-trash"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Paginación -->
+                {% if page_obj.has_other_pages %}
+                    <nav>
+                        <ul class="pagination justify-content-center mt-3">
+                            {% if page_obj.has_previous %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">Anterior</a>
+                                </li>
+                            {% endif %}
+                            <li class="page-item disabled">
+                                <span class="page-link">Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+                            </li>
+                            {% if page_obj.has_next %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">Siguiente</a>
+                                </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                {% endif %}
+            {% else %}
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle"></i>
+                    No se encontraron lotes de estructura. 
+                    <a href="{% url 'inventario:estructura_create' %}">Registrar el primero</a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="mt-3">
+        <a href="{% url 'inventario:home' %}" class="btn btn-secondary">
+            <i class="bi bi-arrow-left"></i> Volver al Módulo
+        </a>
+    </div>
+</div>
+{% endblock %}

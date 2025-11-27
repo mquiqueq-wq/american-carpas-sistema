@@ -15,6 +15,10 @@ from .models import (
     TipoEstructura, MedidaTubo, Calibre, MaterialEstructura, AcabadoEstructura,
     # Catálogos Accesorios
     TipoAccesorio,
+    # Inventarios Principales
+    InventarioLona, InventarioEstructura, InventarioAccesorio,
+    # Órdenes de Producción
+    OrdenProduccion, OrdenProduccionItem,
 )
 
 
@@ -331,5 +335,316 @@ class TipoAccesorioForm(forms.ModelForm):
             }),
             'activo': forms.CheckboxInput(attrs={
                 'class': 'form-check-input'
+            }),
+        }
+
+
+# =============================================================================
+# FORMULARIOS - INVENTARIO DE LONAS
+# =============================================================================
+
+class InventarioLonaForm(forms.ModelForm):
+    """Formulario para inventario de lonas"""
+    
+    class Meta:
+        model = InventarioLona
+        fields = [
+            'tipo_lona', 'ancho_lona', 'color_lona', 'tratamiento',
+            'gramaje', 'metros_iniciales', 'metros_disponibles',
+            'metros_reservados', 'metros_minimo_alerta',
+            'costo_por_metro', 'ubicacion', 'proveedor',
+            'lote_serial', 'numero_factura', 'fecha_ingreso',
+            'fecha_fabricacion', 'garantia_meses',
+            'estado', 'imagen', 'observaciones', 'activo'
+        ]
+        widgets = {
+            'tipo_lona': forms.Select(attrs={'class': 'form-select'}),
+            'ancho_lona': forms.Select(attrs={'class': 'form-select'}),
+            'color_lona': forms.Select(attrs={'class': 'form-select'}),
+            'tratamiento': forms.Select(attrs={'class': 'form-select'}),
+            'gramaje': forms.NumberInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Ej: 650',
+                'step': '0.01'
+            }),
+            'metros_iniciales': forms.NumberInput(attrs={
+                'class': 'form-control',
+                'step': '0.01'
+            }),
+            'metros_disponibles': forms.NumberInput(attrs={
+                'class': 'form-control',
+                'step': '0.01'
+            }),
+            'metros_reservados': forms.NumberInput(attrs={
+                'class': 'form-control',
+                'step': '0.01'
+            }),
+            'metros_minimo_alerta': forms.NumberInput(attrs={
+                'class': 'form-control',
+                'step': '0.01'
+            }),
+            'costo_por_metro': forms.NumberInput(attrs={
+                'class': 'form-control',
+                'step': '0.01'
+            }),
+            'ubicacion': forms.Select(attrs={'class': 'form-select'}),
+            'proveedor': forms.Select(attrs={'class': 'form-select'}),
+            'lote_serial': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Número de lote o serial'
+            }),
+            'numero_factura': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Número de factura'
+            }),
+            'fecha_ingreso': forms.DateInput(attrs={
+                'class': 'form-control',
+                'type': 'date'
+            }),
+            'fecha_fabricacion': forms.DateInput(attrs={
+                'class': 'form-control',
+                'type': 'date'
+            }),
+            'garantia_meses': forms.NumberInput(attrs={
+                'class': 'form-control'
+            }),
+            'estado': forms.Select(attrs={'class': 'form-select'}),
+            'imagen': forms.FileInput(attrs={'class': 'form-control'}),
+            'observaciones': forms.Textarea(attrs={
+                'class': 'form-control',
+                'rows': 3
+            }),
+            'activo': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+        }
+
+
+# =============================================================================
+# FORMULARIOS - INVENTARIO DE ESTRUCTURA
+# =============================================================================
+
+class InventarioEstructuraForm(forms.ModelForm):
+    """Formulario para inventario de estructura"""
+    
+    class Meta:
+        model = InventarioEstructura
+        fields = [
+            'tipo_estructura', 'medida_tubo', 'calibre', 'material', 'acabado',
+            'peso_por_metro', 'tipo_control',
+            'metros_iniciales', 'metros_disponibles', 'metros_reservados', 'metros_minimo_alerta',
+            'longitud_pieza', 'piezas_iniciales', 'piezas_disponibles', 'piezas_reservadas', 'piezas_minimo_alerta',
+            'costo_por_metro', 'costo_por_pieza',
+            'ubicacion', 'proveedor', 'lote_serial', 'numero_factura',
+            'fecha_ingreso', 'estado', 'observaciones', 'activo'
+        ]
+        widgets = {
+            'tipo_estructura': forms.Select(attrs={'class': 'form-select'}),
+            'medida_tubo': forms.Select(attrs={'class': 'form-select'}),
+            'calibre': forms.Select(attrs={'class': 'form-select'}),
+            'material': forms.Select(attrs={'class': 'form-select'}),
+            'acabado': forms.Select(attrs={'class': 'form-select'}),
+            'peso_por_metro': forms.NumberInput(attrs={
+                'class': 'form-control',
+                'step': '0.001'
+            }),
+            'tipo_control': forms.Select(attrs={'class': 'form-select'}),
+            'metros_iniciales': forms.NumberInput(attrs={
+                'class': 'form-control',
+                'step': '0.01'
+            }),
+            'metros_disponibles': forms.NumberInput(attrs={
+                'class': 'form-control',
+                'step': '0.01'
+            }),
+            'metros_reservados': forms.NumberInput(attrs={
+                'class': 'form-control',
+                'step': '0.01'
+            }),
+            'metros_minimo_alerta': forms.NumberInput(attrs={
+                'class': 'form-control',
+                'step': '0.01'
+            }),
+            'longitud_pieza': forms.NumberInput(attrs={
+                'class': 'form-control',
+                'step': '0.01'
+            }),
+            'piezas_iniciales': forms.NumberInput(attrs={'class': 'form-control'}),
+            'piezas_disponibles': forms.NumberInput(attrs={'class': 'form-control'}),
+            'piezas_reservadas': forms.NumberInput(attrs={'class': 'form-control'}),
+            'piezas_minimo_alerta': forms.NumberInput(attrs={'class': 'form-control'}),
+            'costo_por_metro': forms.NumberInput(attrs={
+                'class': 'form-control',
+                'step': '0.01'
+            }),
+            'costo_por_pieza': forms.NumberInput(attrs={
+                'class': 'form-control',
+                'step': '0.01'
+            }),
+            'ubicacion': forms.Select(attrs={'class': 'form-select'}),
+            'proveedor': forms.Select(attrs={'class': 'form-select'}),
+            'lote_serial': forms.TextInput(attrs={'class': 'form-control'}),
+            'numero_factura': forms.TextInput(attrs={'class': 'form-control'}),
+            'fecha_ingreso': forms.DateInput(attrs={
+                'class': 'form-control',
+                'type': 'date'
+            }),
+            'estado': forms.Select(attrs={'class': 'form-select'}),
+            'observaciones': forms.Textarea(attrs={
+                'class': 'form-control',
+                'rows': 3
+            }),
+            'activo': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+        }
+
+
+# =============================================================================
+# FORMULARIOS - INVENTARIO DE ACCESORIOS
+# =============================================================================
+
+class InventarioAccesorioForm(forms.ModelForm):
+    """Formulario para inventario de accesorios"""
+    
+    class Meta:
+        model = InventarioAccesorio
+        fields = [
+            'tipo_accesorio', 'nombre', 'descripcion', 'especificaciones',
+            'cantidad_inicial', 'cantidad_disponible', 'cantidad_reservada', 'cantidad_minima_alerta',
+            'costo_unitario', 'ubicacion', 'proveedor',
+            'lote_serial', 'fecha_ingreso', 'imagen',
+            'estado', 'observaciones', 'activo'
+        ]
+        widgets = {
+            'tipo_accesorio': forms.Select(attrs={'class': 'form-select'}),
+            'nombre': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Nombre del accesorio'
+            }),
+            'descripcion': forms.Textarea(attrs={
+                'class': 'form-control',
+                'rows': 2
+            }),
+            'especificaciones': forms.Textarea(attrs={
+                'class': 'form-control',
+                'rows': 2
+            }),
+            'cantidad_inicial': forms.NumberInput(attrs={'class': 'form-control'}),
+            'cantidad_disponible': forms.NumberInput(attrs={'class': 'form-control'}),
+            'cantidad_reservada': forms.NumberInput(attrs={'class': 'form-control'}),
+            'cantidad_minima_alerta': forms.NumberInput(attrs={'class': 'form-control'}),
+            'costo_unitario': forms.NumberInput(attrs={
+                'class': 'form-control',
+                'step': '0.01'
+            }),
+            'ubicacion': forms.Select(attrs={'class': 'form-select'}),
+            'proveedor': forms.Select(attrs={'class': 'form-select'}),
+            'lote_serial': forms.TextInput(attrs={'class': 'form-control'}),
+            'imagen': forms.FileInput(attrs={'class': 'form-control'}),
+            'fecha_ingreso': forms.DateInput(attrs={
+                'class': 'form-control',
+                'type': 'date'
+            }),
+            'estado': forms.Select(attrs={'class': 'form-select'}),
+            'observaciones': forms.Textarea(attrs={
+                'class': 'form-control',
+                'rows': 3
+            }),
+            'activo': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+        }
+
+
+# =============================================================================
+# FORMULARIOS - ÓRDENES DE PRODUCCIÓN
+# =============================================================================
+
+class OrdenProduccionForm(forms.ModelForm):
+    """Formulario para órdenes de producción"""
+    
+    class Meta:
+        model = OrdenProduccion
+        fields = [
+            'fecha_orden', 'fecha_entrega_requerida', 'proyecto', 'cliente',
+            'ubicacion_entrega', 'solicitado_por', 'es_urgente', 'prioridad',
+            'estado', 'observaciones'
+        ]
+        widgets = {
+            'fecha_orden': forms.DateInput(attrs={
+                'class': 'form-control',
+                'type': 'date'
+            }),
+            'fecha_entrega_requerida': forms.DateInput(attrs={
+                'class': 'form-control',
+                'type': 'date'
+            }),
+            'proyecto': forms.Select(attrs={'class': 'form-select'}),
+            'cliente': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Nombre del cliente'
+            }),
+            'ubicacion_entrega': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Dirección de entrega'
+            }),
+            'solicitado_por': forms.Select(attrs={'class': 'form-select'}),
+            'es_urgente': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'prioridad': forms.NumberInput(attrs={
+                'class': 'form-control',
+                'min': '1',
+                'max': '5'
+            }),
+            'estado': forms.Select(attrs={'class': 'form-select'}),
+            'observaciones': forms.Textarea(attrs={
+                'class': 'form-control',
+                'rows': 3
+            }),
+        }
+
+
+class OrdenProduccionItemForm(forms.ModelForm):
+    """Formulario para ítems de orden de producción"""
+    
+    class Meta:
+        model = OrdenProduccionItem
+        fields = [
+            'cantidad', 'tipo_producto', 'dimensiones', 'color_estructura',
+            'color_lona', 'incluye_cortinas', 'cantidad_cortinas',
+            'incluye_logo_techo', 'cantidad_logos_techo',
+            'incluye_logo_cortina', 'cantidad_logos_cortina',
+            'incluye_faldon', 'incluye_entecho', 'otros_accesorios',
+            'descripcion_completa', 'especificaciones_cliente'
+        ]
+        widgets = {
+            'cantidad': forms.NumberInput(attrs={'class': 'form-control'}),
+            'tipo_producto': forms.Select(attrs={'class': 'form-select'}),
+            'dimensiones': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Ej: 3x3 MTS, 10x20 MTS'
+            }),
+            'color_estructura': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Ej: Blanco, Azul'
+            }),
+            'color_lona': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Ej: Blanco, Azul'
+            }),
+            'incluye_cortinas': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'cantidad_cortinas': forms.NumberInput(attrs={'class': 'form-control'}),
+            'incluye_logo_techo': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'cantidad_logos_techo': forms.NumberInput(attrs={'class': 'form-control'}),
+            'incluye_logo_cortina': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'cantidad_logos_cortina': forms.NumberInput(attrs={'class': 'form-control'}),
+            'incluye_faldon': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'incluye_entecho': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'otros_accesorios': forms.Textarea(attrs={
+                'class': 'form-control',
+                'rows': 2
+            }),
+            'descripcion_completa': forms.Textarea(attrs={
+                'class': 'form-control',
+                'rows': 3,
+                'placeholder': 'Descripción completa del producto...'
+            }),
+            'especificaciones_cliente': forms.Textarea(attrs={
+                'class': 'form-control',
+                'rows': 2
             }),
         }

@@ -1,0 +1,213 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ lona.codigo_rollo }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Encabezado -->
+    <div class="mb-4">
+        <div class="d-flex justify-content-between align-items-start">
+            <div>
+                <h3>
+                    <i class="bi bi-layers text-primary"></i> {{ lona.codigo_rollo }}
+                    {% if lona.estado == 'DISPONIBLE' %}
+                        <span class="badge bg-success">Disponible</span>
+                    {% elif lona.estado == 'EN_USO' %}
+                        <span class="badge bg-info">En Uso</span>
+                    {% elif lona.estado == 'RESERVADO' %}
+                        <span class="badge bg-warning text-dark">Reservado</span>
+                    {% elif lona.estado == 'AGOTADO' %}
+                        <span class="badge bg-danger">Agotado</span>
+                    {% else %}
+                        <span class="badge bg-secondary">{{ lona.estado }}</span>
+                    {% endif %}
+                </h3>
+                <p class="text-muted mb-0">
+                    <strong>Tipo:</strong> {{ lona.tipo_lona.nombre|default:"-" }} |
+                    <strong>Color:</strong> {{ lona.color_lona.nombre|default:"-" }}
+                </p>
+            </div>
+            <div class="btn-group">
+                <a href="{% url 'inventario:lona_update' lona.pk %}" class="btn btn-primary">
+                    <i class="bi bi-pencil"></i> Editar
+                </a>
+                <a href="{% url 'inventario:lona_delete' lona.pk %}" class="btn btn-outline-danger">
+                    <i class="bi bi-trash"></i> Eliminar
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Panel Principal -->
+        <div class="col-lg-8">
+            <!-- Control de Metraje -->
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="bi bi-rulers"></i> Control de Metraje</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-md-3">
+                            <h4 class="text-muted">{{ lona.metros_iniciales }} m</h4>
+                            <small>Metros Iniciales</small>
+                        </div>
+                        <div class="col-md-3">
+                            <h4 class="text-success">{{ lona.metros_disponibles }} m</h4>
+                            <small>Disponibles</small>
+                        </div>
+                        <div class="col-md-3">
+                            <h4 class="text-warning">{{ lona.metros_reservados }} m</h4>
+                            <small>Reservados</small>
+                        </div>
+                        <div class="col-md-3">
+                            <h4 class="text-info">{{ lona.metros_utilizados }} m</h4>
+                            <small>Utilizados</small>
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="progress" style="height: 25px;">
+                        <div class="progress-bar bg-success" role="progressbar" 
+                             style="width: {{ lona.porcentaje_disponible }}%;">
+                            {{ lona.porcentaje_disponible|floatformat:0 }}% disponible
+                        </div>
+                    </div>
+                    {% if lona.metros_disponibles <= lona.metros_minimo_alerta %}
+                        <div class="alert alert-warning mt-3 mb-0">
+                            <i class="bi bi-exclamation-triangle"></i>
+                            <strong>Alerta:</strong> Stock por debajo del mínimo ({{ lona.metros_minimo_alerta }} m)
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Características -->
+            <div class="card mb-4">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="bi bi-card-list"></i> Características</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <strong>Tipo de Lona:</strong><br>
+                            {{ lona.tipo_lona.nombre|default:"-" }}
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <strong>Ancho:</strong><br>
+                            {{ lona.ancho_lona.valor_metros|default:"-" }} m
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <strong>Color:</strong><br>
+                            {% if lona.color_lona %}
+                                <span style="display:inline-block; width:20px; height:20px; background-color:{{ lona.color_lona.codigo_hex }}; border:1px solid #ccc; border-radius:3px; vertical-align:middle;"></span>
+                                {{ lona.color_lona.nombre }}
+                            {% else %}
+                                -
+                            {% endif %}
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <strong>Tratamiento:</strong><br>
+                            {{ lona.tratamiento.nombre|default:"-" }}
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <strong>Gramaje:</strong><br>
+                            {{ lona.gramaje|default:"-" }} g/m²
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <strong>Costo por Metro:</strong><br>
+                            ${{ lona.costo_por_metro|default:"0" }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Trazabilidad -->
+            <div class="card mb-4">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0"><i class="bi bi-qr-code"></i> Trazabilidad</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <strong>Código QR:</strong><br>
+                            <small>{{ lona.codigo_qr }}</small>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <strong>Lote/Serial:</strong><br>
+                            {{ lona.lote_serial|default:"-" }}
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <strong>Factura:</strong><br>
+                            {{ lona.numero_factura|default:"-" }}
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <strong>Fecha Ingreso:</strong><br>
+                            {{ lona.fecha_ingreso|date:"d/m/Y"|default:"-" }}
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <strong>Fecha Fabricación:</strong><br>
+                            {{ lona.fecha_fabricacion|date:"d/m/Y"|default:"-" }}
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <strong>Garantía:</strong><br>
+                            {{ lona.garantia_meses|default:"0" }} meses
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Panel Lateral -->
+        <div class="col-lg-4">
+            <!-- Ubicación -->
+            <div class="card mb-4">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0"><i class="bi bi-geo-alt"></i> Ubicación</h5>
+                </div>
+                <div class="card-body">
+                    {% if lona.ubicacion %}
+                        <h6>{{ lona.ubicacion.codigo }}</h6>
+                        <p class="mb-0">{{ lona.ubicacion.nombre }}</p>
+                        <small class="text-muted">{{ lona.ubicacion.bodega }}</small>
+                    {% else %}
+                        <span class="text-muted">Sin ubicación asignada</span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Proveedor -->
+            <div class="card mb-4">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="mb-0"><i class="bi bi-building"></i> Proveedor</h5>
+                </div>
+                <div class="card-body">
+                    {% if lona.proveedor %}
+                        <h6>{{ lona.proveedor.razon_social }}</h6>
+                        <small class="text-muted">{{ lona.proveedor.nit }}</small>
+                    {% else %}
+                        <span class="text-muted">Sin proveedor asignado</span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Valor del Inventario -->
+            <div class="card mb-4">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="bi bi-currency-dollar"></i> Valor</h5>
+                </div>
+                <div class="card-body text-center">
+                    <h3 class="text-success">${{ lona.valor_inventario|floatformat:0 }}</h3>
+                    <small class="text-muted">Valor del inventario disponible</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Botón volver -->
+    <div class="mt-3">
+        <a href="{% url 'inventario:lona_list' %}" class="btn btn-secondary">
+            <i class="bi bi-arrow-left"></i> Volver al Listado
+        </a>
+    </div>
+</div>
+{% endblock %}

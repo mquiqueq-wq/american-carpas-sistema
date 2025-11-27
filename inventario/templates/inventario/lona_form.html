@@ -1,0 +1,164 @@
+{% extends 'base.html' %}
+
+{% block title %}{% if object %}Editar{% else %}Nuevo{% endif %} Rollo de Lona{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-{% if object %}pencil{% else %}plus-circle{% endif %}"></i>
+                        {% if object %}Editar Rollo: {{ object.codigo_rollo }}{% else %}Nuevo Rollo de Lona{% endif %}
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data" novalidate>
+                        {% csrf_token %}
+                        
+                        <!-- Características de la Lona -->
+                        <h6 class="text-muted border-bottom pb-2 mb-3">
+                            <i class="bi bi-layers"></i> Características de la Lona
+                        </h6>
+                        <div class="row mb-3">
+                            <div class="col-md-3">
+                                <label class="form-label">Tipo de Lona <span class="text-danger">*</span></label>
+                                {{ form.tipo_lona }}
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Ancho <span class="text-danger">*</span></label>
+                                {{ form.ancho_lona }}
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Color</label>
+                                {{ form.color_lona }}
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Tratamiento</label>
+                                {{ form.tratamiento }}
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-3">
+                                <label class="form-label">Gramaje (g/m²)</label>
+                                {{ form.gramaje }}
+                            </div>
+                        </div>
+
+                        <!-- Control de Metraje -->
+                        <h6 class="text-muted border-bottom pb-2 mb-3">
+                            <i class="bi bi-rulers"></i> Control de Metraje
+                        </h6>
+                        <div class="row mb-3">
+                            <div class="col-md-3">
+                                <label class="form-label">Metros Iniciales <span class="text-danger">*</span></label>
+                                {{ form.metros_iniciales }}
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Metros Disponibles <span class="text-danger">*</span></label>
+                                {{ form.metros_disponibles }}
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Metros Reservados</label>
+                                {{ form.metros_reservados }}
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Mínimo Alerta</label>
+                                {{ form.metros_minimo_alerta }}
+                            </div>
+                        </div>
+
+                        <!-- Costos y Ubicación -->
+                        <h6 class="text-muted border-bottom pb-2 mb-3">
+                            <i class="bi bi-currency-dollar"></i> Costos y Ubicación
+                        </h6>
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <label class="form-label">Costo por Metro</label>
+                                {{ form.costo_por_metro }}
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Ubicación</label>
+                                {{ form.ubicacion }}
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Proveedor</label>
+                                {{ form.proveedor }}
+                            </div>
+                        </div>
+
+                        <!-- Trazabilidad -->
+                        <h6 class="text-muted border-bottom pb-2 mb-3">
+                            <i class="bi bi-card-list"></i> Trazabilidad
+                        </h6>
+                        <div class="row mb-3">
+                            <div class="col-md-3">
+                                <label class="form-label">Lote/Serial</label>
+                                {{ form.lote_serial }}
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Número Factura</label>
+                                {{ form.numero_factura }}
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Fecha Ingreso</label>
+                                {{ form.fecha_ingreso }}
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Fecha Fabricación</label>
+                                {{ form.fecha_fabricacion }}
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-3">
+                                <label class="form-label">Garantía (meses)</label>
+                                {{ form.garantia_meses }}
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Estado</label>
+                                {{ form.estado }}
+                            </div>
+                        </div>
+
+                        <!-- Imagen y Observaciones -->
+                        <h6 class="text-muted border-bottom pb-2 mb-3">
+                            <i class="bi bi-image"></i> Imagen y Observaciones
+                        </h6>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Imagen</label>
+                                {{ form.imagen }}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Observaciones</label>
+                                {{ form.observaciones }}
+                            </div>
+                        </div>
+
+                        <!-- Estado Activo -->
+                        <div class="mb-3">
+                            <div class="form-check">
+                                {{ form.activo }}
+                                <label class="form-check-label">Registro Activo</label>
+                            </div>
+                        </div>
+                        
+                        <hr>
+                        
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'inventario:lona_list' %}" class="btn btn-secondary">
+                                <i class="bi bi-x-circle"></i> Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-success">
+                                <i class="bi bi-check-circle"></i> 
+                                {% if object %}Actualizar{% else %}Guardar{% endif %}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
